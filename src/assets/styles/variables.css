@@ -1,0 +1,99 @@
+﻿/* 布依族词典 - 设计令牌系统 */
+/* 基于 liquid-glass.css 原始设计 */
+
+:root {
+  /* 品牌色彩 */
+  --brand-300: #6BA3BE;
+  --brand-500: #3A6B8C;
+  --brand-700: #1B3A5C;
+  --accent-300: #D4883A;
+
+  /* 背景色 */
+  --background: #F5F2EF;
+  --foreground: #1B3A5C;
+  --card: rgba(232, 228, 225, 0.25);
+  --card-foreground: #1B3A5C;
+
+  /* 主色调 */
+  --primary: #3A6B8C;
+  --primary-foreground: #FFFFFF;
+  --secondary: rgba(27, 58, 92, 0.08);
+  --secondary-foreground: #1B3A5C;
+
+  /* 辅助色 */
+  --muted: rgba(245, 242, 239, 0.6);
+  --muted-foreground: rgba(27, 58, 92, 0.5);
+  --accent: #D4883A;
+  --accent-foreground: #FFFFFF;
+
+  /* 边框和输入 */
+  --border: rgba(27, 58, 92, 0.08);
+  --input: rgba(27, 58, 92, 0.12);
+  --ring: #3A6B8C;
+
+  /* 字体 */
+  --font-sans: 'DM Sans', ui-sans-serif, sans-serif, system-ui;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 1.2rem;
+  --spacing: 0.24rem;
+
+  /* 文字颜色 */
+  --c-text: #1B3A5C;
+  --c-text-85: rgba(27,58,92,0.85);
+  --c-text-70: rgba(27,58,92,0.7);
+  --c-text-60: rgba(27,58,92,0.6);
+  --c-text-50: rgba(27,58,92,0.5);
+  --c-text-35: rgba(27,58,92,0.35);
+  --c-text-10: rgba(27,58,92,0.1);
+
+  /* 品牌色变体 */
+  --c-brand: #3A6B8C;
+  --c-brand-light: #6BA3BE;
+  --c-brand-dark: #1B3A5C;
+  --c-brand-25: rgba(58,107,140,0.25);
+  --c-brand-40: rgba(58,107,140,0.4);
+  --c-brand-60: rgba(58,107,140,0.6);
+  --c-brand-08: rgba(58,107,140,0.08);
+  --c-brand-06: rgba(58,107,140,0.06);
+
+  /* 强调色 */
+  --c-accent: #D4883A;
+  --c-accent-20: rgba(212,136,58,0.2);
+  --c-accent-40: rgba(212,136,58,0.4);
+  --c-accent-10: rgba(212,136,58,0.1);
+  --c-accent-04: rgba(212,136,58,0.04);
+
+  /* 功能色 */
+  --c-success: #34c759;
+  --c-danger: #B54040;
+
+  /* 背景渐变 */
+  --c-bg-warm: #F5F2EF;
+  --c-bg-silver: #E8E4E1;
+  --c-overlay: rgba(245,242,239,0.12);
+
+  /* 白色变体 */
+  --c-white: #ffffff;
+  --c-white-78: rgba(255,255,255,0.78);
+  --c-white-65: rgba(255,255,255,0.65);
+  --c-white-60: rgba(255,255,255,0.6);
+  --c-white-55: rgba(255,255,255,0.55);
+  --c-white-50: rgba(255,255,255,0.5);
+  --c-white-35: rgba(255,255,255,0.35);
+  --c-white-15: rgba(255,255,255,0.15);
+  --c-white-10: rgba(255,255,255,0.10);
+
+  /* 玻璃效果 */
+  --c-glass: rgba(255,255,255,0.45);
+  --c-glass-nav: rgba(255,255,255,0.72);
+
+  /* 分隔线和阴影 */
+  --c-divider: rgba(27,58,92,0.08);
+  --c-shadow-soft: rgba(27,58,92,0.08);
+  --c-shadow-12: rgba(27,58,92,0.12);
+  --c-shadow-40: rgba(0,0,0,0.4);
+
+  /* 深色蒙层 */
+  --c-overlay-deep-1: rgba(27,58,92,0.88);
+  --c-overlay-deep-2: rgba(58,107,140,0.75);
+}
