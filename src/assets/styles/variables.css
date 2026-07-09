@@ -1,6 +1,4 @@
 ﻿/* 布依族词典 - 设计令牌系统 */
-/* 基于 liquid-glass.css 原始设计 */
-
 :root {
   /* 品牌色彩 */
   --brand-300: #6BA3BE;
@@ -33,6 +31,7 @@
 
   /* 字体 */
   --font-sans: 'DM Sans', ui-sans-serif, sans-serif, system-ui;
+  --font-serif: 'Noto Serif SC', serif;
   --font-mono: 'JetBrains Mono', monospace;
   --radius: 1.2rem;
   --spacing: 0.24rem;

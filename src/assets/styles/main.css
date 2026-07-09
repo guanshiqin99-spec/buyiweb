@@ -1,16 +1,11 @@
 ﻿/* 布依族词典 - 全局样式 */
-/* 基于原始 liquid-glass.css 设计 */
-
 @import './variables.css';
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+/* Google Fonts - DM Sans + Noto Serif SC */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
 
-/* ===== 基础排版 ===== */
-html { 
-  min-height: 100%; 
-}
-
+/* 基础排版 */
+html { min-height: 100%; }
 body {
   min-height: 100vh;
   margin: 0;
@@ -23,13 +18,11 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ===== 全局 focus-visible 焦点环 ===== */
 :focus-visible {
   outline: 2px solid var(--c-brand);
   outline-offset: 2px;
 }
 
-/* ===== Skip Link ===== */
 .skip-link {
   position: absolute;
   top: -100%;
@@ -43,19 +36,15 @@ body {
   text-decoration: none;
   transition: top 150ms ease;
 }
+.skip-link:focus { top: 8px; }
 
-.skip-link:focus {
-  top: 8px;
-}
-
-/* ===== Liquid Glass 面板 ===== */
+/* Liquid Glass */
 .liquid-glass {
   position: relative;
   border-radius: 1.2rem;
   background: var(--c-glass);
   border: 1px solid var(--c-white-50);
-  transition: transform 250ms cubic-bezier(0.32,0.72,0,1),
-              box-shadow 250ms cubic-bezier(0.32,0.72,0,1);
+  transition: transform 250ms cubic-bezier(0.32,0.72,0,1), box-shadow 250ms cubic-bezier(0.32,0.72,0,1);
   overflow: hidden;
 }
 
@@ -76,21 +65,14 @@ body {
   z-index: -2;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 1px 0 0 var(--c-white-35),
-              inset 0 -1px 0 0 rgba(0,0,0,0.03);
+  box-shadow: inset 0 1px 0 0 var(--c-white-35), inset 0 -1px 0 0 rgba(0,0,0,0.03);
 }
 
 @supports (backdrop-filter: blur(20px)) {
-  .liquid-glass {
-    backdrop-filter: blur(10px) saturate(110%);
-    -webkit-backdrop-filter: blur(10px) saturate(110%);
-  }
+  .liquid-glass { backdrop-filter: blur(10px) saturate(110%); -webkit-backdrop-filter: blur(10px) saturate(110%); }
 }
-
 @supports not (backdrop-filter: blur(20px)) {
-  .liquid-glass {
-    background: var(--c-white-65);
-  }
+  .liquid-glass { background: var(--c-white-65); }
 }
 
 .liquid-glass:hover {
@@ -98,7 +80,7 @@ body {
   box-shadow: 0 12px 32px var(--c-shadow-soft);
 }
 
-/* ===== 导航玻璃 ===== */
+/* 导航玻璃 */
 .liquid-glass-nav {
   width: 100%;
   height: 48px;
@@ -111,54 +93,27 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(110%);
 }
 
-/* ===== 标题呼吸效果 ===== */
-.title-breath {
-  animation: titleBreath 6s ease-in-out infinite;
-}
-
+/* 标题呼吸效果 */
+.title-breath { animation: titleBreath 6s ease-in-out infinite; }
 @keyframes titleBreath {
-  0%, 100% { 
-    text-shadow: 0 0 4px rgba(58,107,140,0.10); 
-    filter: brightness(1); 
-  }
-  50% { 
-    text-shadow: 0 0 15px rgba(58,107,140,0.35); 
-    filter: brightness(1.06); 
-  }
+  0%, 100% { text-shadow: 0 0 4px rgba(58,107,140,0.10); filter: brightness(1); }
+  50% { text-shadow: 0 0 15px rgba(58,107,140,0.35); filter: brightness(1.06); }
 }
 
-/* ===== 搜索框聚焦发光 ===== */
-.search-glow {
-  transition: box-shadow 300ms cubic-bezier(0.25,0.8,0.25,1),
-              border-color 300ms ease;
-}
-
+/* 搜索框聚焦发光 */
+.search-glow { transition: box-shadow 300ms cubic-bezier(0.25,0.8,0.25,1), border-color 300ms ease; }
 .search-glow:focus-within {
-  box-shadow: 0 0 0 4px rgba(58,107,140,0.12),
-              0 8px 32px rgba(58,107,140,0.18);
+  box-shadow: 0 0 0 4px rgba(58,107,140,0.12), 0 8px 32px rgba(58,107,140,0.18);
 }
 
-/* ===== 播放中均衡器动画 ===== */
-@keyframes equalize {
-  0%, 100% { height: 6px; }
-  50% { height: 16px; }
-}
-
-.eq-bar {
-  width: 3px;
-  background: var(--c-brand);
-  border-radius: 2px;
-  animation: equalize 0.9s ease-in-out infinite;
-}
-
+/* 均衡器动画 */
+.eq-bar { width: 3px; background: var(--c-brand); border-radius: 2px; animation: equalize 0.9s ease-in-out infinite; }
 .eq-bar:nth-child(2) { animation-delay: 0.15s; }
 .eq-bar:nth-child(3) { animation-delay: 0.3s; }
+@keyframes equalize { 0%, 100% { height: 6px; } 50% { height: 16px; } }
 
-/* ===== 导航水波涟漪下划线 ===== */
-.nav-rail a {
-  position: relative;
-}
-
+/* 导航水波涟漪 */
+.nav-rail a { position: relative; }
 .nav-rail a::after {
   content: '';
   position: absolute;
@@ -171,19 +126,15 @@ body {
   transform-origin: center;
   transition: transform 250ms cubic-bezier(0.32,0.72,0,1);
 }
+.nav-rail a:hover::after { transform: translateX(-50%) scaleX(1); }
 
-.nav-rail a:hover::after { 
-  transform: translateX(-50%) scaleX(1); 
-}
-
-/* ===== 隐藏滚动条 ===== */
+/* 隐藏滚动条 */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ===== 无障碍: 尊重减少动效偏好 ===== */
+/* 无障碍 */
 @media (prefers-reduced-motion: reduce) {
-  .title-breath,
-  .eq-bar { animation: none !important; }
+  .title-breath, .eq-bar { animation: none !important; }
   .nav-rail a::after { transition: none !important; }
   .search-glow { transition: none !important; }
 }
