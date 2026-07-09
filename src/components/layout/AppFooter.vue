@@ -1,4 +1,8 @@
-﻿<template>
+﻿<script setup>
+import { RouterLink } from 'vue-router'
+</script>
+
+<template>
   <footer class="app-footer">
     <div class="footer-content">
       <div class="footer-brand">

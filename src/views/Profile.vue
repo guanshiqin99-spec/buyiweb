@@ -1,128 +1,222 @@
-﻿<template>
-  <div class="profile-page">
-    <div class="profile-header">
-      <div class="avatar">👤</div>
-      <h1>未登录</h1>
-      <p>登录后享受更多功能</p>
-      <button class="login-btn">登录</button>
+﻿<script setup>
+import { useRouter } from 'vue-router'
+import PageShell from '@/components/common/PageShell.vue'
+import imgBg from '@/assets/images/bg-profile.png'
+
+const router = useRouter()
+
+const menuItems = [
+  { icon: '❤️', label: '我的收藏', path: '/favorites' },
+  { icon: '📊', label: '学习记录', path: '/record' },
+  { icon: '⚙️', label: '设置', path: '/settings' }
+]
+</script>
+
+<template>
+  <PageShell
+    :bg-image="imgBg"
+    title="个人中心"
+    subtitle="管理你的学习进度与收藏"
+    overlay-style="cool"
+    pattern-type="weaving"
+    :particle-density="8"
+  >
+    <div class="profile-content">
+      <!-- 头像区域 -->
+      <section class="avatar-section liquid-glass glow-card">
+        <div class="glow-effect"></div>
+        <div class="avatar-wrapper">
+          <div class="avatar">
+            <span class="avatar-icon">👤</span>
+          </div>
+          <div class="avatar-border"></div>
+        </div>
+        <h2 class="username">未登录</h2>
+        <p class="user-desc">登录后享受更多功能</p>
+        <button class="login-btn">登录 / 注册</button>
+      </section>
+
+      <!-- 菜单列表 -->
+      <section class="menu-section">
+        <nav class="menu-list liquid-glass glow-card">
+          <div class="glow-effect"></div>
+          <a 
+            v-for="(item, index) in menuItems" 
+            :key="item.label"
+            class="menu-item card-interactive"
+            @click.prevent="router.push(item.path)"
+          >
+            <span class="menu-icon">{{ item.icon }}</span>
+            <span class="menu-text">{{ item.label }}</span>
+            <span class="menu-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          </a>
+        </nav>
+      </section>
+
+      <!-- 应用信息 -->
+      <section class="app-info">
+        <div class="app-logo">🎋</div>
+        <p class="app-name">布依族词典</p>
+        <p class="app-version">v1.0.0</p>
+        <p class="app-copyright">© 2026 少数民族语言数字化保护</p>
+      </section>
     </div>
-    
-    <div class="menu-list">
-      <div class="menu-item">
-        <span class="menu-icon">❤️</span>
-        <span class="menu-text">我的收藏</span>
-        <span class="menu-arrow">→</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">📊</span>
-        <span class="menu-text">学习记录</span>
-        <span class="menu-arrow">→</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">⚙️</span>
-        <span class="menu-text">设置</span>
-        <span class="menu-arrow">→</span>
-      </div>
-    </div>
-    
-    <div class="app-info">
-      <p>布依族词典 v1.0.0</p>
-      <p>© 2026 少数民族语言数字化保护</p>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <style scoped>
-.profile-page {
-  max-width: 500px;
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 400px;
   margin: 0 auto;
-  padding: 40px 20px;
 }
 
-.profile-header {
+/* 头像区域 */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 32px;
   text-align: center;
-  margin-bottom: 40px;
+}
+
+.avatar-wrapper {
+  position: relative;
+  margin-bottom: 20px;
 }
 
 .avatar {
   width: 80px;
   height: 80px;
-  background: #e0e0e0;
-  border-radius: 50%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--c-brand-08), var(--c-accent-10));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  margin: 0 auto 15px;
 }
 
-.profile-header h1 {
-  color: #1B3A5C;
-  margin: 0 0 10px 0;
+.avatar-icon {
+  font-size: 36px;
 }
 
-.profile-header p {
-  color: #666;
-  margin: 0 0 20px 0;
+.avatar-border {
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid var(--c-brand-25);
+}
+
+.username {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--c-text);
+  margin: 0 0 8px 0;
+}
+
+.user-desc {
+  font-size: 14px;
+  color: var(--c-text-60);
+  margin: 0 0 24px 0;
 }
 
 .login-btn {
-  padding: 12px 40px;
-  background: #3A6B8C;
-  color: white;
+  padding: 12px 32px;
+  background: var(--c-brand);
+  color: var(--c-white);
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 999px;
+  font: 600 14px var(--font-sans);
   cursor: pointer;
+  transition: all 200ms ease;
 }
 
+.login-btn:hover {
+  background: var(--c-brand-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--c-brand-25);
+}
+
+/* 菜单列表 */
 .menu-list {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 40px;
+  padding: 8px 0;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 18px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+  text-decoration: none;
+  color: inherit;
   cursor: pointer;
-  transition: background 0.2s;
-}
-
-.menu-item:last-child {
-  border-bottom: none;
+  transition: background 200ms ease;
 }
 
 .menu-item:hover {
-  background: #f8f9fa;
+  background: var(--c-brand-06);
 }
 
 .menu-icon {
   font-size: 20px;
-  margin-right: 15px;
+  margin-right: 16px;
 }
 
 .menu-text {
   flex: 1;
-  font-size: 16px;
-  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--c-text);
 }
 
 .menu-arrow {
-  color: #999;
+  color: var(--c-text-35);
+  transition: transform 200ms ease;
 }
 
+.menu-item:hover .menu-arrow {
+  transform: translateX(4px);
+  color: var(--c-brand);
+}
+
+/* 应用信息 */
 .app-info {
   text-align: center;
-  color: #999;
-  font-size: 14px;
+  padding: 24px;
 }
 
-.app-info p {
-  margin: 5px 0;
+.app-logo {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.app-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c-text);
+  margin: 0 0 4px 0;
+}
+
+.app-version {
+  font-size: 12px;
+  color: var(--c-text-50);
+  margin: 0 0 8px 0;
+  font-family: var(--font-mono);
+}
+
+.app-copyright {
+  font-size: 12px;
+  color: var(--c-text-35);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .avatar-section {
+    padding: 32px 24px;
+  }
 }
 </style>

@@ -93,9 +93,45 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(110%);
 }
 
+/* ===== Glow Card Effect ===== */
+.glow-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-effect {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(58, 107, 140, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  will-change: transform;
+}
+
+.glow-card:hover .glow-effect {
+  opacity: 1;
+}
+
+.glow-accent .glow-effect {
+  background: radial-gradient(circle, rgba(212, 136, 58, 0.18) 0%, transparent 70%);
+  width: 250px;
+  height: 250px;
+}
+
+.glow-hero .glow-effect {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+  width: 300px;
+  height: 300px;
+}
+
 /* 标题呼吸效果 */
-.title-breath { animation: titleBreath 6s ease-in-out infinite; }
-@keyframes titleBreath {
+.title-breath { animation: titleBreathe 6s ease-in-out infinite; }
+@keyframes titleBreathe {
   0%, 100% { text-shadow: 0 0 4px rgba(58,107,140,0.10); filter: brightness(1); }
   50% { text-shadow: 0 0 15px rgba(58,107,140,0.35); filter: brightness(1.06); }
 }
@@ -137,4 +173,179 @@ body {
   .title-breath, .eq-bar { animation: none !important; }
   .nav-rail a::after { transition: none !important; }
   .search-glow { transition: none !important; }
+  .glow-effect { display: none !important; }
+}
+
+/* ===== Enhanced Card Interactions ===== */
+.card-interactive {
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+              box-shadow 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+              border-color 0.3s ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 16px 40px rgba(27, 58, 92, 0.12);
+  border-color: var(--c-brand-25);
+}
+
+.card-interactive:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+/* ===== Parallax Container ===== */
+.parallax-container {
+  overflow: hidden;
+  position: relative;
+}
+
+.parallax-bg {
+  position: absolute;
+  inset: -20%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+}
+
+/* ===== Stagger Animation Utilities ===== */
+.stagger-enter > * {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: staggerIn 0.6s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.stagger-enter > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-enter > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-enter > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-enter > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-enter > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-enter > *:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes staggerIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Counter Animation ===== */
+.counter-animate {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+/* ===== Pulse Effect ===== */
+.pulse-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pulse-hover:hover {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* ===== Glow Border ===== */
+.glow-border {
+  position: relative;
+}
+
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--c-brand-25), var(--c-accent-20), var(--c-brand-25));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-border:hover::after {
+  opacity: 1;
+}
+
+/* ===== Section Dividers with Pattern ===== */
+.section-divider {
+  position: relative;
+  height: 60px;
+  overflow: hidden;
+}
+
+.section-divider::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 20px,
+    var(--c-brand-06) 20px,
+    var(--c-brand-06) 21px
+  );
+  opacity: 0.5;
+}
+
+/* ===== Responsive Image Container ===== */
+.img-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.img-container:hover img {
+  transform: scale(1.05);
+}
+
+/* ===== Reduced Motion Support ===== */
+@media (prefers-reduced-motion: reduce) {
+  .stagger-enter > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  .pulse-hover:hover {
+    animation: none !important;
+  }
+  
+  .parallax-bg {
+    transform: none !important;
+  }
+  .glow-effect { display: none !important; }
+}
+
+
+/* ===== Title Breathe Animation ===== */
+.title-breathe {
+  animation: titleBreathe 6s ease-in-out infinite;
+}
+
+@keyframes titleBreathe {
+  0%, 100% {
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    text-shadow: 0 2px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(58, 107, 140, 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-breathe {
+    animation: none !important;
+  }
 }

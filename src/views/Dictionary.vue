@@ -2,6 +2,8 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import SearchBar from '@/components/common/SearchBar.vue'
+import PageShell from '@/components/common/PageShell.vue'
+import imgBg from '@/assets/images/bg-vocabulary.jpg'
 
 const route = useRoute()
 const searchQuery = ref(route.query.q || '')
@@ -47,12 +49,15 @@ watch(() => route.query.q, (newQuery) => {
 </script>
 
 <template>
-  <div class="dictionary-page">
-    <!-- 背景层 -->
-    <div class="background-layer"></div>
-    <div class="overlay-layer"></div>
-
-    <main id="main" style="padding-top: 80px; padding-bottom: 120px;">
+  <PageShell
+    :bg-image="imgBg"
+    title="词典查询"
+    subtitle="搜索布依语词汇、短语与谚语"
+    overlay-style="cool"
+    pattern-type="batik"
+    :particle-density="10"
+  >
+    <main id="main">
       <h1 class="sr-only">词典搜索</h1>
 
       <!-- 搜索区域 -->
@@ -83,11 +88,12 @@ watch(() => route.query.q, (newQuery) => {
 
       <!-- 搜索结果 -->
       <section class="results-section">
-        <div class="results-wrapper liquid-glass">
+        <div class="results-wrapper liquid-glass glow-card">
+          <div class="glow-effect"></div>
           <article
             v-for="result in filteredResults"
             :key="result.id"
-            class="result-item"
+            class="result-item card-interactive"
           >
             <div class="result-content">
               <span :class="['result-type', 'type-' + result.type]">
@@ -117,39 +123,12 @@ watch(() => route.query.q, (newQuery) => {
         </div>
       </section>
     </main>
-  </div>
+  </PageShell>
 </template>
 
 <style scoped>
-.dictionary-page {
-  min-height: 100vh;
-  position: relative;
-}
-
-/* 蜡染几何纹样背景 */
-.background-layer {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background:
-    repeating-linear-gradient(45deg, transparent 0, transparent 28px, rgba(27,58,92,0.05) 28px, rgba(27,58,92,0.05) 29px),
-    repeating-linear-gradient(-45deg, transparent 0, transparent 28px, rgba(27,58,92,0.05) 28px, rgba(27,58,92,0.05) 29px),
-    repeating-linear-gradient(45deg, transparent 0, transparent 14px, rgba(27,58,92,0.02) 14px, rgba(27,58,92,0.02) 15px),
-    repeating-linear-gradient(-45deg, transparent 0, transparent 14px, rgba(27,58,92,0.02) 14px, rgba(27,58,92,0.02) 15px),
-    radial-gradient(circle at 20% 80%, var(--c-brand-06) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, var(--c-accent-04) 0%, transparent 50%),
-    linear-gradient(160deg, var(--c-bg-warm), var(--c-bg-silver));
-}
-
-.overlay-layer {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: var(--c-overlay);
-}
-
 .search-section {
-  padding: 24px 24px 32px;
+  padding: 0 0 32px;
   display: flex;
   justify-content: center;
 }
@@ -202,7 +181,6 @@ watch(() => route.query.q, (newQuery) => {
 }
 
 .results-section {
-  padding: 0 24px;
   display: flex;
   justify-content: center;
 }

@@ -1,10 +1,14 @@
 ﻿<script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import FloatingParticles from '@/components/common/FloatingParticles.vue'
 
 const router = useRouter()
 const searchQuery = ref('')
 const isLoaded = ref(false)
+const parallaxOffset = ref(0)
+const counters = ref({ vocab: 0, phrases: 0, proverbs: 0, songs: 0 })
+const statsVisible = ref(false)
 
 const handleSearch = (query) => {
   if (query.trim()) {
@@ -16,21 +20,61 @@ const handleSearch = (query) => {
 }
 
 const features = [
-  { icon: '📖', title: '词典查询', description: '浏览完整词词汇库，搜索布依语词条', link: '/dictionary' },
-  { icon: '💬', title: '常用短语', description: '日常交流高频表达，掌握地道布依语', link: '/dictionary' },
-  { icon: '💡', title: '智慧谚语', description: '布依族世代相传的智慧结晶', link: '/dictionary' },
-  { icon: '🎵', title: '传统民歌', description: '聆听布依族天籁之音', link: '/songs' }
+  { icon: '📖', title: '词典查询', description: '浏览完整词汇库，搜索布依语词条', link: '/dictionary', accent: false },
+  { icon: '💬', title: '常用短语', description: '日常交流高频表达，掌握地道布依语', link: '/dictionary', accent: false },
+  { icon: '💡', title: '智慧谚语', description: '布依族世代相传的智慧结晶', link: '/dictionary', accent: false },
+  { icon: '🎵', title: '传统民歌', description: '聆听布依族天籁之音', link: '/songs', accent: true }
 ]
 
 const stats = [
-  { number: '646', suffix: '+', label: '收录词汇' },
-  { number: '109', suffix: '+', label: '常用短语' },
-  { number: '39', suffix: '', label: '智慧谚语' },
-  { number: '3', suffix: '', label: '传统民歌' }
+  { key: 'vocab', number: 646, suffix: '+', label: '收录词汇' },
+  { key: 'phrases', number: 109, suffix: '+', label: '常用短语' },
+  { key: 'proverbs', number: 39, suffix: '', label: '智慧谚语' },
+  { key: 'songs', number: 3, suffix: '', label: '传统民歌' }
 ]
+
+// Counter animation
+const animateCounter = (key, target, duration = 2000) => {
+  const start = Date.now()
+  const animate = () => {
+    const elapsed = Date.now() - start
+    const progress = Math.min(elapsed / duration, 1)
+    const eased = 1 - Math.pow(1 - progress, 3)
+    counters.value[key] = Math.floor(eased * target)
+    if (progress < 1) requestAnimationFrame(animate)
+  }
+  requestAnimationFrame(animate)
+}
+
+let scrollHandler = null
 
 onMounted(() => {
   setTimeout(() => { isLoaded.value = true }, 100)
+
+  scrollHandler = () => {
+    parallaxOffset.value = window.scrollY * 0.3
+  }
+  window.addEventListener('scroll', scrollHandler, { passive: true })
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !statsVisible.value) {
+        statsVisible.value = true
+        stats.forEach((stat, i) => {
+          setTimeout(() => animateCounter(stat.key, stat.number), i * 200)
+        })
+      }
+    })
+  }, { threshold: 0.3 })
+
+  const statsEl = document.querySelector('.stats-section')
+  if (statsEl) observer.observe(statsEl)
+})
+
+onUnmounted(() => {
+  if (scrollHandler) {
+    window.removeEventListener('scroll', scrollHandler)
+  }
 })
 </script>
 
@@ -39,13 +83,14 @@ onMounted(() => {
     <main id="main">
       <!-- Cinematic Hero -->
       <section class="hero">
-        <div class="hero-bg">
-          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80" alt="布依族梯田风光" loading="eager"/>
+        <div class="hero-bg" :style="{ transform: 	ranslateY(px) }">
+          <img src="@/assets/images/bouyei-landscape.jpg" alt="布依族梯田风光" loading="eager"/>
         </div>
         <div class="hero-scrim"></div>
+        <FloatingParticles pattern="batik" :count="16" />
         <div class="hero-content">
           <p class="hero-tag reveal">少数民族语言数字化保护</p>
-          <h1 class="hero-title reveal">布依族<br/>词典</h1>
+          <h1 class="hero-title reveal title-breathe">布依族<br/>词典</h1>
           <p class="hero-desc reveal">传承布依文化，连接语言之美</p>
           <div class="search-wrapper liquid-glass search-glow reveal">
             <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -64,8 +109,9 @@ onMounted(() => {
         <div class="container">
           <h2 class="section-title reveal">探索布依语</h2>
           <p class="section-subtitle reveal">词典、短语、谚语、民歌 —— 全方位体验布依族语言文化</p>
-          <div class="features-grid">
-            <a v-for="(feature, i) in features" :key="feature.title" :href="feature.link" class="feature-card liquid-glass reveal" :style="{ '--delay': (0.1 + i * 0.1) + 's' }" @click.prevent="router.push(feature.link)">
+          <div class="features-grid stagger-enter">
+            <a v-for="feature in features" :key="feature.title" :href="feature.link" class="feature-card liquid-glass card-interactive glow-card" :class="{ 'glow-accent': feature.accent }" @click.prevent="router.push(feature.link)">
+              <div class="glow-effect"></div>
               <span class="feature-icon">{{ feature.icon }}</span>
               <h3 class="feature-title">{{ feature.title }}</h3>
               <p class="feature-description">{{ feature.description }}</p>
@@ -76,12 +122,11 @@ onMounted(() => {
 
       <!-- 统计数据 -->
       <section class="stats-section">
-        <div class="container">
-          <div class="stats-grid">
-            <div v-for="stat in stats" :key="stat.label" class="stat-item liquid-glass reveal">
-              <p class="stat-number">{{ stat.number }}<span class="stat-suffix">{{ stat.suffix }}</span></p>
-              <p class="stat-label">{{ stat.label }}</p>
-            </div>
+        <div class="stats-grid stagger-enter">
+          <div v-for="stat in stats" :key="stat.key" class="stat-item liquid-glass glow-card">
+            <div class="glow-effect"></div>
+            <p class="stat-number">{{ counters[stat.key] }}<span class="stat-suffix">{{ stat.suffix }}</span></p>
+            <p class="stat-label">{{ stat.label }}</p>
           </div>
         </div>
       </section>
@@ -90,12 +135,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.home-page { min-height: 100vh; }
-
-/* Cinematic Hero */
+/* Hero 区域 */
 .hero {
   position: relative;
-  min-height: calc(100svh - 48px);
+  min-height: 100vh;
   display: flex;
   align-items: flex-end;
   padding: 0 24px 80px;
@@ -104,8 +147,9 @@ onMounted(() => {
 
 .hero-bg {
   position: absolute;
-  inset: 0;
+  inset: -20%;
   z-index: -2;
+  will-change: transform;
 }
 
 .hero-bg img {
@@ -132,6 +176,8 @@ onMounted(() => {
 .hero-content {
   max-width: 720px;
   color: #fff;
+  position: relative;
+  z-index: 2;
 }
 
 .hero-tag {
@@ -173,6 +219,11 @@ onMounted(() => {
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.search-wrapper:focus-within {
+  transform: scale(1.02);
 }
 
 .search-icon { flex-shrink: 0; }
@@ -217,7 +268,6 @@ onMounted(() => {
   opacity: 0;
   transform: translateY(28px);
   animation: heroFadeUp 0.8s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-  animation-delay: var(--delay, 0.3s);
 }
 
 @keyframes heroFadeUp {
@@ -234,6 +284,7 @@ onMounted(() => {
 /* 功能区域 */
 .features-section {
   padding: 96px 24px;
+  position: relative;
 }
 
 .container { max-width: 980px; margin: 0 auto; }
@@ -271,12 +322,6 @@ onMounted(() => {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 250ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px var(--c-shadow-soft);
 }
 
 .feature-icon { font-size: 28px; margin-bottom: 20px; flex-shrink: 0; }
@@ -311,5 +356,6 @@ onMounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .reveal, .hero-bg img { animation: none !important; opacity: 1 !important; transform: none !important; }
   .feature-card { transition: none !important; }
+  .glow-effect { display: none !important; }
 }
 </style>
