@@ -65,7 +65,7 @@ onMounted(() => {
           <h2 class="section-title reveal">探索布依语</h2>
           <p class="section-subtitle reveal">词典、短语、谚语、民歌 —— 全方位体验布依族语言文化</p>
           <div class="features-grid">
-            <a v-for="(feature, i) in features" :key="feature.title" :href="feature.link" class="feature-card liquid-glass reveal" :style="{ '--delay': i * 0.1 + 's' }" @click.prevent="router.push(feature.link)">
+            <a v-for="(feature, i) in features" :key="feature.title" :href="feature.link" class="feature-card liquid-glass reveal" :style="{ '--delay': (0.1 + i * 0.1) + 's' }" @click.prevent="router.push(feature.link)">
               <span class="feature-icon">{{ feature.icon }}</span>
               <h3 class="feature-title">{{ feature.title }}</h3>
               <p class="feature-description">{{ feature.description }}</p>
@@ -112,14 +112,12 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.08);
-  opacity: 0;
-  transition: all 1.4s cubic-bezier(0.32, 0.72, 0, 1);
+  animation: heroImgReveal 1.4s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
-.loaded .hero-bg img {
-  transform: scale(1);
-  opacity: 1;
+@keyframes heroImgReveal {
+  from { opacity: 0; transform: scale(1.08); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .hero-scrim {
@@ -141,12 +139,12 @@ onMounted(() => {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.7);
+  color: var(--c-accent);
   margin: 0 0 24px 0;
 }
 
 .hero-title {
-  font-family: 'Noto Serif SC', serif;
+  font-family: var(--font-serif);
   font-size: clamp(64px, 12vw, 152px);
   font-weight: 600;
   line-height: 0.86;
@@ -158,7 +156,7 @@ onMounted(() => {
   font-size: clamp(16px, 2vw, 21px);
   font-weight: 400;
   line-height: 1.55;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.82);
   margin: 0 0 40px 0;
 }
 
@@ -210,28 +208,28 @@ onMounted(() => {
 
 .hero-stats {
   font-size: 12px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.6);
   margin: 24px 0 0 0;
 }
 
 /* 内容浮现动画 */
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s cubic-bezier(0.32, 0.72, 0, 1), transform 0.8s cubic-bezier(0.32, 0.72, 0, 1);
-  transition-delay: var(--delay, 0.3s);
+  transform: translateY(28px);
+  animation: heroFadeUp 0.8s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation-delay: var(--delay, 0.3s);
 }
 
-.loaded .reveal {
-  opacity: 1;
-  transform: translateY(0);
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.loaded .hero-tag { transition-delay: 0.3s; }
-.loaded .hero-title { transition-delay: 0.5s; }
-.loaded .hero-desc { transition-delay: 0.7s; }
-.loaded .search-wrapper { transition-delay: 0.9s; }
-.loaded .hero-stats { transition-delay: 1.1s; }
+.loaded .hero-tag { animation-delay: 0.3s; }
+.loaded .hero-title { animation-delay: 0.5s; }
+.loaded .hero-desc { animation-delay: 0.7s; }
+.loaded .search-wrapper { animation-delay: 0.9s; }
+.loaded .hero-stats { animation-delay: 1.1s; }
 
 /* 功能区域 */
 .features-section {
@@ -264,7 +262,7 @@ onMounted(() => {
 }
 
 @media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 500px) { .features-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .features-grid { grid-template-columns: 1fr; } }
 
 .feature-card {
   display: flex;
@@ -273,6 +271,12 @@ onMounted(() => {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+  transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 250ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px var(--c-shadow-soft);
 }
 
 .feature-icon { font-size: 28px; margin-bottom: 20px; flex-shrink: 0; }
@@ -290,7 +294,7 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-@media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .stat-item {
   padding: 24px;
@@ -305,7 +309,7 @@ onMounted(() => {
 
 /* 减少动效 */
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
-  .hero-bg img { transform: none !important; opacity: 1 !important; transition: none !important; }
+  .reveal, .hero-bg img { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .feature-card { transition: none !important; }
 }
 </style>
