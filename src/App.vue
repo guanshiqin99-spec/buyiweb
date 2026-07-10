@@ -1,56 +1,51 @@
-﻿<script setup>
+<script setup>
 import { onMounted, onUnmounted } from 'vue'
 import { RouterView } from 'vue-router'
 import AppHeader from './components/layout/AppHeader.vue'
 import AppFooter from './components/layout/AppFooter.vue'
+import AudioPlayer from './components/specific/AudioPlayer.vue'
+import AgentPanel from './components/specific/AgentPanel.vue'
+import SearchModal from './components/common/SearchModal.vue'
+import CursorGlow from './components/common/CursorGlow.vue'
+import { initLiquidGlass } from './utils/liquidGlass'
+import { useSearchStore } from './stores/search'
 
-let glowObserver = null
+const searchStore = useSearchStore()
+
+// 判断目标是否为输入型元素，避免在输入框内按 / 误触发搜索
+function isTypingTarget(el) {
+  return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
+}
+
+// 全局 "/" 热键唤起搜索 Modal
+function handleHotkey(e) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return
+  if (e.key === '/' && !searchStore.isOpen && !isTypingTarget(e.target)) {
+    e.preventDefault()
+    searchStore.open()
+  }
+}
 
 onMounted(() => {
-  // Glow effect mouse tracking
-  const handleGlow = (e) => {
-    const cards = document.querySelectorAll('.glow-card:hover, .glow-hero:hover')
-    cards.forEach(el => {
-      const glow = el.querySelector('.glow-effect')
-      if (!glow) return
-      const rect = el.getBoundingClientRect()
-      glow.style.left = (e.clientX - rect.left) + 'px'
-      glow.style.top = (e.clientY - rect.top) + 'px'
-    })
-  }
-
-  document.addEventListener('mousemove', handleGlow, { passive: true })
-
-  // MutationObserver to handle dynamically added cards
-  glowObserver = new MutationObserver(() => {
-    // Touch device detection
-    if ('ontouchstart' in window) {
-      document.querySelectorAll('.glow-effect').forEach(el => {
-        el.style.display = 'none'
-      })
-    }
-  })
-  glowObserver.observe(document.body, { childList: true, subtree: true })
-
-  // Initial check for touch devices
-  if ('ontouchstart' in window) {
-    document.querySelectorAll('.glow-effect').forEach(el => {
-      el.style.display = 'none'
-    })
-  }
+  initLiquidGlass()
+  document.addEventListener('keydown', handleHotkey)
 })
 
 onUnmounted(() => {
-  if (glowObserver) glowObserver.disconnect()
+  document.removeEventListener('keydown', handleHotkey)
 })
 </script>
 
 <template>
   <div class="app-container">
     <a class="skip-link" href="#main">跳到主内容</a>
+    <CursorGlow />
     <AppHeader />
     <RouterView />
     <AppFooter />
+    <AudioPlayer />
+    <AgentPanel />
+    <SearchModal :is-open="searchStore.isOpen" @close="searchStore.close()" />
   </div>
 </template>
 

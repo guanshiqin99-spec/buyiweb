@@ -1,26 +1,24 @@
-﻿import { defineStore } from 'pinia'
+import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { userApi } from '@/utils/api'
+import { favoritesApi } from '@/utils/api'
 
 export const useFavoritesStore = defineStore('favorites', () => {
-  // 状态
   const favorites = ref([])
   const isLoading = ref(false)
-  
-  // 计算属性
+
   const favoriteCount = computed(() => favorites.value.length)
-  
-  // 检查是否已收藏
-  function isFavorite(id) {
-    return favorites.value.some(item => item.id === id)
+
+  function isFavorite(contentType, contentId) {
+    return favorites.value.some(
+      (item) => item.contentType === contentType && item.contentId === contentId
+    )
   }
-  
-  // 获取收藏列表
-  async function fetchFavorites(params = {}) {
+
+  async function fetchFavorites() {
     isLoading.value = true
     try {
-      const response = await userApi.getFavorites(params)
-      favorites.value = response.data || response
+      const response = await favoritesApi.list()
+      favorites.value = Array.isArray(response) ? response : (response.items || [])
       return response
     } catch (error) {
       console.error('获取收藏列表失败:', error)
@@ -29,53 +27,44 @@ export const useFavoritesStore = defineStore('favorites', () => {
       isLoading.value = false
     }
   }
-  
-  // 添加收藏
-  async function addFavorite(item) {
+
+  // 切换收藏状态（后端为 toggle 模式）
+  async function toggleFavorite(contentType, contentId) {
     try {
-      await userApi.addFavorite(item)
-      favorites.value.unshift(item)
-      return true
+      const result = await favoritesApi.toggle(contentType, contentId)
+      // 后端返回 { favorited } 据此同步本地列表
+      if (result.favorited) {
+        if (!isFavorite(contentType, contentId)) {
+          favorites.value.unshift({ contentType, contentId })
+        }
+      } else {
+        favorites.value = favorites.value.filter(
+          (item) => !(item.contentType === contentType && item.contentId === contentId)
+        )
+      }
+      return result
     } catch (error) {
-      console.error('添加收藏失败:', error)
+      console.error('切换收藏失败:', error)
       throw error
     }
   }
-  
-  // 删除收藏
-  async function removeFavorite(id) {
+
+  async function clearFavorites() {
     try {
-      await userApi.removeFavorite(id)
-      favorites.value = favorites.value.filter(item => item.id !== id)
-      return true
+      await favoritesApi.clear()
+      favorites.value = []
     } catch (error) {
-      console.error('删除收藏失败:', error)
+      console.error('清空收藏失败:', error)
       throw error
     }
   }
-  
-  // 切换收藏状态
-  async function toggleFavorite(item) {
-    if (isFavorite(item.id)) {
-      return await removeFavorite(item.id)
-    } else {
-      return await addFavorite(item)
-    }
-  }
-  
-  // 清空收藏
-  function clearFavorites() {
-    favorites.value = []
-  }
-  
+
   return {
     favorites,
     isLoading,
     favoriteCount,
     isFavorite,
     fetchFavorites,
-    addFavorite,
-    removeFavorite,
     toggleFavorite,
     clearFavorites
   }

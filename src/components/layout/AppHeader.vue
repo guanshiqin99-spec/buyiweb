@@ -1,10 +1,14 @@
-﻿<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+<script setup>
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 const isDrawerOpen = ref(false)
 const isScrolled = ref(false)
+const burgerRef = ref(null)
 
 const navLinks = [
   { path: '/dictionary', label: '词典' },
@@ -32,10 +36,24 @@ const toggleDrawer = () => {
 }
 
 const closeDrawer = () => {
+  const wasOpen = isDrawerOpen.value
   isDrawerOpen.value = false
+  if (wasOpen) {
+    nextTick(() => burgerRef.value?.focus())
+  }
 }
 
 const isActive = (path) => route.path === path
+
+const handleAuthAction = () => {
+  if (authStore.isLoggedIn) {
+    if (window.confirm('确定要退出当前账号吗？')) {
+      authStore.logout()
+    }
+  } else {
+    router.push('/login')
+  }
+}
 </script>
 
 <template>
@@ -46,7 +64,7 @@ const isActive = (path) => route.path === path
   >
     <div class="nav-inner">
       <RouterLink to="/" class="nav-brand" @click="closeDrawer">
-        <svg class="nav-brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <svg class="nav-brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 2L6 8V16L12 22L18 16V8L12 2Z" stroke="currentColor" stroke-width="1.5"/>
           <path d="M8 12L10 14L15 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -64,9 +82,13 @@ const isActive = (path) => route.path === path
         >
           {{ link.label }}
         </RouterLink>
+        <button class="nav-auth-btn" @click="handleAuthAction">
+          {{ authStore.isLoggedIn ? '退出' : '登录' }}
+        </button>
       </div>
       
       <button
+        ref="burgerRef"
         class="nav-burger"
         aria-label="打开菜单"
         :aria-expanded="isDrawerOpen"
@@ -84,6 +106,8 @@ const isActive = (path) => route.path === path
       id="navDrawer"
       class="nav-drawer"
       :class="{ open: isDrawerOpen, scrolled: isScrolled }"
+      :aria-hidden="!isDrawerOpen"
+      :inert="!isDrawerOpen"
     >
       <RouterLink
         v-for="link in navLinks"
@@ -105,6 +129,9 @@ const isActive = (path) => route.path === path
   transition: background 300ms ease, backdrop-filter 300ms ease, box-shadow 300ms ease;
   background: transparent;
   backdrop-filter: none;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .nav-immersive.scrolled {
@@ -186,8 +213,14 @@ const isActive = (path) => route.path === path
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
-  transition: all 200ms ease;
+  transition: color 200ms ease, background 200ms ease;
   position: relative;
+  outline: none;
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
 }
 
 .nav-immersive:not(.scrolled) .nav-link {
@@ -219,6 +252,42 @@ const isActive = (path) => route.path === path
   font-weight: 600;
 }
 
+/* 登录/退出按钮 */
+.nav-auth-btn {
+  margin-left: 8px;
+  padding: 6px 16px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  font: 500 13px var(--font-sans);
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease;
+  outline: none;
+}
+
+.nav-auth-btn:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
+}
+
+.nav-immersive:not(.scrolled) .nav-auth-btn {
+  color: rgba(255,255,255,0.9);
+  border-color: rgba(255,255,255,0.4);
+}
+
+.nav-immersive:not(.scrolled) .nav-auth-btn:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+.nav-immersive.scrolled .nav-auth-btn {
+  color: var(--c-brand);
+  border-color: var(--c-brand-25);
+}
+
+.nav-immersive.scrolled .nav-auth-btn:hover {
+  background: var(--c-brand-08);
+}
+
 /* 汉堡按钮 */
 .nav-burger {
   display: inline-flex;
@@ -232,6 +301,12 @@ const isActive = (path) => route.path === path
   cursor: pointer;
   padding: 0;
   transition: color 300ms ease;
+  outline: none;
+}
+
+.nav-burger:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
 }
 
 .nav-immersive:not(.scrolled) .nav-burger {
@@ -265,6 +340,13 @@ const isActive = (path) => route.path === path
   backdrop-filter: blur(20px) saturate(120%);
   -webkit-backdrop-filter: blur(20px) saturate(120%);
   border-bottom: 1px solid rgba(27,58,92,0.06);
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+[data-theme="dark"] .nav-drawer {
+  background: rgba(15, 20, 25, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .nav-drawer.open {
@@ -284,7 +366,7 @@ const isActive = (path) => route.path === path
   text-decoration: none;
   padding: 14px 12px;
   border-radius: 10px;
-  transition: all 150ms ease;
+  transition: background 150ms ease, color 150ms ease;
 }
 
 .nav-drawer a:hover {

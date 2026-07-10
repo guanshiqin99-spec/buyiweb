@@ -1,31 +1,119 @@
-﻿<script setup>
-import { ref, computed } from 'vue'
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import PageShell from '@/components/common/PageShell.vue'
+import { contentApi, recordsApi } from '@/utils/api'
+import { useAuthStore } from '@/stores/auth'
+import { useFavoritesStore } from '@/stores/favorites'
 import imgBg from '@/assets/images/bouyei-textile.jpg'
 
-const words = [
-  { id: 1, bouyei: 'ndaangl', chinese: '水', english: 'water', phonetic: '/naŋ²⁴/' },
-  { id: 2, bouyei: 'mbaanl', chinese: '村', english: 'village', phonetic: '/mbaːn²⁴/' },
-  { id: 3, bouyei: 'byaail', chinese: '走', english: 'walk', phonetic: '/pjaːi²⁴/' },
-  { id: 4, bouyei: 'ndil', chinese: '好', english: 'good', phonetic: '/ndi²⁴/' },
-  { id: 5, bouyei: 'goy', chinese: '我', english: 'I', phonetic: '/kɔi²⁴/' }
-]
-
+const authStore = useAuthStore()
+const favoritesStore = useFavoritesStore()
+const words = ref([])
+const isLoading = ref(false)
 const currentIndex = ref(0)
 const isFlipped = ref(false)
 const learnedCount = ref(0)
+const actionMsg = ref('')
+let msgTimer = null
+// 学习统计（登录态拉取）
+const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
 
-const currentWord = computed(() => words[currentIndex.value])
+const currentWord = computed(() => words.value[currentIndex.value] || {
+  bouyei: '', chinese: '', english: '', phonetic: ''
+})
 
 const flipCard = () => {
   isFlipped.value = !isFlipped.value
 }
 
+function showMsg(text) {
+  actionMsg.value = text
+  if (msgTimer) clearTimeout(msgTimer)
+  msgTimer = setTimeout(() => { actionMsg.value = '' }, 2200)
+}
+
+// 发音（占位：后端暂无 TTS）
+function handlePlay() {
+  showMsg('发音功能即将上线')
+}
+
+// 收藏切换
+async function handleFavorite() {
+  if (!authStore.isLoggedIn) {
+    showMsg('请先登录后再收藏')
+    return
+  }
+  if (!currentWord.value?.id) return
+  try {
+    await favoritesStore.toggleFavorite('dictionary', currentWord.value.id)
+    showMsg('已更新收藏')
+  } catch (e) {
+    showMsg('操作失败，请重试')
+  }
+}
+
+// 标记复习
+async function handleReview() {
+  if (!authStore.isLoggedIn) {
+    showMsg('请先登录后再标记复习')
+    return
+  }
+  if (!currentWord.value?.id) return
+  try {
+    await recordsApi.create({
+      contentType: 'dictionary',
+      contentId: currentWord.value.id,
+      actionType: 'view'
+    })
+    showMsg('已加入复习清单')
+  } catch (e) {
+    showMsg('操作失败，请重试')
+  }
+}
+
 const nextWord = () => {
   isFlipped.value = false
-  currentIndex.value = (currentIndex.value + 1) % words.length
-  learnedCount.value++
+  if (words.value.length > 0) {
+    // 先记录当前词，再切换索引，避免把“下一词”写入学习记录
+    if (authStore.isLoggedIn && currentWord.value?.id) {
+      recordsApi.create({
+        contentType: 'dictionary',
+        contentId: currentWord.value.id,
+        actionType: 'view'
+      }).catch(() => { /* 记录失败静默忽略 */ })
+    }
+    currentIndex.value = (currentIndex.value + 1) % words.value.length
+    learnedCount.value++
+  }
 }
+
+onMounted(async () => {
+  isLoading.value = true
+  // 并行：加载词汇 + 拉取学习统计（登录态）
+  const tasks = [
+    contentApi.list('dictionary', { page: 1, pageSize: 50 }).then(res => {
+      words.value = (res.items || []).map(item => ({
+        id: item.id,
+        bouyei: item.buyiText || '',
+        chinese: item.zhText || '',
+        english: item.enText || '',
+        phonetic: item.description || ''
+      }))
+    }).catch(e => {
+      console.error('词汇加载失败', e)
+      words.value = []
+    }),
+    authStore.isLoggedIn ? recordsApi.stats().then(res => {
+      learnStats.value = res || learnStats.value
+    }).catch(() => {}) : Promise.resolve()
+  ]
+  await Promise.allSettled(tasks)
+  isLoading.value = false
+})
+
+onUnmounted(() => {
+  if (msgTimer) clearTimeout(msgTimer)
+})
 </script>
 
 <template>
@@ -38,14 +126,43 @@ const nextWord = () => {
     :particle-density="8"
   >
     <div class="learn-content">
+      <!-- 学习统计条（登录态显示） -->
+      <div v-if="authStore.isLoggedIn" class="learn-stats liquid-glass glow-card reveal reveal-1" aria-live="polite" aria-atomic="false">
+        <div class="glow-effect"></div>
+        <div class="learn-stat">
+          <span class="learn-stat-value">{{ learnStats.streakDays ?? 0 }}</span>
+          <span class="learn-stat-label">连续天数</span>
+        </div>
+        <div class="learn-stat-divider"></div>
+        <div class="learn-stat">
+          <span class="learn-stat-value">{{ learnStats.totalCount ?? 0 }}</span>
+          <span class="learn-stat-label">累计学习</span>
+        </div>
+        <div class="learn-stat-divider"></div>
+        <div class="learn-stat">
+          <span class="learn-stat-value">{{ learnStats.todayCount ?? 0 }}</span>
+          <span class="learn-stat-label">今日</span>
+        </div>
+      </div>
+
+      <p v-if="isLoading" class="loading-hint">加载中…</p>
+      <p v-else-if="words.length === 0" class="loading-hint">暂无词汇</p>
+      <template v-else>
       <div class="progress liquid-glass glow-card">
         <div class="glow-effect"></div>
         <span>已学习: {{ learnedCount }} 词</span>
         <span>进度: {{ currentIndex + 1 }} / {{ words.length }}</span>
       </div>
       
-      <div class="card-container glow-card" @click="flipCard">
-        <div class="glow-effect"></div>
+      <div
+        class="card-container"
+        role="button"
+        tabindex="0"
+        aria-label="翻转学习卡片"
+        @click="flipCard"
+        @keydown.enter="flipCard"
+        @keydown.space.prevent="flipCard"
+      >
         <div class="card" :class="{ flipped: isFlipped }">
           <div class="card-front liquid-glass">
             <span class="phonetic">{{ currentWord.phonetic }}</span>
@@ -59,10 +176,38 @@ const nextWord = () => {
           </div>
         </div>
       </div>
-      
-      <button class="next-btn" @click="nextWord">
-        下一个 →
-      </button>
+
+      <p v-if="actionMsg" class="action-msg" aria-live="polite">{{ actionMsg }}</p>
+
+      <div class="action-bar" role="group" aria-label="学习动作">
+        <button class="action-btn" type="button" aria-label="播放发音" @click="handlePlay">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span>发音</span>
+        </button>
+        <button class="action-btn" type="button" aria-label="收藏词条" @click="handleFavorite">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <span>收藏</span>
+        </button>
+        <button class="action-btn" type="button" aria-label="标记复习" @click="handleReview">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>复习</span>
+        </button>
+        <button class="action-btn action-btn-primary" type="button" aria-label="下一个词条" @click="nextWord">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+          <span>下一词</span>
+        </button>
+      </div>
+      </template>
     </div>
   </PageShell>
 </template>
@@ -75,6 +220,47 @@ const nextWord = () => {
   gap: 32px;
   max-width: 400px;
   margin: 0 auto;
+}
+
+.loading-hint {
+  text-align: center;
+  color: var(--c-text-60);
+  font-size: 14px;
+  padding: 48px 0;
+}
+
+/* 学习统计条 */
+.learn-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  padding: 16px 24px;
+}
+
+.learn-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.learn-stat-value {
+  font: 600 24px var(--font-sans);
+  color: var(--c-brand);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.learn-stat-label {
+  font-size: 11px;
+  color: var(--c-text-60);
+}
+
+.learn-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--c-divider, rgba(58, 107, 140, 0.12));
 }
 
 .progress {
@@ -90,6 +276,7 @@ const nextWord = () => {
   perspective: 1000px;
   cursor: pointer;
   width: 100%;
+  overflow: visible;
 }
 
 .card {
@@ -107,20 +294,25 @@ const nextWord = () => {
 .card-front,
 .card-back {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   border-radius: var(--radius);
   padding: 32px;
+  box-sizing: border-box;
 }
 
 .card-front {
-  background: var(--c-glass);
-  border: 1px solid var(--c-white-50);
+  --lg-radius: var(--radius);
+  --lg-tint-a: 0.28;
 }
 
 .card-back {
@@ -145,7 +337,7 @@ const nextWord = () => {
 
 .phonetic {
   font-size: 16px;
-  color: var(--c-brand-light);
+  color: var(--c-brand);
   font-family: var(--font-mono);
 }
 
@@ -160,34 +352,72 @@ const nextWord = () => {
 }
 
 .hint {
-  color: var(--c-text-50);
+  color: var(--c-text-70);
   font-size: 14px;
   margin: 16px 0 0 0;
 }
 
-.next-btn {
-  padding: 14px 36px;
+.action-msg {
+  font-size: 13px;
+  color: var(--c-brand);
+  margin: -8px 0 0 0;
+  text-align: center;
+  min-height: 18px;
+}
+
+.action-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: var(--c-white-80, rgba(255, 255, 255, 0.7));
+  border: 1px solid var(--c-white-50, rgba(255, 255, 255, 0.5));
+  border-radius: 14px;
+  color: var(--c-text-70);
+  font: 500 12px var(--font-sans);
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, transform 200ms ease, border-color 200ms ease;
+}
+
+.action-btn:hover {
+  background: var(--c-brand-06, rgba(58, 107, 140, 0.06));
+  color: var(--c-brand);
+  transform: translateY(-2px);
+}
+
+.action-btn:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
+}
+
+.action-btn:active {
+  transform: translateY(0);
+}
+
+.action-btn-primary {
   background: var(--c-brand);
   color: var(--c-white);
-  border: none;
-  border-radius: 999px;
-  font: 600 16px var(--font-sans);
-  cursor: pointer;
-  transition: all 200ms ease;
+  border-color: var(--c-brand);
 }
 
-.next-btn:hover {
+.action-btn-primary:hover {
   background: var(--c-brand-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px var(--c-brand-25);
-}
-
-.next-btn:active {
-  transform: translateY(0);
+  color: var(--c-white);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card {
+    transition: none !important;
+  }
+  .action-btn {
     transition: none !important;
   }
 }

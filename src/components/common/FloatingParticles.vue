@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
@@ -45,7 +45,7 @@ const createParticle = () => {
     x: Math.random() * 100,
     y: Math.random() * 100,
     size,
-    opacity: Math.random() * 0.08 + 0.04,
+    opacity: Math.random() * 0.04 + 0.03,
     duration: Math.random() * 15 + 15,
     delay: Math.random() * -30,
     drift: Math.random() * 20 - 10
@@ -53,7 +53,8 @@ const createParticle = () => {
 }
 
 onMounted(() => {
-  particles.value = Array.from({ length: props.count }, createParticle)
+  const count = Math.min(props.count, 8)
+  particles.value = Array.from({ length: count }, createParticle)
 })
 
 onUnmounted(() => {
@@ -113,7 +114,7 @@ onUnmounted(() => {
     opacity: var(--particle-opacity, 0.08);
   }
   100% {
-    transform: translateY(-100vh) translateX(var(--drift, 0px)) rotate(360deg);
+    transform: translateY(-100vh) translateX(var(--drift, 0px)) rotate(180deg);
     opacity: 0;
   }
 }
@@ -126,7 +127,7 @@ onUnmounted(() => {
 }
 
 @media (max-width: 640px) {
-  .particle:nth-child(n+7) {
+  .particle:nth-child(n+5) {
     display: none;
   }
 }

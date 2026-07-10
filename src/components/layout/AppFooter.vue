@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { RouterLink } from 'vue-router'
 </script>
 
@@ -20,9 +20,9 @@ import { RouterLink } from 'vue-router'
 
         <div class="footer-section">
           <h4>关于</h4>
-          <a href="#">项目介绍</a>
-          <a href="#">使用帮助</a>
-          <a href="#">联系我们</a>
+          <span class="footer-link-text">项目介绍</span>
+          <span class="footer-link-text">使用帮助</span>
+          <span class="footer-link-text">联系我们</span>
         </div>
       </div>
 
@@ -84,7 +84,8 @@ import { RouterLink } from 'vue-router'
   margin: 0 0 12px 0;
 }
 
-.footer-section a {
+.footer-section a,
+.footer-section .footer-link-text {
   display: block;
   font-size: 14px;
   color: var(--c-white-60);
@@ -93,8 +94,16 @@ import { RouterLink } from 'vue-router'
   transition: color 150ms ease;
 }
 
-.footer-section a:hover {
+.footer-section a:hover,
+.footer-section .footer-link-text:hover {
   color: var(--c-white);
+}
+
+.footer-link-text {
+  display: block;
+  font-size: 14px;
+  color: var(--c-white-60);
+  padding: 4px 0;
 }
 
 .footer-bottom {

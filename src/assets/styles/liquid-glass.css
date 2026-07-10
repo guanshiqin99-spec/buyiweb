@@ -1,0 +1,592 @@
+/*
+ * liquid-glass.css - 布依族词典 Web 版共享设计系统
+ * 风格: Apple Liquid Glass 骨架 + 布依族民族靛蓝配色
+ * 主题模式: light (暖白底浅色明亮主题)
+ *
+ * 完整 WWDC25 物理光学材质实现，6层光学结构
+ */
+
+/* ===== Liquid Glass 专有扩展变量（基础令牌见 variables.css） ===== */
+:root {
+  /* 沉浸式导航栏变量 */
+  --nav-hero-height: 280px;
+  --nav-scroll-bg: rgba(255,255,255,0.85);
+  --nav-scroll-blur: blur(20px) saturate(120%);
+  --nav-pill-active: rgba(255,255,255,0.2);
+  --nav-pill-scroll: var(--c-brand-08);
+  --nav-pill-hover: rgba(255,255,255,0.15);
+  --nav-pill-radius: 999px;
+
+  /* 液体玻璃材质层级 */
+  --lg-hero-blur: blur(10px) saturate(155%);
+  --lg-content-blur: blur(6px) saturate(140%);
+  --lg-quiet-blur: blur(4px) saturate(120%);
+}
+
+/* ===== @property: 液态玻璃可过渡光学属性 =====
+ * 注册后 --lg-* 可在 transition 中插值，并确保 ::before/::after 继承 */
+@property --lg-mx {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+@property --lg-my {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 22%;
+}
+@property --lg-spec {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.45;
+}
+@property --lg-tint-a {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.16;
+}
+
+/* ===== Liquid Glass 面板 (WWDC25 物理光学材质) =====
+ * 自底向上的层结构：
+ *   1. 折射层   backdrop-filter (轻模糊 + 饱和) —— 背景被折射穿透
+ *   2. 厚度层   element background 多重渐变 (顶部高光带 / 底部焦散聚光 / 自适应着色)
+ *   3. 噪声层   ::after feTurbulence 内部颗粒 (overlay 混合)
+ *   4. 高光层   ::before 镜面高光 + 菲涅尔边缘色散
+ *   5. 边缘层   inset box-shadow 菲涅尔边缘反射 + 物理厚度内阴影
+ *   6. 阴影层   多重柔和物理投影 (接触 / 近 / 中 / 远)
+ */
+.liquid-glass,
+.liquid-glass-content {
+  --lg-radius: 28px;
+  --lg-mx: 50%;
+  --lg-my: 22%;
+  --lg-spec: 0.30;
+  --lg-edge-x: 0;
+  --lg-tint: 255, 255, 255;
+  --lg-tint-a: 0.12;
+  position: relative;
+  isolation: isolate;                       /* 限制混合范围，使伪元素与背景正确合成 */
+  border-radius: var(--lg-radius);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+  /* 厚度层 + 焦散聚光 + 自适应着色 (体积深度) */
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.26) 0%,
+      rgba(255, 255, 255, 0.07) 14%,
+      rgba(255, 255, 255, 0.01) 32%,
+      transparent 60%),
+    radial-gradient(140% 90% at 50% 122%,
+      rgba(58, 107, 140, 0.10) 0%,
+      rgba(212, 136, 58, 0.04) 38%,
+      transparent 62%),
+    linear-gradient(180deg,
+      rgba(var(--lg-tint), var(--lg-tint-a)) 0%,
+      rgba(var(--lg-tint), calc(var(--lg-tint-a) * 0.55)) 100%);
+  /* 菲涅尔边缘反射 + 物理厚度内阴影 + 边缘光响应光标 + 柔和物理投影 */
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.55),          /* 顶部内高光 (厚度) */
+    inset 0 -1px 1px var(--c-text-10),                  /* 底部内阴影 (厚度) */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),          /* 内圈微反光 */
+    inset calc(var(--lg-edge-x, 0) * 1px) 0 10px rgba(255, 255, 255, 0.12), /* 边缘光响应光标 */
+    var(--shadow-xs),                                    /* 接触阴影 */
+    var(--shadow-sm),                                    /* 近投影 */
+    var(--shadow-md);                                    /* 中投影 */
+  transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1),
+              --lg-spec 300ms ease;
+}
+
+/* Hero 玻璃：更厚、更亮、更有景深，用于搜索弹窗、播放器、登录卡 */
+.liquid-glass-hero {
+  --lg-spec: 0.42;
+  --lg-tint-a: 0.16;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.36) 0%,
+      rgba(255, 255, 255, 0.10) 14%,
+      rgba(255, 255, 255, 0.02) 32%,
+      transparent 60%),
+    radial-gradient(140% 90% at 50% 122%,
+      rgba(58, 107, 140, 0.14) 0%,
+      rgba(212, 136, 58, 0.06) 38%,
+      transparent 62%),
+    linear-gradient(180deg,
+      rgba(var(--lg-tint), var(--lg-tint-a)) 0%,
+      rgba(var(--lg-tint), calc(var(--lg-tint-a) * 0.55)) 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.70),
+    inset 0 -1px 1px var(--c-text-10),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset calc(var(--lg-edge-x, 0) * 1px) 0 12px rgba(255, 255, 255, 0.18),
+    var(--shadow-sm),
+    var(--shadow-md),
+    var(--shadow-lg);
+}
+
+/* Quiet 玻璃：几乎不发光，用于列表、菜单、筛选器 */
+.liquid-glass-quiet {
+  --lg-spec: 0.18;
+  --lg-tint-a: 0.08;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.04) 14%,
+      transparent 60%),
+    linear-gradient(180deg,
+      rgba(var(--lg-tint), var(--lg-tint-a)) 0%,
+      rgba(var(--lg-tint), calc(var(--lg-tint-a) * 0.55)) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 var(--c-text-10),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    var(--shadow-xs),
+    var(--shadow-sm);
+}
+.liquid-glass-quiet:hover {
+  transform: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 var(--c-text-10),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10),
+    var(--shadow-xs),
+    var(--shadow-sm);
+}
+
+/* 折射层：基础模糊 + 饱和 (所有支持 backdrop-filter 的浏览器) */
+@supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+  .liquid-glass,
+  .liquid-glass-content {
+    backdrop-filter: var(--lg-content-blur);
+    -webkit-backdrop-filter: var(--lg-content-blur);
+  }
+  .liquid-glass-hero {
+    backdrop-filter: var(--lg-hero-blur);
+    -webkit-backdrop-filter: var(--lg-hero-blur);
+  }
+  .liquid-glass-quiet {
+    backdrop-filter: var(--lg-quiet-blur);
+    -webkit-backdrop-filter: var(--lg-quiet-blur);
+  }
+}
+/* 无 backdrop-filter 支持：用更实的底色兜底 */
+@supports not ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+  .liquid-glass,
+  .liquid-glass-content {
+    background-color: rgba(255, 255, 255, 0.55);
+  }
+  .liquid-glass-hero {
+    background-color: rgba(255, 255, 255, 0.65);
+  }
+  .liquid-glass-quiet {
+    background-color: rgba(255, 255, 255, 0.40);
+  }
+}
+
+/* 噪声层 ::after (内部颗粒纹理，z=-2：位于厚度层之上、高光层之下) */
+.liquid-glass::after,
+.liquid-glass-content::after,
+.liquid-glass-hero::after,
+.liquid-glass-quiet::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+  opacity: 0.18;
+}
+
+/* 高光层 ::before (镜面高光 + 菲涅尔边缘色散，z=-1：位于噪声层之上) */
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    /* 镜面高光：随 --lg-mx/--lg-my 移动，小而圆的光点跟鼠标（非整片雾光） */
+    radial-gradient(18% 20% at var(--lg-mx) var(--lg-my),
+      rgba(255, 255, 255, 0.58) 0%,
+      rgba(255, 255, 255, 0.24) 40%,
+      rgba(255, 255, 255, 0.06) 70%,
+      transparent 90%),
+    /* 菲涅尔顶部边缘反射 */
+    radial-gradient(120% 140% at 50% -20%,
+      rgba(255, 255, 255, 0.42) 0%,
+      transparent 32%),
+    /* 焦散底部边缘冷光 */
+    radial-gradient(100% 100% at 50% 120%,
+      rgba(107, 163, 190, 0.22) 0%,
+      transparent 55%);
+  background-blend-mode: screen, soft-light, normal;
+  mix-blend-mode: screen;
+  opacity: var(--lg-spec);
+  will-change: transform;
+  transition: opacity 300ms ease;
+}
+
+/* 悬停：镜面高光增强 + 微浮起 + 折射阴影加深（仅限支持 hover 的设备，避免触屏粘性） */
+@media (hover: hover) {
+  .liquid-glass:hover {
+    --lg-spec: 0.52;
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.78),
+      inset 0 -1px 1px var(--c-shadow-12),
+      inset 1px 0 0 rgba(255, 90, 90, 0.04),
+      inset -1px 0 0 rgba(90, 110, 255, 0.04),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+      inset calc(var(--lg-edge-x, 0) * 1px) 0 12px rgba(255, 255, 255, 0.18),
+      var(--shadow-sm),
+      var(--shadow-md),
+      var(--shadow-lg);
+  }
+}
+
+/* ===== 药丸形液态玻璃变体（播放条等小尺寸悬浮物体） ===== */
+.liquid-glass-pill {
+  --lg-radius: 999px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.60),
+    inset 0 -1px 1px var(--c-text-10),
+    inset 1px 0 0 rgba(255, 90, 90, 0.03),
+    inset -1px 0 0 rgba(90, 110, 255, 0.03),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.10),
+    inset calc(var(--lg-edge-x, 0) * 1px) 0 10px rgba(255, 255, 255, 0.14),
+    var(--shadow-sm),
+    var(--shadow-md),
+    var(--shadow-lg);
+}
+.liquid-glass-pill::before {
+  background:
+    radial-gradient(28% 30% at var(--lg-mx) var(--lg-my),
+      rgba(255, 255, 255, 0.52) 0%,
+      rgba(255, 255, 255, 0.20) 40%,
+      rgba(255, 255, 255, 0.05) 70%,
+      transparent 90%),
+    radial-gradient(120% 140% at 50% -20%,
+      rgba(255, 255, 255, 0.24) 0%,
+      transparent 28%),
+    radial-gradient(100% 100% at 50% 120%,
+      rgba(107, 163, 190, 0.18) 0%,
+      transparent 55%);
+  background-blend-mode: screen, soft-light, normal;
+}
+.liquid-glass-pill:hover {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.75),
+    inset 0 -1px 1px var(--c-shadow-12),
+    inset 1px 0 0 rgba(255, 90, 90, 0.04),
+    inset -1px 0 0 rgba(90, 110, 255, 0.04),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset calc(var(--lg-edge-x, 0) * 1px) 0 12px rgba(255, 255, 255, 0.18),
+    var(--shadow-sm),
+    var(--shadow-md),
+    var(--shadow-lg);
+}
+
+/* ===== 导航毛玻璃 ===== */
+.liquid-glass-nav {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  border-radius: 0;
+  background: var(--c-glass-nav);
+  border-bottom: 1px solid var(--c-white-60);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+}
+
+/* ===== 呼吸感: 标题玉石微光（仅 Hero 大标题保留） ===== */
+@keyframes titleBreath {
+  0%, 100% { text-shadow: 0 0 4px rgba(58,107,140,0.10); filter: brightness(1); }
+  50%      { text-shadow: 0 0 15px rgba(58,107,140,0.35); filter: brightness(1.06); }
+}
+
+/* ===== 动效: 导航水波涟漪下划线 ===== */
+.nav-rail a {
+  position: relative;
+}
+.nav-rail a::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c-brand), transparent);
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform 250ms cubic-bezier(0.32,0.72,0,1);
+}
+.nav-rail a:hover::after { transform: translateX(-50%) scaleX(1); }
+
+/* ===== 动效: 搜索框聚合聚焦 ===== */
+.search-glow {
+  transition: box-shadow 300ms cubic-bezier(0.25,0.8,0.25,1),
+              border-color 300ms ease;
+}
+.search-glow:focus-within {
+  box-shadow: 0 0 0 4px rgba(58,107,140,0.12),
+              0 8px 32px rgba(58,107,140,0.18);
+}
+
+/* ===== 入场动画: staggered fadeUp ===== */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0;
+  animation: revealUp 0.7s cubic-bezier(0.32,0.72,0,1) both;
+}
+.reveal-1 { animation-delay: 0.1s; }
+.reveal-2 { animation-delay: 0.2s; }
+.reveal-3 { animation-delay: 0.3s; }
+.reveal-4 { animation-delay: 0.4s; }
+.reveal-5 { animation-delay: 0.5s; }
+.reveal-6 { animation-delay: 0.6s; }
+
+/* ===== 入场动画: 图片揭幕 ===== */
+@keyframes imgReveal {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.img-reveal {
+  animation: imgReveal 1.2s cubic-bezier(0.32,0.72,0,1) both;
+}
+
+/* ===== 均衡器动画 ===== */
+.eq-bar {
+  width: 3px;
+  background: var(--c-brand);
+  border-radius: 2px;
+  animation: equalize 0.9s ease-in-out infinite;
+}
+.eq-bar:nth-child(2) { animation-delay: 0.15s; }
+.eq-bar:nth-child(3) { animation-delay: 0.3s; }
+@keyframes equalize {
+  0%, 100% { height: 6px; }
+  50%      { height: 16px; }
+}
+
+/* ===== Glow Card 光效跟随 ===== */
+.glow-card {
+  position: relative;
+  overflow: hidden;
+}
+.glow-card .glow-effect {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(58, 107, 140, 0.10) 0%,
+    rgba(58, 107, 140, 0.04) 45%,
+    transparent 72%);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 300ms ease;
+  z-index: 1;
+}
+.glow-card:hover .glow-effect {
+  opacity: 0.55;
+}
+.glow-card.glow-accent .glow-effect {
+  background: radial-gradient(circle,
+    rgba(212, 136, 58, 0.12) 0%,
+    rgba(212, 136, 58, 0.04) 45%,
+    transparent 72%);
+}
+.glow-hero .glow-effect {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    transparent 72%);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 400ms ease;
+}
+.glow-hero:hover .glow-effect {
+  opacity: 0.45;
+}
+
+/* ===== 边框光效跟随 ===== */
+.glow-border {
+  position: relative;
+  overflow: hidden;
+}
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: conic-gradient(from var(--glow-angle, 0deg),
+    transparent, var(--c-brand), transparent);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  z-index: -1;
+}
+.glow-border:hover::before {
+  opacity: 0.28;
+}
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: var(--c-glass);
+  border-radius: inherit;
+  z-index: -1;
+}
+
+/* ===== 卡片交互增强 ===== */
+.card-interactive {
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1),
+              border-color 0.3s ease;
+}
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px var(--c-shadow-12);
+  border-color: var(--c-brand-25);
+}
+.card-interactive:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* ===== stagger 进入动效 ===== */
+.stagger-enter > * {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: revealUp 0.6s cubic-bezier(0.32,0.72,0,1) forwards;
+}
+.stagger-enter > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-enter > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-enter > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-enter > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-enter > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-enter > *:nth-child(6) { animation-delay: 0.6s; }
+.stagger-enter > *:nth-child(n+7) { animation-delay: 0.7s; }
+
+/* ===== 标题呼吸动效 (大标题用) ===== */
+@keyframes titleBreathe {
+  0%, 100% {
+    text-shadow: 0 4px 40px rgba(0,0,0,0.4);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 4px 60px rgba(0,0,0,0.6), 0 0 80px rgba(58,107,140,0.3);
+    transform: scale(1.01);
+  }
+}
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.title-breathe {
+  animation: heroFadeUp 0.9s cubic-bezier(0.32,0.72,0,1) 0.5s forwards,
+             titleBreathe 4s ease-in-out 1.4s infinite;
+}
+
+/* ===== 视差容器 ===== */
+.parallax-container { overflow: hidden; position: relative; }
+.parallax-bg {
+  position: absolute;
+  inset: -20%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+}
+
+/* ===== 隐藏滚动条 ===== */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ===== 响应式图片容器 ===== */
+.img-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+.img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@media (hover: hover) {
+  .img-container:hover img {
+    transform: scale(1.05);
+  }
+}
+
+/* ===== 计数器动画 ===== */
+.counter-animate {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+/* ===== 脉冲悬停 ===== */
+.pulse-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.pulse-hover:hover {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* ===== 分隔线图案 ===== */
+.section-divider {
+  position: relative;
+  height: 60px;
+  overflow: hidden;
+}
+.section-divider::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 20px,
+    var(--c-brand-06) 20px,
+    var(--c-brand-06) 21px
+  );
+  opacity: 0.5;
+}
+
+/* ===== 无障碍: 尊重减少动效偏好 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .title-breathe,
+  .eq-bar,
+  .reveal,
+  .img-reveal,
+  .pulse-hover:hover { animation: none !important; }
+  .reveal { opacity: 1 !important; }
+  .nav-rail a::after { transition: none !important; }
+  .search-glow { transition: none !important; }
+  .liquid-glass,
+  .liquid-glass::before,
+  .liquid-glass::after { transition: none !important; }
+  .liquid-glass { --lg-mx: 50% !important; --lg-my: 22% !important; --lg-spec: 0.55 !important; --lg-tint-a: 0.16 !important; --lg-edge-x: 0 !important; }
+  .glow-card .glow-effect,
+  .glow-hero .glow-effect,
+  .glow-border::before { display: none !important; }
+  .stagger-enter > * { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .card-interactive { transition: none !important; }
+  .parallax-bg { transform: none !important; }
+}

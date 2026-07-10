@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, onMounted, computed } from 'vue'
 
 const props = defineProps({
@@ -13,6 +13,10 @@ const props = defineProps({
       { category: '形容', count: 76 },
       { category: '其他', count: 48 }
     ]
+  },
+  title: {
+    type: String,
+    default: '词汇分类分布'
   },
   height: {
     type: Number,
@@ -39,9 +43,14 @@ const barGap = computed(() => {
 
 <template>
   <div class="chart-container">
-    <h3 class="chart-title">词汇分类分布</h3>
+    <h3 class="chart-title">{{ title }}</h3>
     
-    <div class="chart-wrapper" :style="{ height: height + 'px' }">
+    <div
+      class="chart-wrapper"
+      role="img"
+      :aria-label="`${title}图表，共 ${data.length} 个分类`"
+      :style="{ height: height + 'px' }"
+    >
       <!-- Y轴标签 -->
       <div class="y-axis">
         <span v-for="i in 5" :key="i" class="y-label">
@@ -228,5 +237,9 @@ const barGap = computed(() => {
 .legend-text {
   font-size: 12px;
   color: var(--c-text-60);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar { animation: none !important; }
 }
 </style>

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import FloatingParticles from './FloatingParticles.vue'
 
@@ -27,7 +27,7 @@ const props = defineProps({
   },
   particleDensity: {
     type: Number,
-    default: 12
+    default: 6
   }
 })
 
@@ -35,7 +35,7 @@ const isLoaded = ref(false)
 const parallaxOffset = ref(0)
 
 const handleScroll = () => {
-  parallaxOffset.value = window.scrollY * 0.3
+  parallaxOffset.value = window.scrollY * 0.15
 }
 
 onMounted(() => {
@@ -56,7 +56,7 @@ onUnmounted(() => {
       class="page-shell__bg"
       :style="{ transform: `translateY(${parallaxOffset}px)` }"
     >
-      <img :src="bgImage" :alt="title" loading="eager" />
+      <img :src="bgImage" alt="" width="1920" height="1080" loading="eager" fetchpriority="high" />
     </div>
 
     <div class="page-shell__overlay" :class="'overlay-' + overlayStyle" />
@@ -119,27 +119,27 @@ onUnmounted(() => {
 .overlay-warm {
   background: linear-gradient(
     180deg,
-    rgba(27, 58, 92, 0.92) 0%,
-    rgba(27, 58, 92, 0.75) 40%,
-    rgba(245, 242, 239, 0.95) 100%
+    rgba(27, 58, 92, 0.82) 0%,
+    rgba(27, 58, 92, 0.55) 45%,
+    rgba(245, 242, 239, 0.92) 100%
   );
 }
 
 .overlay-cool {
   background: linear-gradient(
     180deg,
-    rgba(27, 58, 92, 0.94) 0%,
-    rgba(58, 107, 140, 0.8) 40%,
-    rgba(245, 242, 239, 0.95) 100%
+    rgba(27, 58, 92, 0.84) 0%,
+    rgba(58, 107, 140, 0.62) 45%,
+    rgba(245, 242, 239, 0.92) 100%
   );
 }
 
 .overlay-accent {
   background: linear-gradient(
     180deg,
-    rgba(27, 58, 92, 0.92) 0%,
-    rgba(212, 136, 58, 0.15) 30%,
-    rgba(245, 242, 239, 0.95) 100%
+    rgba(27, 58, 92, 0.80) 0%,
+    rgba(212, 136, 58, 0.10) 35%,
+    rgba(245, 242, 239, 0.92) 100%
   );
 }
 
@@ -150,6 +150,7 @@ onUnmounted(() => {
   display: flex;
   align-items: flex-end;
   padding: 80px 24px 48px;
+  padding-top: calc(80px + env(safe-area-inset-top, 0px));
 }
 
 .page-shell__hero-content {
@@ -201,12 +202,12 @@ onUnmounted(() => {
   animation: staggerIn 0.6s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 
-.page-shell.loaded .page-shell__content > :deep(*:nth-child(1)) { animation-delay: 0.4s; }
-.page-shell.loaded .page-shell__content > :deep(*:nth-child(2)) { animation-delay: 0.5s; }
-.page-shell.loaded .page-shell__content > :deep(*:nth-child(3)) { animation-delay: 0.6s; }
-.page-shell.loaded .page-shell__content > :deep(*:nth-child(4)) { animation-delay: 0.7s; }
-.page-shell.loaded .page-shell__content > :deep(*:nth-child(5)) { animation-delay: 0.8s; }
-.page-shell.loaded .page-shell__content > :deep(*:nth-child(6)) { animation-delay: 0.9s; }
+.page-shell.loaded .page-shell__content > :deep(*:nth-child(1)) { animation-delay: 0.2s; }
+.page-shell.loaded .page-shell__content > :deep(*:nth-child(2)) { animation-delay: 0.28s; }
+.page-shell.loaded .page-shell__content > :deep(*:nth-child(3)) { animation-delay: 0.36s; }
+.page-shell.loaded .page-shell__content > :deep(*:nth-child(4)) { animation-delay: 0.44s; }
+.page-shell.loaded .page-shell__content > :deep(*:nth-child(5)) { animation-delay: 0.52s; }
+.page-shell.loaded .page-shell__content > :deep(*:nth-child(6)) { animation-delay: 0.6s; }
 
 @keyframes staggerIn {
   to {

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 defineProps({
   pattern: {
     type: String,
@@ -26,6 +26,7 @@ defineProps({
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <!-- 菱形基础纹样 -->
       <path d="M50 10 L90 50 L50 90 L10 50 Z" stroke="var(--c-brand)" stroke-width="1.5" fill="none" />
@@ -54,6 +55,7 @@ defineProps({
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <!-- 外圈 -->
       <circle cx="50" cy="50" r="45" stroke="var(--c-brand)" stroke-width="1.5" fill="none" />
@@ -63,7 +65,7 @@ defineProps({
       <line v-for="i in 12" :key="i"
         x1="50" y1="12"
         x2="50" y2="25"
-        :transform="otate( 50 50)"
+        :transform="`rotate(${i * 30} 50 50)`"
         stroke="var(--c-brand)" stroke-width="1.5"
       />
       
@@ -85,6 +87,7 @@ defineProps({
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <!-- 锯齿纹 -->
       <polyline points="10,20 25,35 40,20 55,35 70,20 85,35" stroke="var(--c-brand)" stroke-width="1.5" fill="none" />
