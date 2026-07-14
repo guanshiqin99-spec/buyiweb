@@ -10,11 +10,13 @@ const router = useRouter()
 const authStore = useAuthStore()
 const isDrawerOpen = ref(false)
 const isScrolled = ref(false)
+const navRef = ref(null)
 const burgerRef = ref(null)
 const isImmersive = computed(() => route.meta.navTone === 'immersive')
 const navContrast = computed(() => route.meta.navContrast || 'on-light')
 // 动态探测：根据导航栏正下方的背景区块实时切换深/浅文字（苹果式）
 const dynamicTone = ref(null) // 'dark' | 'light' | null
+const toneConfidence = ref('low') // 'high' | 'low'
 const effectiveContrast = computed(() => {
   if (dynamicTone.value === 'dark' || dynamicTone.value === 'light') {
     return `on-${dynamicTone.value}`
@@ -33,42 +35,175 @@ const navLinks = [
 ]
 
 let scrollHandler = null
+let resizeHandler = null
 let scrollRaf = null
+let toneObserver = null
+let pendingTone = null
+let toneSwitchTimer = null
+const intersectingToneElements = new Set()
+const TONE_SWITCH_DELAY = 96
 
-// 检测导航栏正下方所处区块的 data-nav-tone，实时切换深/浅文字
+function isValidTone(value) {
+  return value === 'dark' || value === 'light'
+}
+
+function getProbeY() {
+  const navBottom = navRef.value?.getBoundingClientRect().bottom || 56
+  return Math.min(window.innerHeight - 1, Math.max(0, Math.round(navBottom + 8)))
+}
+
+function clearPendingTone() {
+  pendingTone = null
+  if (toneSwitchTimer) window.clearTimeout(toneSwitchTimer)
+  toneSwitchTimer = null
+}
+
+function acceptTone(tone) {
+  if (!isValidTone(tone)) return
+
+  if (!dynamicTone.value || dynamicTone.value === tone) {
+    clearPendingTone()
+    dynamicTone.value = tone
+    toneConfidence.value = 'high'
+    return
+  }
+
+  if (pendingTone !== tone) {
+    clearPendingTone()
+    pendingTone = tone
+    toneConfidence.value = 'low'
+    toneSwitchTimer = window.setTimeout(() => {
+      if (pendingTone !== tone) return
+      dynamicTone.value = tone
+      toneConfidence.value = 'high'
+      clearPendingTone()
+    }, TONE_SWITCH_DELAY)
+  }
+}
+
+function markToneUncertain() {
+  clearPendingTone()
+  toneConfidence.value = 'low'
+}
+
+function toneAtPoint(x, y) {
+  const stack = typeof document.elementsFromPoint === 'function'
+    ? document.elementsFromPoint(x, y)
+    : [document.elementFromPoint(x, y)].filter(Boolean)
+
+  for (const element of stack) {
+    if (navRef.value?.contains(element)) continue
+    const marked = element.closest?.('[data-nav-tone]')
+    if (!marked || navRef.value?.contains(marked)) continue
+    const tone = marked.dataset.navTone
+    if (isValidTone(tone)) return tone
+  }
+  return null
+}
+
+function observedTone() {
+  const tones = new Set(
+    [...intersectingToneElements]
+      .map((element) => element.dataset.navTone)
+      .filter(isValidTone)
+  )
+  return tones.size === 1 ? [...tones][0] : null
+}
+
+// 语义区块优先；区块边界或复杂图层中使用左、中、右三点投票。
 function detectNavTone() {
-  const x = window.innerWidth / 2
-  const y = 72 // 紧贴导航栏（56px）下方
-  const el = document.elementFromPoint(x, y)
-  if (!el) { dynamicTone.value = null; return }
-  const marked = el.closest('[data-nav-tone]')
-  dynamicTone.value = marked ? marked.dataset.navTone : null
+  const markers = document.querySelectorAll('[data-nav-tone]')
+  if (!markers.length) {
+    acceptTone(navContrast.value === 'on-dark' ? 'dark' : 'light')
+    return
+  }
+
+  const semanticTone = observedTone()
+  if (semanticTone) {
+    acceptTone(semanticTone)
+    return
+  }
+
+  const y = getProbeY()
+  const sampleXs = [window.innerWidth * 0.14, window.innerWidth * 0.5, window.innerWidth * 0.86]
+  const votes = sampleXs.map((x) => toneAtPoint(x, y)).filter(isValidTone)
+  const darkVotes = votes.filter((tone) => tone === 'dark').length
+  const lightVotes = votes.filter((tone) => tone === 'light').length
+
+  if (darkVotes >= 2) acceptTone('dark')
+  else if (lightVotes >= 2) acceptTone('light')
+  else if (!votes.length) acceptTone(navContrast.value === 'on-dark' ? 'dark' : 'light')
+  else markToneUncertain()
+}
+
+function scheduleToneDetection() {
+  if (scrollRaf) return
+  scrollRaf = requestAnimationFrame(() => {
+    scrollRaf = null
+    detectNavTone()
+  })
+}
+
+function setupToneObserver() {
+  toneObserver?.disconnect()
+  intersectingToneElements.clear()
+
+  const markers = [...document.querySelectorAll('[data-nav-tone]')]
+  if (!markers.length || typeof IntersectionObserver === 'undefined') {
+    scheduleToneDetection()
+    return
+  }
+
+  const probeY = getProbeY()
+  const bottomInset = Math.max(0, window.innerHeight - probeY - 2)
+  toneObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) intersectingToneElements.add(entry.target)
+      else intersectingToneElements.delete(entry.target)
+    })
+    scheduleToneDetection()
+  }, {
+    rootMargin: `-${probeY}px 0px -${bottomInset}px 0px`,
+    threshold: 0
+  })
+  markers.forEach((element) => toneObserver.observe(element))
+  scheduleToneDetection()
 }
 
 onMounted(() => {
   scrollHandler = () => {
     isScrolled.value = window.scrollY > 100
-    if (scrollRaf) return
-    scrollRaf = requestAnimationFrame(() => {
-      scrollRaf = null
-      detectNavTone()
-    })
+    scheduleToneDetection()
+  }
+  resizeHandler = () => {
+    isScrolled.value = window.scrollY > 100
+    setupToneObserver()
   }
   window.addEventListener('scroll', scrollHandler, { passive: true })
-  window.addEventListener('resize', detectNavTone, { passive: true })
-  nextTick(detectNavTone)
+  window.addEventListener('resize', resizeHandler, { passive: true })
+  isScrolled.value = window.scrollY > 100
+  nextTick(setupToneObserver)
 })
 
 onUnmounted(() => {
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
-  window.removeEventListener('resize', detectNavTone)
+  if (resizeHandler) window.removeEventListener('resize', resizeHandler)
   if (scrollRaf) cancelAnimationFrame(scrollRaf)
+  toneObserver?.disconnect()
+  clearPendingTone()
+  window.removeEventListener('keydown', handleEscape)
 })
 
 // 路由切换后重置并重新探测
 watch(() => route.path, () => {
+  closeDrawer()
+  clearPendingTone()
   dynamicTone.value = null
-  nextTick(detectNavTone)
+  toneConfidence.value = 'low'
+  nextTick(() => {
+    isScrolled.value = window.scrollY > 100
+    setupToneObserver()
+  })
 })
 
 const toggleDrawer = () => {
@@ -82,6 +217,21 @@ const closeDrawer = () => {
     nextTick(() => burgerRef.value?.focus())
   }
 }
+
+// Escape 关闭抽屉：只在打开时挂载监听，关闭后即时卸载
+const handleEscape = (e) => {
+  if (e.key === 'Escape' && isDrawerOpen.value) {
+    closeDrawer()
+  }
+}
+
+watch(isDrawerOpen, (open) => {
+  if (open) {
+    window.addEventListener('keydown', handleEscape)
+  } else {
+    window.removeEventListener('keydown', handleEscape)
+  }
+})
 
 const isActive = (path) => route.path === path
 
@@ -98,9 +248,11 @@ const handleAuthAction = () => {
 
 <template>
   <nav 
+    ref="navRef"
     class="nav-immersive" 
     :class="{
       scrolled: isScrolled,
+      'nav-immersive--tone-uncertain': toneConfidence === 'low',
       'nav-immersive--light': !isImmersive,
       'nav-immersive--culture': route.name === 'culture',
       'nav-immersive--on-dark': effectiveContrast === 'on-dark',
@@ -146,6 +298,12 @@ const handleAuthAction = () => {
       </button>
     </div>
     
+    <div
+      class="nav-drawer-scrim"
+      :class="{ open: isDrawerOpen }"
+      :aria-hidden="!isDrawerOpen"
+      @click="closeDrawer"
+    ></div>
     <div
       id="navDrawer"
       class="nav-drawer"
@@ -515,6 +673,21 @@ const handleAuthAction = () => {
   color: var(--c-text);
 }
 
+/* 探测结果不确定时仅增加轻微保护衬底，可靠时仍保持完全透明。 */
+.nav-immersive:not(.nav-immersive--light).nav-immersive--tone-uncertain.nav-immersive--on-dark {
+  background: rgba(10, 27, 42, .16);
+  backdrop-filter: blur(10px) saturate(110%);
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .12);
+}
+
+.nav-immersive:not(.nav-immersive--light).nav-immersive--tone-uncertain.nav-immersive--on-light {
+  background: rgba(247, 245, 242, .22);
+  backdrop-filter: blur(10px) saturate(110%);
+  -webkit-backdrop-filter: blur(10px) saturate(110%);
+  box-shadow: 0 1px 0 var(--c-divider);
+}
+
 /* 汉堡按钮 */
 .nav-burger {
   display: inline-flex;
@@ -556,29 +729,34 @@ const handleAuthAction = () => {
   }
 }
 
-/* 下拉菜单 */
+/* 下拉菜单：常驻 DOM，用 transform 平移到屏外配合透明度做过渡，避免 display 切换导致无动画 */
 .nav-drawer {
   position: fixed;
   top: 56px;
   left: 0;
   right: 0;
   z-index: 39;
-  display: none;
+  display: flex;
   flex-direction: column;
   padding: 8px 24px 24px;
   gap: 2px;
   overscroll-behavior: contain;
-  transition: background 300ms ease, backdrop-filter 300ms ease;
+  transition: transform var(--duration-base) ease-out, opacity var(--duration-base) ease-out, background 300ms ease, backdrop-filter 300ms ease;
   background: var(--c-glass-nav);
   backdrop-filter: blur(20px) saturate(120%);
   -webkit-backdrop-filter: blur(20px) saturate(120%);
   border-bottom: 1px solid var(--c-divider);
   max-height: calc(100vh - 56px);
   overflow-y: auto;
+  opacity: 0;
+  transform: translateX(100%);
+  pointer-events: none;
 }
 
 .nav-drawer.open {
-  display: flex;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
 }
 
 @media (min-width: 640px) {
@@ -614,9 +792,38 @@ const handleAuthAction = () => {
   background: var(--c-brand-06);
 }
 
+/* 抽屉遮罩：点击关闭，与抽屉同步淡入淡出 */
+.nav-drawer-scrim {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 38;
+  background: var(--c-modal-overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) ease-out;
+}
+
+.nav-drawer-scrim.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (min-width: 640px) {
+  .nav-drawer-scrim {
+    display: none !important;
+  }
+}
+
 /* 减少动效 */
 @media (prefers-reduced-motion: reduce) {
   .nav-immersive {
+    transition: none !important;
+  }
+  .nav-drawer,
+  .nav-drawer-scrim {
     transition: none !important;
   }
 }

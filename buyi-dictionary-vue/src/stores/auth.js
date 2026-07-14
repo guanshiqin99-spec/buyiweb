@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import axios from 'axios'
 import {
   AUTH_SESSION_CLEARED_EVENT,
-  AUTH_SESSION_UPDATED_EVENT,
-  authApi,
-  meApi
-} from '@/utils/api'
+  AUTH_SESSION_UPDATED_EVENT
+} from '@/utils/authInterceptor'
+import { authApi, meApi, apiBaseURL } from '@/utils/api'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
@@ -84,6 +84,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // 刷新 token：发起 refresh 请求并更新会话
+  // 由 authInterceptor 在 401 时调用，刷新失败时抛出由拦截器处理重定向
+  async function tryRefresh() {
+    const refresh = localStorage.getItem('refreshToken')
+    if (!refresh) throw new Error('无 refreshToken')
+    const { data } = await axios.post(`${apiBaseURL}/miniapp/auth/refresh`, { refreshToken: refresh })
+    setSession(data.accessToken, data.refreshToken || refresh)
+    return data.accessToken
+  }
+
   return {
     token,
     refreshToken,
@@ -94,6 +104,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     logout,
-    fetchUserProfile
+    fetchUserProfile,
+    tryRefresh
   }
 })

@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import IconPause from '@/components/icons/IconPause.vue'
 import IconPlay from '@/components/icons/IconPlay.vue'
+import imgAmbient from '@/assets/images/music-ambient.jpg'
 
 const playerStore = usePlayerStore()
 const audioRef = ref(null)
@@ -10,6 +11,7 @@ const currentSong = computed(() => playerStore.currentSong)
 const isPlaying = computed(() => playerStore.isPlaying)
 const isExpanded = computed(() => playerStore.isExpanded)
 const progress = computed(() => playerStore.progress)
+const coverSrc = computed(() => currentSong.value?.coverUrl || imgAmbient)
 
 function seek(event) {
   playerStore.seekTo(Number(event.target.value))
@@ -37,8 +39,7 @@ onUnmounted(() => {
     <template v-if="isExpanded">
       <button class="player__identity" type="button" :aria-expanded="true" aria-label="收起播放器" @click="playerStore.collapse()">
         <span class="player__cover" :class="{ 'player__cover--spinning': isPlaying }">
-          <img v-if="currentSong.coverUrl" :src="currentSong.coverUrl" :alt="`${currentSong.title}封面`" width="48" height="48" />
-          <span v-else aria-hidden="true">♪</span>
+          <img :src="coverSrc" :alt="`${currentSong.title}封面`" width="48" height="48" />
         </span>
         <span class="player__text">
           <strong>{{ currentSong.title }}</strong>
@@ -73,8 +74,9 @@ onUnmounted(() => {
 
     <template v-else>
       <button class="player__disc" type="button" aria-label="展开播放器" @click="playerStore.expand()">
-        <img v-if="currentSong.coverUrl" :src="currentSong.coverUrl" :alt="`${currentSong.title}封面`" width="40" height="40" />
-        <span v-else aria-hidden="true">♪</span>
+        <span class="player__disc-label" :class="{ 'is-spinning': isPlaying }">
+          <img :src="coverSrc" :alt="`${currentSong.title}封面`" width="32" height="32" />
+        </span>
       </button>
       <button class="player__disc-play" type="button" :aria-label="isPlaying ? '暂停播放' : '播放'" @click="playerStore.togglePlay()">
         {{ isPlaying ? 'Ⅱ' : '▶' }}
@@ -126,7 +128,10 @@ onUnmounted(() => {
 .player__status:empty { display: none; }
 .player__status--error { color: var(--c-danger); }
 .player--collapsed { left: auto; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: none; display: flex; width: 66px; height: 66px; padding: 5px; border-radius: 50%; }
-.player--collapsed .player__disc { width: 56px; height: 56px; cursor: pointer; }
+.player--collapsed .player__disc { width: 56px; height: 56px; cursor: pointer; background: repeating-radial-gradient(circle at center, transparent 0 3px, rgba(255,255,255,.04) 3px 4px), radial-gradient(circle at center, #2a2d33 0%, #15171c 80%); box-shadow: 0 4px 12px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.06); }
+.player__disc-label { width: 72%; height: 72%; border-radius: 50%; overflow: hidden; display: grid; place-items: center; }
+.player__disc-label.is-spinning { animation: spin 9s linear infinite; }
+.player__disc-label img { width: 100%; height: 100%; object-fit: cover; }
 .player__disc-play { position: absolute; right: -3px; bottom: -3px; display: grid; width: 28px; height: 28px; place-items: center; padding: 0; border: 2px solid var(--background); border-radius: 50%; color: var(--c-white); background: var(--c-brand); cursor: pointer; font-size: 11px; }
 .player--collapsed .player__status { left: auto; right: 0; width: 230px; bottom: 76px; text-align: right; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -137,5 +142,5 @@ onUnmounted(() => {
   .player__identity { grid-column: 1; grid-row: 2; }
   .player__transport { grid-column: 2; grid-row: 2; }
 }
-@media (prefers-reduced-motion: reduce) { .player, .player__play { transition: none; } .player__cover--spinning { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .player, .player__play { transition: none; } .player__cover--spinning, .player__disc-label.is-spinning { animation: none; } }
 </style>

@@ -6,24 +6,11 @@ import imgBg from '@/assets/images/generated/favorites-archive-shelf.png'
 import { useFavoritesStore } from '@/stores/favorites'
 import IconHeartFilled from '@/components/icons/IconHeartFilled.vue'
 import IconHeart from '@/components/icons/IconHeart.vue'
+import { getContentLabel, getContentRoute } from '../utils/contentTypes'
 
 const favoritesStore = useFavoritesStore()
 const favorites = ref([])
 const isLoading = ref(true)
-
-const typeLabels = {
-  dictionary: '词汇',
-  phrase: '短语',
-  proverb: '谚语',
-  song: '民歌'
-}
-
-const typePaths = {
-  dictionary: '/dictionary',
-  phrase: '/dictionary',
-  proverb: '/dictionary',
-  song: '/songs'
-}
 
 onMounted(async () => {
   try {
@@ -72,8 +59,8 @@ async function removeFavorite(item) {
           :key="`${item.contentType}-${item.contentId}`"
           class="fav-item liquid-glass-quiet"
         >
-          <RouterLink class="fav-item-body" :to="typePaths[item.contentType] || '/dictionary'">
-            <span class="fav-type-tag">{{ typeLabels[item.contentType] || '内容' }}</span>
+          <RouterLink class="fav-item-body" :to="getContentRoute(item.contentType)">
+            <span class="fav-type-tag">{{ getContentLabel(item.contentType) }}</span>
             <div class="fav-item-info">
               <p class="fav-item-title">{{ item.title || item.buyiText || item.zhText || `#${item.contentId}` }}</p>
               <p v-if="item.subtitle || item.chinese" class="fav-item-sub">{{ item.subtitle || item.chinese }}</p>

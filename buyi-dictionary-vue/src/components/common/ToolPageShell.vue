@@ -1,6 +1,4 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-
 defineProps({
   title: {
     type: String,
@@ -24,28 +22,11 @@ defineProps({
     validator: (value) => ['dark', 'light'].includes(value)
   }
 })
-
-const bgParallax = ref(0)
-let scrollHandler = null
-
-onMounted(() => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  const isMobile = window.matchMedia('(max-width: 768px)').matches
-  const coefficient = isMobile ? 0.025 : 0.05
-  scrollHandler = () => {
-    bgParallax.value = window.scrollY * coefficient
-  }
-  window.addEventListener('scroll', scrollHandler, { passive: true })
-})
-
-onUnmounted(() => {
-  if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
-})
 </script>
 
 <template>
-  <main id="main" class="tool-page" :class="{ 'tool-page--image-only': bgImage && !showOverlay, 'tool-page--image-light': bgImage && !showOverlay && imageTone === 'light' }" :data-nav-tone="bgImage && !showOverlay ? imageTone : (showOverlay ? 'light' : null)" data-motion-surface="tool">
-    <div v-if="bgImage" class="tool-page__bg" :style="{ transform: `translate3d(0, ${bgParallax}px, 0)` }">
+  <main id="main" class="tool-page" :class="{ 'tool-page--image-only': bgImage && !showOverlay, 'tool-page--image-light': bgImage && !showOverlay && imageTone === 'light' }" :data-nav-tone="bgImage && !showOverlay ? imageTone : (showOverlay ? 'light' : null)" data-motion-surface="tool" data-tool-page="">
+    <div v-if="bgImage" class="tool-page__bg">
       <img :src="bgImage" alt="" loading="eager" fetchpriority="high" />
     </div>
     <div v-if="bgImage && showOverlay" class="tool-page__overlay" />

@@ -156,7 +156,7 @@ onUnmounted(() => {
 .museum-hero::before { position: absolute; inset: -10% 0; background: linear-gradient(90deg, rgba(13, 37, 56, .94), rgba(27,58,92,.66) 46%, rgba(27,58,92,.15)), var(--hero-image) center / cover; content: ''; will-change: transform; transform: translate3d(0, var(--hero-parallax, 0px), 0); }.museum-hero::after { position: absolute; right: 7vw; bottom: 8vw; width: 14vw; min-width: 120px; aspect-ratio: 1; border: 1px solid rgba(255,255,255,.36); border-radius: 50%; content: ''; }
 .museum-hero__content, .museum-hero__caption { position: relative; z-index: 1; }.museum-hero__content { max-width: 700px; }.museum-hero__content p, .section-heading p, .language-exhibit header p, .sound-exhibit p, .participation-exhibit > div > p, .closing-exhibit > p { margin: 0; color: var(--c-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
 .museum-hero h1 { margin: 16px 0; font: 600 clamp(48px, 8vw, 92px) / .96 var(--font-serif); letter-spacing: -.04em; text-wrap: balance; }.museum-hero__content > span { display: block; max-width: 33ch; color: var(--c-white-78); font-size: 17px; line-height: 1.7; }.museum-hero__caption { max-width: 17ch; color: var(--c-white-65); font-size: 13px; line-height: 1.7; }
-.primary-action, .light-action, .outline-action { display: inline-flex; align-items: center; gap: 10px; margin-top: 30px; padding: 13px 19px; border: 1px solid transparent; border-radius: 999px; text-decoration: none; cursor: pointer; font: 700 14px var(--font-sans); -webkit-appearance: none; appearance: none; transition: transform var(--duration-fast) var(--ease-out-quart), filter var(--duration-fast) var(--ease-out-quart), box-shadow var(--duration-fast) var(--ease-out-quart), background var(--duration-fast) var(--ease-out-quart); }.primary-action { color: var(--c-white); background: var(--c-accent); }.primary-action:hover, .light-action:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: var(--shadow-md); }.primary-action:active, .light-action:active, .outline-action:active { transform: scale(.98); }.primary-action:focus-visible, .light-action:focus-visible, .outline-action:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
+.primary-action, .light-action, .outline-action { position: relative; display: inline-flex; align-items: center; gap: 10px; margin-top: 30px; padding: 13px 19px; border: 1px solid transparent; border-radius: 999px; text-decoration: none; cursor: pointer; font: 700 14px var(--font-sans); -webkit-appearance: none; appearance: none; transition: transform var(--duration-fast) var(--ease-out-quart), filter var(--duration-fast) var(--ease-out-quart), box-shadow var(--duration-fast) var(--ease-out-quart), background var(--duration-fast) var(--ease-out-quart); }.primary-action { color: var(--c-white); background: var(--c-accent); }.primary-action:hover, .light-action:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: var(--shadow-md); }.primary-action:active, .light-action:active, .outline-action:active { transform: scale(.98); }.primary-action:focus-visible, .light-action:focus-visible, .outline-action:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
 .language-exhibit, .participation-exhibit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .82fr); gap: clamp(42px, 10vw, 150px); width: min(960px, calc(100% - 48px)); margin: 0 auto; padding: 112px 0; }.language-exhibit h2, .section-heading h2, .participation-exhibit h2, .closing-exhibit h2 { margin: 9px 0 0; font: 600 clamp(32px, 5vw, 58px) / 1.15 var(--font-serif); text-wrap: balance; }.language-exhibit__body { display: grid; align-content: end; gap: 25px; }.language-exhibit__body p { max-width: 42ch; margin: 0; color: var(--c-text-70); line-height: 1.9; }.text-link, .participation-exhibit a { color: var(--c-brand); font-weight: 700; text-decoration: none; }.text-link span { margin-left: 8px; }
 .craft-exhibit { padding: 100px max(24px, calc((100vw - 1180px) / 2)); background: var(--c-bg-silver); }.section-heading { max-width: 700px; }.craft-exhibit__images { display: grid; grid-template-columns: 1.15fr .85fr .85fr; gap: 18px; margin-top: 46px; }.craft-exhibit figure { margin: 0; }.craft-exhibit figure:nth-child(2) { margin-top: 58px; }.craft-exhibit figure:nth-child(3) { margin-top: 118px; }.craft-exhibit img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }.craft-exhibit figure:first-child img { aspect-ratio: 4 / 5; }.craft-exhibit figcaption { margin-top: 12px; color: var(--c-text-70); font-size: 13px; line-height: 1.55; }.outline-action { border-color: var(--c-brand-40); color: var(--c-brand); background: transparent; }.outline-action:hover { background: var(--c-brand-06); }
 .sound-exhibit { position: relative; display: grid; place-items: center start; min-height: 630px; padding: 80px max(24px, calc((100vw - 1180px) / 2)); color: var(--c-white); overflow: hidden; }.sound-exhibit::before { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(13,37,56,.95), rgba(13,37,56,.68)), var(--sound-image) center / cover; content: ''; }.sound-exhibit > div { position: relative; z-index: 1; max-width: 620px; }.sound-exhibit h2 { margin: 12px 0; font: 600 clamp(42px, 7vw, 74px) / 1 var(--font-serif); text-wrap: balance; }.sound-exhibit span { color: var(--c-white-78); font-size: 16px; line-height: 1.7; }.light-action { color: var(--c-brand); background: var(--c-white); }
@@ -181,10 +181,32 @@ onUnmounted(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 @media (max-width: 760px) { .museum-hero { align-items: end; min-height: min(640px, 82svh); padding-top: 104px; padding-bottom: 48px; }.museum-hero__caption { display: none; }.language-exhibit, .participation-exhibit { grid-template-columns: 1fr; padding: 72px 0; }.craft-exhibit { padding-top: 72px; padding-bottom: 72px; }.craft-exhibit__images { grid-template-columns: 1fr; gap: 30px; }.craft-exhibit figure:nth-child(2), .craft-exhibit figure:nth-child(3) { margin-top: 0; }.craft-exhibit img, .craft-exhibit figure:first-child img { aspect-ratio: 16 / 10; }.sound-exhibit { min-height: 510px; }.museum-hero h1 { font-size: clamp(45px, 13vw, 70px); } }
+/* 跳转按钮呼吸动效：伪元素向外柔和发光，强度随呼吸缓慢起伏 */
+.primary-action::after, .light-action::after, .outline-action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 18px 2px var(--breath-glow, transparent);
+  opacity: 0;
+  animation: buttonBreathe 3.2s var(--ease-out-quart) infinite;
+}
+.primary-action { --breath-glow: var(--c-accent-40); }
+.light-action { --breath-glow: var(--c-white-50); }
+.outline-action { --breath-glow: var(--c-brand-40); }
+.primary-action:hover::after, .light-action:hover::after, .outline-action:hover::after {
+  animation-play-state: paused;
+}
+@keyframes buttonBreathe {
+  0%, 100% { opacity: 0; }
+  45%, 55% { opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
   .museum-hero__content > *, .museum-hero__caption { animation: none !important; }
   .museum-hero::before { transform: none !important; }
   .reveal-target { opacity: 1 !important; transform: none !important; transition: none !important; }
   .primary-action, .light-action, .outline-action { transition: none; }
+  .primary-action::after, .light-action::after, .outline-action::after { animation: none; opacity: 0; }
 }
 </style>

@@ -1,6 +1,14 @@
 /* 布依族词典 - Vue 版补充样式
- * 基础令牌见 variables.css，液体玻璃光学材质见 liquid-glass.css
- * 本文件仅保留 liquid-glass.css 未覆盖的 Vue 特有样式 */
+ * 基础令牌见 variables.css，液体玻璃光学材质与共享组件类见 liquid-glass.css
+ * 本文件仅保留 liquid-glass.css 未覆盖的 Vue 特有样式：
+ *   - 基础排版（html/body）
+ *   - 全局 focus-visible 焦点环
+ *   - Skip Link
+ *   - 通用入场动画工具类（.anim-fade-up / .anim-hero-* / .anim-card-in）
+ *   - 滚动 Reveal 工具类（.reveal —— 唯一定义处，受 .motion-ready 门控）
+ *   - 系统级减弱动效兜底
+ * 共享组件类（.card-interactive / .glow-card / .stagger-enter / .section-divider /
+ * .img-container / .pulse-hover / .no-scrollbar）归属 liquid-glass.css */
 
 /* Google Fonts 已移至 index.html 以非阻塞方式加载（preconnect + link） */
 

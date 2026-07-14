@@ -3,7 +3,7 @@ import { RouterLink } from 'vue-router'
 </script>
 
 <template>
-  <footer class="app-footer">
+  <footer class="app-footer" data-nav-tone="dark">
     <div class="footer-content">
       <div class="footer-brand">
         <h3>布依族词典</h3>

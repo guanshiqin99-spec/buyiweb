@@ -3,6 +3,7 @@ import { nextTick } from 'vue'
 import Home from '../views/Home.vue'
 import { useAuthStore } from '@/stores/auth'
 import { collectLiquidGlass } from '@/utils/liquidGlass'
+import { logRouteChunkError } from '@/utils/logger'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -84,6 +85,11 @@ const router = createRouter({
       name: 'settings',
       component: () => import('../views/Settings.vue'),
       meta: { requiresAuth: true, navTone: 'immersive', navContrast: 'on-light', navRail: 'clear' }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('../views/NotFound.vue')
     }
   ]
 })
@@ -101,6 +107,11 @@ router.beforeEach((to) => {
 // 路由切换后重新收集动态挂载的光学元素（幂等）
 router.afterEach(() => {
   nextTick(() => collectLiquidGlass())
+})
+
+// 路由懒加载 chunk 失败时统一记录
+router.onError((error) => {
+  logRouteChunkError(error)
 })
 
 export default router

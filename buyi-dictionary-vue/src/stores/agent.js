@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { agentApi } from '@/utils/api'
+import { askStream } from '@/utils/agentStream'
 
 // 布依文化导览员：角色定义 + 上下文读取 + DeepSeek 流式问答
 const AGENT_ROLE = {
@@ -65,7 +65,7 @@ export const useAgentStore = defineStore('agent', {
           content: m.text
         }))
 
-      this._controller = agentApi.askStream({
+      this._controller = askStream({
         question: text,
         history,
         onDelta: (chunk) => {

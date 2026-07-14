@@ -455,10 +455,19 @@ function optionId(idx) {
   outline: none;
 }
 
+/* 聚焦反馈由外层 .search-glow 的青色光环统一承担，input 内不再画焦点环，避免出现黄色描边 */
 .search-modal-input:focus-visible {
-  outline: 2px solid var(--c-focus);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: none;
+}
+
+/* 覆盖浏览器自动填充的默认黄色背景，保持弹窗搜索框玻璃质感 */
+.search-modal-input:-webkit-autofill,
+.search-modal-input:-webkit-autofill:hover,
+.search-modal-input:-webkit-autofill:focus,
+.search-modal-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--c-text);
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .search-modal-input::placeholder {

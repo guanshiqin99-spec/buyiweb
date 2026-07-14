@@ -4,6 +4,13 @@
  * 主题模式: light (暖白底浅色明亮主题)
  *
  * 完整 WWDC25 物理光学材质实现，6层光学结构
+ *
+ * 本文件归属：
+ *   - 液体玻璃材质类（.liquid-glass / .liquid-glass-content / .liquid-glass-hero / .liquid-glass-quiet / .liquid-glass-pill / .liquid-glass-nav）
+ *   - 共享组件类（.card-interactive / .glow-card / .stagger-enter / .section-divider / .img-container / .pulse-hover / .no-scrollbar）
+ *   - 导航水波涟漪、搜索框聚合、标题呼吸（titleBreathe）、图片揭幕、视差等动效
+ *   - revealUp keyframe（供 .stagger-enter 等使用；.reveal 基础规则由 main.css 统一定义）
+ * 不归属本文件（见 main.css）：基础排版、focus-visible、Skip Link、.reveal 基础规则、入场动画工具类
  */
 
 /* ===== Liquid Glass 专有扩展变量（基础令牌见 variables.css） ===== */
@@ -324,11 +331,9 @@
   -webkit-backdrop-filter: blur(12px) saturate(110%);
 }
 
-/* ===== 呼吸感: 标题玉石微光（仅 Hero 大标题保留） ===== */
-@keyframes titleBreath {
-  0%, 100% { text-shadow: 0 0 4px rgba(58,107,140,0.10); filter: brightness(1); }
-  50%      { text-shadow: 0 0 15px rgba(58,107,140,0.35); filter: brightness(1.06); }
-}
+/* ===== 呼吸感: 标题玉石微光（仅 Hero 大标题保留） =====
+ * 注: titleBreath 已确认为未被任何 class 引用的死代码，已删除。
+ * 实际使用的是下方 titleBreathe（.title-breathe 类引用）。 */
 
 /* ===== 动效: 导航水波涟漪下划线 ===== */
 .nav-rail a {
@@ -358,21 +363,13 @@
               0 8px 32px rgba(58,107,140,0.18);
 }
 
-/* ===== 入场动画: staggered fadeUp ===== */
+/* ===== 入场动画: staggered fadeUp =====
+ * 注: .reveal 基础规则由 main.css 统一定义（受 .motion-ready 门控，安全默认可见）。
+ * 此处仅保留 revealUp keyframe 供 .stagger-enter 等其他类使用。 */
 @keyframes revealUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.reveal {
-  opacity: 0;
-  animation: revealUp 0.7s cubic-bezier(0.32,0.72,0,1) both;
-}
-.reveal-1 { animation-delay: 0.1s; }
-.reveal-2 { animation-delay: 0.2s; }
-.reveal-3 { animation-delay: 0.3s; }
-.reveal-4 { animation-delay: 0.4s; }
-.reveal-5 { animation-delay: 0.5s; }
-.reveal-6 { animation-delay: 0.6s; }
 
 /* ===== 入场动画: 图片揭幕 ===== */
 @keyframes imgReveal {
@@ -588,6 +585,33 @@
     var(--c-brand-06) 21px
   );
   opacity: 0.5;
+}
+
+/* ===== 工具页：减少动效堆叠 =====
+ * 工具页（Profile / Record / Favorites / Settings / Learn / Dictionary / Quiz）通过根元素
+ * 的 [data-tool-page] 标记进入"工具模式"：禁用卡片 hover 强发光与 liquid-glass 浮起，
+ * 保留基础卡片样式与折射。Hero / 模态 / 登录卡 / 全局搜索框不受此作用域影响。
+ */
+@media (hover: hover) {
+  [data-tool-page] .glow-card:hover .glow-effect,
+  [data-tool-page] .glow-hero:hover .glow-effect {
+    opacity: 0;
+  }
+
+  [data-tool-page] .liquid-glass:hover,
+  [data-tool-page] .liquid-glass-content:hover,
+  [data-tool-page] .liquid-glass-hero:hover,
+  [data-tool-page] .liquid-glass-quiet:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+    --lg-spec: 0.24;
+  }
+
+  [data-tool-page] .card-interactive:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+    border-color: var(--c-divider);
+  }
 }
 
 /* ===== 无障碍: 尊重减少动效偏好 ===== */

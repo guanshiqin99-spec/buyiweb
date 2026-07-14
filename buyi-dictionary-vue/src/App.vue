@@ -39,7 +39,14 @@ onUnmounted(() => {
   <div class="app-container">
     <a class="skip-link" href="#main">跳到主内容</a>
     <AppHeader />
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <Suspense>
+        <component :is="Component" />
+        <template #fallback>
+          <div class="app-loading">加载中…</div>
+        </template>
+      </Suspense>
+    </RouterView>
     <AppFooter />
     <AudioPlayer />
     <AgentPanel />
@@ -50,5 +57,14 @@ onUnmounted(() => {
 <style scoped>
 .app-container {
   min-height: 100vh;
+}
+
+.app-loading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-70);
+  font-size: 0.95rem;
 }
 </style>

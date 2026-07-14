@@ -9,6 +9,7 @@ import { useAgentStore } from '@/stores/agent'
 import IconHeart from '@/components/icons/IconHeart.vue'
 import IconVolume from '@/components/icons/IconVolume.vue'
 import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
+import { getContentLabel } from '../utils/contentTypes'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,12 +36,10 @@ const SEARCH_CACHE_KEY = 'buyi-dictionary-search-cache-v1'
 
 const filters = [
   { key: 'all', label: '全部' },
-  { key: 'word', label: '词汇' },
-  { key: 'phrase', label: '短语' },
-  { key: 'proverb', label: '谚语' }
+  { key: 'word', label: getContentLabel('dictionary') },
+  { key: 'phrase', label: getContentLabel('phrase') },
+  { key: 'proverb', label: getContentLabel('proverb') }
 ]
-
-const typeToContentType = { word: 'dictionary', phrase: 'phrase', proverb: 'proverb' }
 
 function mapResults(data) {
   const mapped = []
@@ -56,27 +55,25 @@ function mapResults(data) {
     audioUrl: item.audioUrl || '',
     relatedExhibits: item.relatedExhibits || []
   }))
-  add(data.dictionary, 'word')
+  add(data.dictionary, 'dictionary')
   add(data.phrases, 'phrase')
   add(data.proverbs, 'proverb')
   return mapped
 }
 
-const filteredResults = computed(() => activeFilter.value === 'all'
-  ? allResults.value
-  : allResults.value.filter((item) => item.type === activeFilter.value))
+const filteredResults = computed(() => {
+  if (activeFilter.value === 'all') return allResults.value
+  // filters 仍以 word 作为 UI key，这里映射回 API content type
+  const apiType = activeFilter.value === 'word' ? 'dictionary' : activeFilter.value
+  return allResults.value.filter((item) => item.type === apiType)
+})
 
 const selectedItem = computed(() => filteredResults.value.find((item) => item.id === selectedId.value) || null)
 const hasQuery = computed(() => Boolean(searchQuery.value.trim()))
 const isFavoriteSelected = computed(() => {
   if (!selectedItem.value) return false
-  const contentType = typeToContentType[selectedItem.value.type] || 'dictionary'
-  return favoritesStore.isFavorite(contentType, selectedItem.value.rawId)
+  return favoritesStore.isFavorite(selectedItem.value.type, selectedItem.value.rawId)
 })
-
-function getTypeLabel(type) {
-  return ({ word: '词汇', phrase: '短语', proverb: '谚语' })[type] || type
-}
 
 // 仅保存接口成功返回的原始词条，离线时不伪造任何文化内容。
 function readCachedSearch(keyword) {
@@ -162,7 +159,7 @@ function selectItem(item) { selectedId.value = item.id }
 async function handleFavorite(item) {
   if (!authStore.isLoggedIn) return notify('登录后可以把词条加入收藏。')
   try {
-    await favoritesStore.toggleFavorite(typeToContentType[item.type] || 'dictionary', item.rawId, {
+    await favoritesStore.toggleFavorite(item.type, item.rawId, {
       buyiText: item.bouyei,
       zhText: item.chinese,
       title: item.bouyei || item.chinese,
@@ -177,7 +174,7 @@ async function handleFavorite(item) {
 async function handleLearn(item) {
   if (!authStore.isLoggedIn) return notify('登录后可以记录学习轨迹。')
   try {
-    await recordsApi.create({ contentType: typeToContentType[item.type] || 'dictionary', contentId: item.rawId, actionType: 'view' })
+    await recordsApi.create({ contentType: item.type, contentId: item.rawId, actionType: 'view' })
     notify('已加入学习记录。')
   } catch {
     notify('学习记录未保存，请稍后重试。')
@@ -276,7 +273,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main id="main" class="dictionary-workspace" data-nav-tone="light">
+  <main id="main" class="dictionary-workspace" data-nav-tone="light" data-motion-surface="tool" data-tool-page="">
     <div class="dictionary-bg" :style="{ transform: `translate3d(0, ${bgParallax}px, 0)` }"><img :src="imgBg" alt="" loading="eager" fetchpriority="high" /></div>
 
     <header class="dictionary-hero">
@@ -335,7 +332,7 @@ onUnmounted(() => {
           :aria-pressed="result.id === selectedId"
           @click="selectItem(result)"
         >
-          <span class="result-row__type">{{ getTypeLabel(result.type) }}</span>
+          <span class="result-row__type">{{ getContentLabel(result.type) }}</span>
           <strong>{{ result.bouyei }}</strong>
           <span>{{ result.chinese }}</span>
           <small v-if="result.relatedExhibits.length">关联 {{ result.relatedExhibits.length }} 个文化展项</small>
@@ -344,7 +341,7 @@ onUnmounted(() => {
 
       <aside class="entry-detail liquid-glass liquid-glass-content" aria-label="词条详情">
         <template v-if="selectedItem">
-          <div class="entry-detail__topline"><span>{{ getTypeLabel(selectedItem.type) }}</span><span>{{ selectedItem.english || '布依语词典' }}</span></div>
+          <div class="entry-detail__topline"><span>{{ getContentLabel(selectedItem.type) }}</span><span>{{ selectedItem.english || '布依语词典' }}</span></div>
           <h2>{{ selectedItem.bouyei }}</h2>
           <p class="entry-detail__meaning">{{ selectedItem.chinese }}</p>
           <p v-if="selectedItem.example" class="entry-detail__note">{{ selectedItem.example }}</p>

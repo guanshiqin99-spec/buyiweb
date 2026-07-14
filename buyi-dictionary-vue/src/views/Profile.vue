@@ -11,6 +11,7 @@ import IconBook from '@/components/icons/IconBook.vue'
 import IconSettings from '@/components/icons/IconSettings.vue'
 import IconUser from '@/components/icons/IconUser.vue'
 import IconAchievementBadge from '@/components/icons/IconAchievementBadge.vue'
+import { getContentLabel } from '../utils/contentTypes'
 
 const authStore = useAuthStore()
 const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
@@ -18,19 +19,12 @@ const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
 const badges = ref([])
 
-const typeLabels = {
-  dictionary: '词汇',
-  phrase: '短语',
-  proverb: '谚语',
-  song: '民歌'
-}
-
 // 将 typeCounts 对象映射为 BarChart 数据
 const typeChartData = computed(() => {
   const tc = learnStats.value.typeCounts || {}
   return Object.entries(tc)
     .filter(([, v]) => v > 0)
-    .map(([k, v]) => ({ category: typeLabels[k] || k, count: v }))
+    .map(([k, v]) => ({ category: getContentLabel(k), count: v }))
 })
 
 // 菜单项统一使用线性 SVG 图标，避免 emoji 跨平台渲染差异与读屏朗读

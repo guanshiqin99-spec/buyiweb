@@ -1,6 +1,8 @@
 import axios from 'axios'
+import { logApiError } from './logger'
+import { getContentApiPath } from './contentTypes'
 
-const apiBaseURL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+export const apiBaseURL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
 const api = axios.create({
   baseURL: apiBaseURL,
@@ -15,108 +17,14 @@ api.interceptors.request.use((config) => {
   return config
 }, (error) => Promise.reject(error))
 
-// 响应拦截器：统一解包 + 401 自动刷新 token（队列重放）
-let isRefreshing = false
-let pendingQueue = []
-
-export const AUTH_SESSION_UPDATED_EVENT = 'buyi:auth-session-updated'
-export const AUTH_SESSION_CLEARED_EVENT = 'buyi:auth-session-cleared'
-
-function notifySessionUpdated(accessToken, refreshToken) {
-  localStorage.setItem('token', accessToken)
-  localStorage.setItem('refreshToken', refreshToken)
-  window.dispatchEvent(new CustomEvent(AUTH_SESSION_UPDATED_EVENT, {
-    detail: { accessToken, refreshToken }
-  }))
-}
-
-function settlePendingRequests(error, accessToken = '') {
-  pendingQueue.forEach(({ resolve, reject, request }) => {
-    if (error) {
-      reject(error)
-      return
-    }
-    request.headers = request.headers || {}
-    request.headers.Authorization = `Bearer ${accessToken}`
-    resolve(api.request(request))
-  })
-  pendingQueue = []
-}
-
+// 响应拦截器：统一解包（鉴权 401 刷新由 authInterceptor 处理）
 api.interceptors.response.use(
   (response) => response.data,
-  async (error) => {
-    const originalRequest = error.config
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      const refreshToken = localStorage.getItem('refreshToken')
-      if (!refreshToken) {
-        clearAuthAndRedirect()
-        return Promise.reject(error)
-      }
-
-      // 刷新进行中则挂起当前请求
-      if (isRefreshing) {
-        originalRequest._retry = true
-        return new Promise((resolve, reject) => {
-          pendingQueue.push({ resolve, reject, request: originalRequest })
-        })
-      }
-
-      originalRequest._retry = true
-      isRefreshing = true
-      try {
-        const res = await axios.post(`${apiBaseURL}/miniapp/auth/refresh`, { refreshToken })
-        const newToken = res.data.accessToken
-        const newRefresh = res.data.refreshToken || refreshToken
-        notifySessionUpdated(newToken, newRefresh)
-        settlePendingRequests(null, newToken)
-
-        originalRequest.headers = originalRequest.headers || {}
-        originalRequest.headers.Authorization = `Bearer ${newToken}`
-        return api.request(originalRequest)
-      } catch (refreshError) {
-        settlePendingRequests(refreshError)
-        clearAuthAndRedirect()
-        return Promise.reject(refreshError)
-      } finally {
-        isRefreshing = false
-      }
-    }
-
-    if (error.response) {
-      const msg = error.response.data?.message || error.response.data?.error
-      switch (error.response.status) {
-        case 403:
-          console.error('没有权限访问', msg)
-          break
-        case 404:
-          console.error('请求的资源不存在', msg)
-          break
-        case 500:
-          console.error('服务器内部错误', msg)
-          break
-        default:
-          console.error('请求失败:', error.response.status, msg)
-      }
-    } else if (error.request) {
-      console.error('网络错误，请检查网络连接或后端服务是否启动')
-    } else {
-      console.error('请求配置错误:', error.message)
-    }
+  (error) => {
+    logApiError(error)
     return Promise.reject(error)
   }
 )
-
-function clearAuthAndRedirect() {
-  localStorage.removeItem('token')
-  localStorage.removeItem('refreshToken')
-  localStorage.removeItem('userInfo')
-  window.dispatchEvent(new CustomEvent(AUTH_SESSION_CLEARED_EVENT))
-  if (window.location.pathname !== '/login') {
-    window.location.href = '/login'
-  }
-}
 
 export const authApi = {
   login(data) { return api.post('/miniapp/auth/web-login', data) },
@@ -142,16 +50,9 @@ export const searchApi = {
   hot() { return api.get('/miniapp/search/hot') }
 }
 
-const CONTENT_PATHS = {
-  dictionary: 'dictionary',
-  phrase: 'phrases',
-  proverb: 'proverbs',
-  song: 'songs'
-}
-
 export const contentApi = {
   list(type, params) {
-    const path = CONTENT_PATHS[type] || CONTENT_PATHS.dictionary
+    const path = getContentApiPath(type)
     return api.get(`/miniapp/${path}`, { params })
   }
 }
@@ -179,71 +80,6 @@ export const recordsApi = {
 
 export const badgesApi = {
   list() { return api.get('/miniapp/badges') }
-}
-
-// 智能体 SSE 流式问答：POST + fetch reader 解析 data: 分片
-export const agentApi = {
-  askStream({ question, history, onDelta, onDone, onError }) {
-    const controller = new AbortController()
-    const token = localStorage.getItem('token')
-
-    fetch(`${apiBaseURL}/miniapp/agent/ask`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ question, history: history ?? [] }),
-      signal: controller.signal
-    })
-      .then(async (resp) => {
-        if (!resp.ok) {
-          const text = await resp.text().catch(() => '')
-          throw new Error(`智能体请求失败 (${resp.status}): ${text.slice(0, 120)}`)
-        }
-        if (!resp.body) {
-          onDone?.()
-          return
-        }
-        const reader = resp.body.getReader()
-        const decoder = new TextDecoder('utf-8')
-        let buffer = ''
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() ?? ''
-          for (const line of lines) {
-            const trimmed = line.trim()
-            if (!trimmed || !trimmed.startsWith('data:')) continue
-            const data = trimmed.slice(5).trim()
-            if (!data) continue
-            try {
-              const payload = JSON.parse(data)
-              if (payload.type === 'delta' && payload.content) {
-                onDelta?.(payload.content)
-              } else if (payload.type === 'done') {
-                onDone?.()
-                return
-              } else if (payload.type === 'error') {
-                onError?.(new Error(payload.message || '智能体错误'))
-                return
-              }
-            } catch {
-              /* 忽略无法解析的分片 */
-            }
-          }
-        }
-        onDone?.()
-      })
-      .catch((err) => {
-        if (err?.name === 'AbortError') return
-        onError?.(err instanceof Error ? err : new Error(String(err)))
-      })
-
-    return controller
-  }
 }
 
 export default api

@@ -22,6 +22,8 @@ let scrollHandler = null
 let currentVisitId = 0
 const recordedVisitIds = new Set()
 const recordingVisitIds = new Set()
+// 复习记录的去重集合，按 wordId 维护，独立于浏览记录
+const recordedReviewIds = new Set()
 // 学习统计（登录态拉取）
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
 
@@ -83,16 +85,26 @@ async function recordCurrentView() {
   }
 }
 
-// 标记复习。同一张卡片在本次停留期间只写入一次 view 记录。
+// 标记复习。同一张卡片在本次会话只写入一次 review 记录，与 view 记录互不影响。
 async function handleReview() {
   if (!authStore.isLoggedIn) {
     showMsg('请先登录后再标记复习')
     return
   }
   if (!currentWord.value?.id) return
+  const wordId = currentWord.value.id
+  if (recordedReviewIds.has(wordId)) {
+    showMsg('已复习过，无需重复添加')
+    return
+  }
   try {
-    const created = await recordCurrentView()
-    showMsg(created ? '已加入复习清单' : '这张卡片已记录，无需重复添加')
+    await recordsApi.create({
+      contentType: 'dictionary',
+      contentId: wordId,
+      actionType: 'review'
+    })
+    recordedReviewIds.add(wordId)
+    showMsg('已加入复习清单')
   } catch (e) {
     showMsg('操作失败，请重试')
   }
@@ -152,7 +164,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main id="main" class="learn-page">
+  <main id="main" class="learn-page" data-motion-surface="tool" data-tool-page="">
     <div class="learn-page__bg" :style="{ transform: `translate3d(0, ${bgParallax}px, 0)` }"><img :src="imgBg" alt="" loading="eager" fetchpriority="high" /></div>
     <div class="learn-content">
       <header class="learn-header">

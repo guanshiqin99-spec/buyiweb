@@ -5,6 +5,7 @@ import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import imgBg from '@/assets/images/generated/record-learning-tracker.png'
 import { recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
+import { getContentLabel } from '@/utils/contentTypes'
 
 const authStore = useAuthStore()
 const createEmptyStats = () => ({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
@@ -14,13 +15,6 @@ const isLoading = ref(true)
 const isClearing = ref(false)
 const toast = ref(null)
 let toastTimer
-
-const typeLabels = {
-  dictionary: '词汇',
-  phrase: '短语',
-  proverb: '谚语',
-  song: '民歌'
-}
 
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
@@ -125,7 +119,7 @@ function formatDate(dateStr) {
         <h2 class="section-title">类型分布</h2>
         <div class="type-list">
           <div v-for="(count, type) in stats.typeCounts" :key="type" class="type-row">
-            <span class="type-name">{{ typeLabels[type] || type }}</span>
+            <span class="type-name">{{ getContentLabel(type) }}</span>
             <span class="type-count">{{ count }}</span>
           </div>
         </div>
@@ -149,7 +143,7 @@ function formatDate(dateStr) {
           :key="record.id"
           class="record-item liquid-glass-quiet"
         >
-          <span class="record-type-tag">{{ typeLabels[record.contentType] || '内容' }}</span>
+          <span class="record-type-tag">{{ getContentLabel(record.contentType) }}</span>
           <div class="record-info">
             <p class="record-title">{{ record.title || record.buyiText || `#${record.contentId}` }}</p>
             <p class="record-time">{{ formatDate(record.createdAt || record.learnedAt) }}</p>

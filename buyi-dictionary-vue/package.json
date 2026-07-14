@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --test tests/playableSongs.test.js tests/player.test.js tests/tones.test.js tests/quiz.test.js",
+    "test": "node --import=./tests/setup.mjs --test tests/playableSongs.test.js tests/player.test.js tests/tones.test.js tests/quiz.test.js tests/contentTypes.test.js tests/api.test.js tests/auth.test.js",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix",
     "format": "prettier --write src/"

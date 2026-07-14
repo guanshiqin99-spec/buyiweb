@@ -90,10 +90,19 @@ const handleKeydown = (e) => {
   outline: none;
 }
 
+/* 聚焦反馈由外层 .search-glow 的青色光环统一承担，input 内不再画焦点环，避免出现黄色描边 */
 .search-bar input:focus-visible {
-  outline: 2px solid var(--c-focus);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: none;
+}
+
+/* 覆盖浏览器自动填充的默认黄色背景，保持搜索框玻璃质感 */
+.search-bar input:-webkit-autofill,
+.search-bar input:-webkit-autofill:hover,
+.search-bar input:-webkit-autofill:focus,
+.search-bar input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--c-text);
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .search-bar input::placeholder {
