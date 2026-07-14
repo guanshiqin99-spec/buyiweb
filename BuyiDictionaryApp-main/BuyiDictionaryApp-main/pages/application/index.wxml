@@ -32,4 +32,11 @@
     </view>
   </navigator>
 
+  <navigator class="card card-secondary row-card" url="/pages/quiz/index">
+    <view>
+      <text class="text-h3">布依文化答题</text>
+      <text class="text-sub">十道文化小问，成绩支持本机保存与账号同步</text>
+    </view>
+  </navigator>
+
 </view>

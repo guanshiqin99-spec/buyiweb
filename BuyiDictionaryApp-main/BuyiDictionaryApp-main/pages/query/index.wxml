@@ -89,6 +89,9 @@
         <text class="text-sub result-phonetic" wx:if="{{item.ipa}}">国际音标: [{{item.ipa}}]</text>
         <text wx:if="{{item.contentType === 'song'}}" class="text-sub result-note">来源: 民歌《{{item.title}}》</text>
       </view>
+      <button wx:if="{{page < totalPages}}" class="btn btn-primary load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="loadMore">
+        {{loadingMore ? '正在加载' : '加载更多结果'}}
+      </button>
     </block>
 
     <!-- 状态：空数据 -->

@@ -42,12 +42,12 @@
     <view class="card glass-card">
       <view class="setting-item">
         <text class="text-body">学习提醒</text>
-        <switch color="#5C86C5" checked="{{true}}" />
+        <switch color="#5C86C5" checked="{{notifications}}" bindchange="changeLearningReminder" />
       </view>
       <view class="divider"></view>
       <view class="setting-item">
         <text class="text-body">自动播放发音</text>
-        <switch color="#5C86C5" checked="{{false}}" />
+        <switch color="#5C86C5" checked="{{autoplay}}" bindchange="changeAutoplay" />
       </view>
     </view>
   </view>

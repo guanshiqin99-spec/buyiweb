@@ -22,6 +22,9 @@ function validateEnvironmentOrThrow(env = process.env) {
         return;
     }
     const errors = [];
+    if (env.ENABLE_SWAGGER === 'true') {
+        console.warn('⚠️ 生产环境开启了 Swagger，建议关闭');
+    }
     const jwtSecret = String(env.JWT_SECRET || '').trim();
     const dbType = String(env.DB_TYPE || '').trim();
     const mediaDriver = String(env.MEDIA_DRIVER || '').trim() || 'local';
@@ -49,6 +52,8 @@ function validateEnvironmentOrThrow(env = process.env) {
     requireValue(errors, 'DB_NAME', env.DB_NAME);
     requireValue(errors, 'WECHAT_APP_ID', env.WECHAT_APP_ID);
     requireValue(errors, 'WECHAT_APP_SECRET', env.WECHAT_APP_SECRET);
+    requireValue(errors, 'WECHAT_REMINDER_TEMPLATE_ID', env.WECHAT_REMINDER_TEMPLATE_ID);
+    requireValue(errors, 'WECHAT_REMINDER_TEMPLATE_DATA_JSON', env.WECHAT_REMINDER_TEMPLATE_DATA_JSON);
     requireValue(errors, 'CORS_ORIGIN', env.CORS_ORIGIN);
     if (mediaDriver === 'cos') {
         requireValue(errors, 'COS_SECRET_ID', env.COS_SECRET_ID);

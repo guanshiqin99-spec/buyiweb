@@ -10,6 +10,9 @@ Page({
     currentTheme: 'light',
     fontSizeClass: 'medium',
     loading: false,
+    loadingMore: false,
+    page: 1,
+    totalPages: 1,
     errorText: '',
   },
 
@@ -24,19 +27,35 @@ Page({
     } catch (error) {}
   },
 
-  async loadSongs() {
-    this.setData({ loading: true, errorText: '' });
+  async loadSongs(page = 1) {
+    this.setData(page === 1 ? { loading: true, errorText: '' } : { loadingMore: true, errorText: '' });
     try {
-      const payload = await contentApi.listByType('song', 1, 50);
-      let songs = mapContentList(payload.items || [], 'song');
+      const payload = await contentApi.listByType('song', page, 20);
+      let nextSongs = mapContentList(payload.items || [], 'song');
       if (getApp().globalData.isLogin) {
         const groups = await Favorites.getGroups();
-        songs = applyFavoriteLookup(songs, buildFavoriteLookup(groups));
+        nextSongs = applyFavoriteLookup(nextSongs, buildFavoriteLookup(groups));
       }
-      this.setData({ songs, loading: false });
+      const songs = page === 1 ? nextSongs : this.data.songs.concat(nextSongs.filter((song) => !this.data.songs.some((current) => current.id === song.id)));
+      this.setData({
+        songs,
+        page,
+        totalPages: Number(payload.totalPages || Math.max(1, Math.ceil(Number(payload.total || 0) / 20))),
+        loading: false,
+        loadingMore: false,
+      });
     } catch (error) {
-      this.setData({ songs: [], loading: false, errorText: '民歌加载失败' });
+      this.setData({ songs: page === 1 ? [] : this.data.songs, loading: false, loadingMore: false, errorText: page === 1 ? '民歌加载失败' : '' });
+      if (page > 1) wx.showToast({ title: '更多民歌加载失败', icon: 'none' });
     }
+  },
+
+  loadMore() {
+    if (!this.data.loadingMore && this.data.page < this.data.totalPages) this.loadSongs(this.data.page + 1);
+  },
+
+  onReachBottom() {
+    this.loadMore();
   },
 
   playSong(e) {

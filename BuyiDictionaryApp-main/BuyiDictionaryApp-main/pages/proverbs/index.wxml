@@ -39,6 +39,9 @@
       <text class="text-h3">暂无谚语内容</text>
       <text class="text-sub">后台暂未添加布依族谚语数据</text>
     </view>
+    <button wx:if="{{page < totalPages}}" class="btn btn-primary load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="loadMore">
+      {{loadingMore ? '正在加载' : '加载更多'}}
+    </button>
   </block>
 
 </view>

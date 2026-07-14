@@ -230,8 +230,21 @@ const settingsApi = {
   get() {
     return get('/miniapp/settings', null, { needAuth: true });
   },
-  update(theme, fontSize) {
-    return put('/miniapp/settings', { theme, fontSize }, { needAuth: true });
+  reminderConfig() {
+    return get('/miniapp/settings/reminder-config', null, { needAuth: true, showError: false });
+  },
+  update(settings, legacyFontSize) {
+    const payload = typeof settings === 'object' ? settings : { theme: settings, fontSize: legacyFontSize };
+    return put('/miniapp/settings', payload, { needAuth: true });
+  },
+};
+
+const quizApi = {
+  list(page = 1, pageSize = 10) {
+    return get('/miniapp/quiz-attempts', { page, pageSize }, { needAuth: true, showError: false });
+  },
+  create(payload) {
+    return post('/miniapp/quiz-attempts', payload, { needAuth: true });
   },
 };
 
@@ -248,11 +261,11 @@ const healthApi = {
 };
 
 const contentApi = {
-  search(keyword) {
+  search(keyword, page = 1, pageSize = 20) {
     const app = getAppInstance();
     const isLogin = !!(app && app.globalData && app.globalData.isLogin && app.globalData.token);
     const url = isLogin ? '/miniapp/search/mine' : '/miniapp/search';
-    return get(url, { keyword, page: 1, pageSize: 20 }, { needAuth: isLogin, showError: true });
+    return get(url, { keyword, page, pageSize }, { needAuth: isLogin, showError: true });
   },
   suggest(keyword) {
     return get('/miniapp/search/suggest', { keyword }, { showError: false, redirectOn401: false });
@@ -309,5 +322,6 @@ module.exports = {
   contentApi,
   favoritesApi,
   recordsApi,
+  quizApi,
   extractMessage,
 };

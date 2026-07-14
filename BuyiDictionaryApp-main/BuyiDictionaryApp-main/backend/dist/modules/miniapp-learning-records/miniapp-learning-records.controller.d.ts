@@ -54,6 +54,7 @@ export declare class MiniappLearningRecordsController {
         total: number;
         page: number;
         pageSize: number;
+        totalPages: number;
         stats: {
             today: number;
             total: number;

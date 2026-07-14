@@ -39,7 +39,7 @@ let JwtAuthGuard = class JwtAuthGuard {
         const token = authHeader.slice('Bearer '.length);
         try {
             const payload = this.jwtService.verify(token, {
-                secret: this.configService.get('jwt.secret', 'change-me'),
+                secret: this.configService.get('jwt.secret'),
             });
             if (payload.tokenKind !== 'access') {
                 throw new common_1.UnauthorizedException('\u767b\u5f55\u4ee4\u724c\u7c7b\u578b\u65e0\u6548');

@@ -183,7 +183,8 @@ export class MiniappAuthService {
         tokenKind: 'access',
       },
       {
-        secret: this.configService.get<string>('jwt.secret', 'change-me'),
+        // 安全实践：JWT 密钥无默认兜底，未设置时启动失败
+        secret: this.configService.get<string>('jwt.secret'),
         expiresIn: this.configService.get<string>('jwt.expiresIn', '7d') as never,
       },
     );
@@ -196,7 +197,7 @@ export class MiniappAuthService {
         tokenKind: 'refresh',
       },
       {
-        secret: this.configService.get<string>('jwt.secret', 'change-me'),
+        secret: this.configService.get<string>('jwt.secret'),
         expiresIn: this.configService.get<string>('jwt.refreshExpiresIn', '30d') as never,
       },
     );
@@ -225,7 +226,7 @@ export class MiniappAuthService {
         tokenType: string;
         tokenKind: string;
       }>(refreshToken, {
-        secret: this.configService.get<string>('jwt.secret', 'change-me'),
+        secret: this.configService.get<string>('jwt.secret'),
       });
 
       if (payload.tokenType !== 'miniapp' || payload.tokenKind !== 'refresh') {

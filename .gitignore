@@ -16,6 +16,11 @@ buyi-密码与分析/
 **/.env.local
 **/.env.*.local
 
+# Security: credential-bearing scripts
+BuyiDictionaryApp-main/BuyiDictionaryApp-main/backend/reset_admin.js
+BuyiDictionaryApp-main/BuyiDictionaryApp-main/backend/show_tables.js
+BuyiDictionaryApp-main/BuyiDictionaryApp-main/backend/upload.js
+
 # ---------- 日志文件 ----------
 *.log
 logs/

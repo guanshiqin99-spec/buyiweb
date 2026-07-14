@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "文化答题",
+  "usingComponents": {
+    "custom-nav": "/components/custom-nav/custom-nav"
+  }
+}

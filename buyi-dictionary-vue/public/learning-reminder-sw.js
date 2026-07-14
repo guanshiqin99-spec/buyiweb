@@ -1,0 +1,33 @@
+self.addEventListener('push', (event) => {
+  let payload = {}
+  try { payload = event.data?.json() || {} } catch { payload = { body: event.data?.text() || '' } }
+  event.waitUntil(self.registration.showNotification(payload.title || '今天也来学一点布依语吧', {
+    body: payload.body || '打开布依词典，复习几个词或完成一轮文化答题。',
+    tag: 'buyi-daily-learning-reminder',
+    data: { url: payload.url || '/learn' }
+  }))
+})
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag !== 'buyi-daily-learning-reminder') return
+  event.waitUntil(self.registration.showNotification('今天也来学一点布依语吧', {
+    body: '打开布依词典，复习几个词或完成一轮文化答题。',
+    tag: 'buyi-daily-learning-reminder',
+    data: { url: '/learn' }
+  }))
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const targetUrl = event.notification.data?.url || '/learn'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((client) => 'focus' in client)
+      if (existing) {
+        existing.navigate(targetUrl)
+        return existing.focus()
+      }
+      return self.clients.openWindow(targetUrl)
+    })
+  )
+})

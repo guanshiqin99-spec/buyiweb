@@ -1,0 +1,44 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page quiz-page">
+  <custom-nav title="文化答题"></custom-nav>
+
+  <view wx:if="{{phase === 'intro'}}" class="card quiz-intro">
+    <text class="text-h1">布依文化十问</text>
+    <text class="text-sub">随机完成 10 道四选一题目，每题 10 分，成绩会保存在本机；登录后同时同步到账号。</text>
+    <text wx:if="{{lastAttempt}}" class="text-sub last-attempt">最近成绩：{{lastAttempt.score}} 分（答对 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题）</text>
+    <button class="btn btn-primary" bindtap="startQuiz">开始答题</button>
+  </view>
+
+  <view wx:elif="{{phase === 'question' && currentQuestion}}" class="quiz-question">
+    <view class="quiz-meta">
+      <text class="text-sub">第 {{currentIndex + 1}} / {{questions.length}} 题</text>
+      <text class="text-h3 primary-text">{{score}} 分</text>
+    </view>
+    <view class="progress-track"><view class="progress-bar" style="width: {{(currentIndex + 1) * 100 / questions.length}}%;"></view></view>
+    <view class="card question-card">
+      <text class="text-h2">{{currentQuestion.prompt}}</text>
+      <view class="quiz-options">
+        <button
+          wx:for="{{currentQuestion.options}}"
+          wx:key="*this"
+          class="option-btn {{answered && item === currentQuestion.answer ? 'correct' : ''}} {{answered && item === selected && item !== currentQuestion.answer ? 'wrong' : ''}}"
+          data-option="{{item}}"
+          disabled="{{answered}}"
+          bindtap="selectOption"
+        >{{item}}</button>
+      </view>
+      <view wx:if="{{answered}}" class="feedback">
+        <text class="text-h3">{{selected === currentQuestion.answer ? '回答正确' : '正确答案：' + currentQuestion.answer}}</text>
+        <text class="text-sub">{{currentQuestion.explanation}}</text>
+        <button class="btn btn-primary" bindtap="nextQuestion">{{currentIndex === questions.length - 1 ? '查看成绩' : '下一题'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="card quiz-result">
+    <text class="text-sub">本轮完成</text>
+    <text class="score-value">{{score}} 分</text>
+    <text class="text-h3">答对 {{correctCount}} / {{questions.length}} 题</text>
+    <text class="text-sub save-message">{{saveMsg}}</text>
+    <button class="btn btn-primary" disabled="{{saving}}" bindtap="startQuiz">再来一轮</button>
+  </view>
+</view>

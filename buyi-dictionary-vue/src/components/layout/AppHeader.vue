@@ -4,6 +4,12 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import IconMenu from '@/components/icons/IconMenu.vue'
 import IconClose from '@/components/icons/IconClose.vue'
+import {
+  NAV_TONE_POLICY,
+  isNavTone,
+  resolveNavToneDecision,
+  toneFromContrast
+} from '@/utils/navTonePolicy'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,6 +23,7 @@ const navContrast = computed(() => route.meta.navContrast || 'on-light')
 // 动态探测：根据导航栏正下方的背景区块实时切换深/浅文字（苹果式）
 const dynamicTone = ref(null) // 'dark' | 'light' | null
 const toneConfidence = ref('low') // 'high' | 'low'
+const hasBusyBackdrop = ref(false)
 const effectiveContrast = computed(() => {
   if (dynamicTone.value === 'dark' || dynamicTone.value === 'light') {
     return `on-${dynamicTone.value}`
@@ -40,16 +47,14 @@ let scrollRaf = null
 let toneObserver = null
 let pendingTone = null
 let toneSwitchTimer = null
-const intersectingToneElements = new Set()
-const TONE_SWITCH_DELAY = 96
-
-function isValidTone(value) {
-  return value === 'dark' || value === 'light'
-}
+const TONE_SELECTOR = `[${NAV_TONE_POLICY.markerAttribute}]`
 
 function getProbeY() {
   const navBottom = navRef.value?.getBoundingClientRect().bottom || 56
-  return Math.min(window.innerHeight - 1, Math.max(0, Math.round(navBottom + 8)))
+  return Math.min(
+    window.innerHeight - 1,
+    Math.max(0, Math.round(navBottom - NAV_TONE_POLICY.probeInsetPx))
+  )
 }
 
 function clearPendingTone() {
@@ -59,7 +64,7 @@ function clearPendingTone() {
 }
 
 function acceptTone(tone) {
-  if (!isValidTone(tone)) return
+  if (!isNavTone(tone)) return
 
   if (!dynamicTone.value || dynamicTone.value === tone) {
     clearPendingTone()
@@ -77,7 +82,7 @@ function acceptTone(tone) {
       dynamicTone.value = tone
       toneConfidence.value = 'high'
       clearPendingTone()
-    }, TONE_SWITCH_DELAY)
+    }, NAV_TONE_POLICY.switchDelayMs)
   }
 }
 
@@ -86,53 +91,49 @@ function markToneUncertain() {
   toneConfidence.value = 'low'
 }
 
-function toneAtPoint(x, y) {
+function probeAtPoint(x, y) {
   const stack = typeof document.elementsFromPoint === 'function'
     ? document.elementsFromPoint(x, y)
     : [document.elementFromPoint(x, y)].filter(Boolean)
 
   for (const element of stack) {
     if (navRef.value?.contains(element)) continue
-    const marked = element.closest?.('[data-nav-tone]')
+    const marked = element.closest?.(TONE_SELECTOR)
     if (!marked || navRef.value?.contains(marked)) continue
     const tone = marked.dataset.navTone
-    if (isValidTone(tone)) return tone
+    if (isNavTone(tone)) {
+      return {
+        tone,
+        busy: Boolean(element.closest?.(NAV_TONE_POLICY.busySelector))
+      }
+    }
   }
-  return null
+  return { tone: null, busy: false }
 }
 
-function observedTone() {
-  const tones = new Set(
-    [...intersectingToneElements]
-      .map((element) => element.dataset.navTone)
-      .filter(isValidTone)
-  )
-  return tones.size === 1 ? [...tones][0] : null
-}
-
-// 语义区块优先；区块边界或复杂图层中使用左、中、右三点投票。
+// P0 locked policy: semantic markers are sampled left/center/right; 2/3 wins.
+// Mixed evidence retains the last reliable tone and enables the protective scrim.
 function detectNavTone() {
-  const markers = document.querySelectorAll('[data-nav-tone]')
+  const markers = document.querySelectorAll(TONE_SELECTOR)
+  const fallbackTone = toneFromContrast(navContrast.value)
+  hasBusyBackdrop.value = false
   if (!markers.length) {
-    acceptTone(navContrast.value === 'on-dark' ? 'dark' : 'light')
-    return
-  }
-
-  const semanticTone = observedTone()
-  if (semanticTone) {
-    acceptTone(semanticTone)
+    acceptTone(fallbackTone)
     return
   }
 
   const y = getProbeY()
-  const sampleXs = [window.innerWidth * 0.14, window.innerWidth * 0.5, window.innerWidth * 0.86]
-  const votes = sampleXs.map((x) => toneAtPoint(x, y)).filter(isValidTone)
-  const darkVotes = votes.filter((tone) => tone === 'dark').length
-  const lightVotes = votes.filter((tone) => tone === 'light').length
+  const probes = NAV_TONE_POLICY.sampleRatios
+    .map((ratio) => probeAtPoint(window.innerWidth * ratio, y))
+  const samples = probes.map((probe) => probe.tone)
+  hasBusyBackdrop.value = probes.some((probe) => probe.busy)
+  const decision = resolveNavToneDecision({
+    samples,
+    fallbackTone,
+    lastReliableTone: dynamicTone.value
+  })
 
-  if (darkVotes >= 2) acceptTone('dark')
-  else if (lightVotes >= 2) acceptTone('light')
-  else if (!votes.length) acceptTone(navContrast.value === 'on-dark' ? 'dark' : 'light')
+  if (decision.confidence === 'high') acceptTone(decision.tone)
   else markToneUncertain()
 }
 
@@ -146,9 +147,7 @@ function scheduleToneDetection() {
 
 function setupToneObserver() {
   toneObserver?.disconnect()
-  intersectingToneElements.clear()
-
-  const markers = [...document.querySelectorAll('[data-nav-tone]')]
+  const markers = [...document.querySelectorAll(TONE_SELECTOR)]
   if (!markers.length || typeof IntersectionObserver === 'undefined') {
     scheduleToneDetection()
     return
@@ -156,11 +155,7 @@ function setupToneObserver() {
 
   const probeY = getProbeY()
   const bottomInset = Math.max(0, window.innerHeight - probeY - 2)
-  toneObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) intersectingToneElements.add(entry.target)
-      else intersectingToneElements.delete(entry.target)
-    })
+  toneObserver = new IntersectionObserver(() => {
     scheduleToneDetection()
   }, {
     rootMargin: `-${probeY}px 0px -${bottomInset}px 0px`,
@@ -200,6 +195,7 @@ watch(() => route.path, () => {
   clearPendingTone()
   dynamicTone.value = null
   toneConfidence.value = 'low'
+  hasBusyBackdrop.value = false
   nextTick(() => {
     isScrolled.value = window.scrollY > 100
     setupToneObserver()
@@ -252,7 +248,7 @@ const handleAuthAction = () => {
     class="nav-immersive" 
     :class="{
       scrolled: isScrolled,
-      'nav-immersive--tone-uncertain': toneConfidence === 'low',
+      'nav-immersive--tone-uncertain': toneConfidence === 'low' || hasBusyBackdrop,
       'nav-immersive--light': !isImmersive,
       'nav-immersive--culture': route.name === 'culture',
       'nav-immersive--on-dark': effectiveContrast === 'on-dark',

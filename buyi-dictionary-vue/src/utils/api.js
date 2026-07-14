@@ -89,6 +89,11 @@ export const recordsApi = {
   clear() { return api.delete('/miniapp/learning-records') }
 }
 
+export const quizApi = {
+  list(params) { return api.get('/miniapp/quiz-attempts', { params }) },
+  create(data) { return api.post('/miniapp/quiz-attempts', data) }
+}
+
 export const badgesApi = {
   list() { return api.get('/miniapp/badges') }
 }

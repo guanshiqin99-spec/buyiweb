@@ -99,7 +99,8 @@ export class AdminAuthService {
         tokenKind: 'access',
       },
       {
-        secret: this.configService.get<string>('jwt.secret', 'change-me'),
+        // 安全实践：JWT 密钥无默认兜底，未设置时启动失败
+        secret: this.configService.get<string>('jwt.secret'),
         expiresIn: this.configService.get<string>('jwt.adminExpiresIn', '1d') as never,
       },
     );
@@ -112,7 +113,7 @@ export class AdminAuthService {
         tokenKind: 'refresh',
       },
       {
-        secret: this.configService.get<string>('jwt.secret', 'change-me'),
+        secret: this.configService.get<string>('jwt.secret'),
         expiresIn: this.configService.get<string>('jwt.adminRefreshExpiresIn', '14d') as never,
       },
     );
@@ -141,7 +142,7 @@ export class AdminAuthService {
         tokenType: string;
         tokenKind: string;
       }>(refreshToken, {
-        secret: this.configService.get<string>('jwt.secret', 'change-me'),
+        secret: this.configService.get<string>('jwt.secret'),
       });
 
       if (payload.tokenType !== 'admin' || payload.tokenKind !== 'refresh') {

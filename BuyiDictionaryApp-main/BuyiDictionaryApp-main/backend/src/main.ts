@@ -77,7 +77,7 @@ async function bootstrap() {
     }),
   );
 
-  if ((process.env.ENABLE_SWAGGER ?? 'true') === 'true') {
+  if ((process.env.ENABLE_SWAGGER ?? 'false') === 'true') {
     const config = new DocumentBuilder()
       .setTitle('Buyi Dictionary API')
       .setDescription('布依语词典小程序与管理后台接口文档')

@@ -133,7 +133,7 @@ export const usePlayerStore = defineStore('player', () => {
     if (autoplay) await play()
   }
 
-  async function playSong(song) {
+  async function playSong(song, autoplay = true) {
     if (!song?.playable) {
       message.value = '该曲目暂未收录可播放的音频。'
       return
@@ -148,7 +148,7 @@ export const usePlayerStore = defineStore('player', () => {
     isExpanded.value = true
     hasTriedFallback = false
     message.value = ''
-    await loadSource(song.audioUrl || song.fallbackAudioUrl, song.audioUrl ? 'remote' : 'fallback', true)
+    await loadSource(song.audioUrl || song.fallbackAudioUrl, song.audioUrl ? 'remote' : 'fallback', autoplay)
   }
 
   async function play() {

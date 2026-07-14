@@ -18,14 +18,28 @@ const current_user_decorator_1 = require("../../common/decorators/current-user.d
 const miniapp_jwt_guard_1 = require("../../common/guards/miniapp-jwt.guard");
 const users_service_1 = require("../users/users.service");
 const update_settings_dto_1 = require("./dto/update-settings.dto");
+const learning_reminder_service_1 = require("./learning-reminder.service");
 let MiniappSettingsController = class MiniappSettingsController {
-    constructor(usersService) {
+    constructor(usersService, learningReminderService) {
         this.usersService = usersService;
+        this.learningReminderService = learningReminderService;
     }
-    getSettings(user) {
-        return this.usersService.getSettings(user.sub);
+    getReminderConfig() {
+        return this.learningReminderService.getClientConfig();
     }
-    updateSettings(user, payload) {
+    normalize(settings) {
+        return {
+            theme: settings.theme || 'light',
+            fontSize: settings.fontSize || '中',
+            notifications: settings.notifications === 'true',
+            autoplay: settings.autoplay === 'true',
+            language: settings.language || 'zh-CN',
+        };
+    }
+    async getSettings(user) {
+        return this.normalize(await this.usersService.getSettings(user.sub));
+    }
+    async updateSettings(user, payload) {
         const updates = {};
         if (payload.theme) {
             updates.theme = payload.theme;
@@ -33,16 +47,31 @@ let MiniappSettingsController = class MiniappSettingsController {
         if (payload.fontSize) {
             updates.fontSize = payload.fontSize;
         }
-        return this.usersService.updateSettings(user.sub, updates);
+        if (payload.notifications !== undefined) {
+            updates.notifications = String(payload.notifications);
+        }
+        if (payload.autoplay !== undefined) {
+            updates.autoplay = String(payload.autoplay);
+        }
+        if (payload.language) {
+            updates.language = payload.language;
+        }
+        return this.normalize(await this.usersService.updateSettings(user.sub, updates));
     }
 };
 exports.MiniappSettingsController = MiniappSettingsController;
+__decorate([
+    (0, common_1.Get)('reminder-config'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], MiniappSettingsController.prototype, "getReminderConfig", null);
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], MiniappSettingsController.prototype, "getSettings", null);
 __decorate([
     (0, common_1.Put)(),
@@ -50,11 +79,12 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, update_settings_dto_1.UpdateSettingsDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], MiniappSettingsController.prototype, "updateSettings", null);
 exports.MiniappSettingsController = MiniappSettingsController = __decorate([
     (0, common_1.Controller)('miniapp/settings'),
     (0, common_1.UseGuards)(miniapp_jwt_guard_1.MiniappJwtGuard),
-    __metadata("design:paramtypes", [users_service_1.UsersService])
+    __metadata("design:paramtypes", [users_service_1.UsersService,
+        learning_reminder_service_1.LearningReminderService])
 ], MiniappSettingsController);
 //# sourceMappingURL=miniapp-settings.controller.js.map

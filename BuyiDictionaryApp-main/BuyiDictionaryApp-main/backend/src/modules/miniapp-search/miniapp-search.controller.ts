@@ -73,6 +73,7 @@ export class MiniappSearchController {
       phrases: await this.favoritesService.annotate(user.sub, ContentType.PHRASE, result.phrases),
       proverbs: await this.favoritesService.annotate(user.sub, ContentType.PROVERB, result.proverbs),
       songs: await this.favoritesService.annotate(user.sub, ContentType.SONG, result.songs),
+      pagination: result.pagination,
     };
   }
 }

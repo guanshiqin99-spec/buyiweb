@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mock } from 'node:test'
-import api, { contentApi, homeApi, searchApi } from '../src/utils/api.js'
+import api, { contentApi, homeApi, quizApi, searchApi, settingsApi } from '../src/utils/api.js'
 import { logApiError, logRenderError, logRouteChunkError } from '../src/utils/logger.js'
 
 // 提供最小化的 localStorage 占位，请求拦截器从中读取 token
@@ -84,6 +84,24 @@ test('登录后搜索和词汇列表使用 mine 接口', async () => {
   assert.equal(captured[0].url, '/miniapp/search/mine')
   assert.equal(captured[1].url, '/miniapp/dictionary/mine')
   assert.equal(captured[2].url, '/miniapp/songs')
+})
+
+test('设置与答题成绩使用账号同步接口', async () => {
+  const store = useLocalStorage()
+  store.set('token', 'abc123')
+  const captured = []
+  api.defaults.adapter = (config) => {
+    captured.push(config)
+    return Promise.resolve(okResponse({ ok: true }, config))
+  }
+
+  await settingsApi.update({ notifications: true, autoplay: false })
+  await quizApi.create({ score: 80, correctCount: 8, totalQuestions: 10, answers: [] })
+
+  assert.equal(captured[0].url, '/miniapp/settings')
+  assert.equal(captured[0].method, 'put')
+  assert.equal(captured[1].url, '/miniapp/quiz-attempts')
+  assert.equal(captured[1].method, 'post')
 })
 
 test('响应拦截器对失败响应调用 logApiError 并向外抛出', async () => {

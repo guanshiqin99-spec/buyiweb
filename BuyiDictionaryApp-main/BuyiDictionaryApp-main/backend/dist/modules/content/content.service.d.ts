@@ -306,6 +306,12 @@ export declare class ContentService {
             culturalNote: string | null;
             zhSortKey: string;
         })[];
+        pagination: {
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
     }>;
     suggestAll(keyword: string): Promise<{
         dictionary: ({

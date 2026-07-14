@@ -28,6 +28,9 @@ export interface AppConfig {
     appId: string;
     appSecret: string;
     mockMode: boolean;
+    reminderTemplateId: string;
+    reminderTemplateDataJson: string;
+    reminderHour: number;
   };
   media: {
     driver: string;
@@ -63,11 +66,14 @@ export const appConfig = (): AppConfig => ({
       .split(',')
       .map((item) => item.trim())
       .filter(Boolean),
-    docsEnabled: (process.env.ENABLE_SWAGGER ?? 'true') === 'true',
+    // 安全实践：生产环境默认关闭 Swagger，需显式开启
+    docsEnabled: (process.env.ENABLE_SWAGGER ?? 'false') === 'true',
   },
   jwt: {
-    secret: process.env.JWT_SECRET ?? 'change-me',
-    expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+    // 安全实践：JWT 密钥无默认兜底，未设置时启动失败
+    secret: process.env.JWT_SECRET!,
+    // 安全实践：access token 短有效期，减少被盗用窗口
+    expiresIn: process.env.JWT_EXPIRES_IN ?? '30m',
     adminExpiresIn: process.env.ADMIN_JWT_EXPIRES_IN ?? '1d',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '30d',
     adminRefreshExpiresIn: process.env.ADMIN_JWT_REFRESH_EXPIRES_IN ?? '14d',
@@ -86,6 +92,9 @@ export const appConfig = (): AppConfig => ({
     appId: process.env.WECHAT_APP_ID ?? '',
     appSecret: process.env.WECHAT_APP_SECRET ?? '',
     mockMode: (process.env.WECHAT_MOCK_MODE ?? 'true') === 'true',
+    reminderTemplateId: process.env.WECHAT_REMINDER_TEMPLATE_ID ?? '',
+    reminderTemplateDataJson: process.env.WECHAT_REMINDER_TEMPLATE_DATA_JSON ?? '',
+    reminderHour: Number(process.env.WECHAT_REMINDER_HOUR ?? 20),
   },
   media: {
     driver: process.env.MEDIA_DRIVER ?? 'local',

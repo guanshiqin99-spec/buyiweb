@@ -278,6 +278,12 @@ let ContentService = class ContentService {
             phrases: await Promise.all(phrases.items.map((item) => this.serializeWithRelatedExhibits(item, content_type_enum_1.ContentType.PHRASE))),
             proverbs: await Promise.all(proverbs.items.map((item) => this.serializeWithRelatedExhibits(item, content_type_enum_1.ContentType.PROVERB))),
             songs: songs.items.map((item) => this.serialize(item, content_type_enum_1.ContentType.SONG)),
+            pagination: {
+                page: dictionary.page,
+                pageSize: dictionary.pageSize,
+                total: dictionary.total + phrases.total + proverbs.total + songs.total,
+                totalPages: Math.max(dictionary.totalPages, phrases.totalPages, proverbs.totalPages, songs.totalPages),
+            },
         };
     }
     async suggestAll(keyword) {

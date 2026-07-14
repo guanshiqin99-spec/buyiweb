@@ -11,11 +11,11 @@ const appConfig = () => ({
             .split(',')
             .map((item) => item.trim())
             .filter(Boolean),
-        docsEnabled: (process.env.ENABLE_SWAGGER ?? 'true') === 'true',
+        docsEnabled: (process.env.ENABLE_SWAGGER ?? 'false') === 'true',
     },
     jwt: {
-        secret: process.env.JWT_SECRET ?? 'change-me',
-        expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRES_IN ?? '30m',
         adminExpiresIn: process.env.ADMIN_JWT_EXPIRES_IN ?? '1d',
         refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '30d',
         adminRefreshExpiresIn: process.env.ADMIN_JWT_REFRESH_EXPIRES_IN ?? '14d',
@@ -34,6 +34,9 @@ const appConfig = () => ({
         appId: process.env.WECHAT_APP_ID ?? '',
         appSecret: process.env.WECHAT_APP_SECRET ?? '',
         mockMode: (process.env.WECHAT_MOCK_MODE ?? 'true') === 'true',
+        reminderTemplateId: process.env.WECHAT_REMINDER_TEMPLATE_ID ?? '',
+        reminderTemplateDataJson: process.env.WECHAT_REMINDER_TEMPLATE_DATA_JSON ?? '',
+        reminderHour: Number(process.env.WECHAT_REMINDER_HOUR ?? 20),
     },
     media: {
         driver: process.env.MEDIA_DRIVER ?? 'local',

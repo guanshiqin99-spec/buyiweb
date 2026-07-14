@@ -58,7 +58,7 @@ async function bootstrap() {
         windowMs: 60 * 1000,
         message: '提问过于频繁，请稍后再试',
     }));
-    if ((process.env.ENABLE_SWAGGER ?? 'true') === 'true') {
+    if ((process.env.ENABLE_SWAGGER ?? 'false') === 'true') {
         const config = new swagger_1.DocumentBuilder()
             .setTitle('Buyi Dictionary API')
             .setDescription('布依语词典小程序与管理后台接口文档')

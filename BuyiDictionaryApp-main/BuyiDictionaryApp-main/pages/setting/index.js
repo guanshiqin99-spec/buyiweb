@@ -18,6 +18,9 @@ Page({
     currentFontSize: '\u4E2D',
     fontSizeIndex: 1,
     fontSizeClass: 'medium',
+    notifications: false,
+    autoplay: false,
+    reminderTemplateId: '',
     isLogin: false,
     apiMode: 'auto',
     activeApiMode: 'development',
@@ -109,45 +112,61 @@ Page({
     const isLogin = !!app.globalData.isLogin;
     let theme = wx.getStorageSync('theme') || app.globalData.theme || 'light';
     let fontSize = wx.getStorageSync('fontSize') || app.globalData.fontSize || '\u4E2D';
+    let notifications = wx.getStorageSync('notifications') === true;
+    let autoplay = wx.getStorageSync('autoplay') === true;
 
     if (isLogin) {
       try {
         const payload = await settingsApi.get();
         theme = payload.theme || theme;
         fontSize = payload.fontSize || fontSize;
+        notifications = payload.notifications === true;
+        autoplay = payload.autoplay === true;
+        try {
+          const reminderConfig = await settingsApi.reminderConfig();
+          this.setData({ reminderTemplateId: reminderConfig.templateId || '' });
+        } catch (error) {}
       } catch (error) {}
     }
 
-    app.applySettings({ theme, fontSize }, { persist: true, broadcast: true });
+    app.applySettings({ theme, fontSize, notifications, autoplay }, { persist: true, broadcast: true });
     const fontSizeIndex = this.data.fontSizes.indexOf(fontSize);
     this.setData({
       currentTheme: theme,
       currentFontSize: fontSize,
       fontSizeIndex: fontSizeIndex >= 0 ? fontSizeIndex : 1,
       fontSizeClass: fontSize === '\u5C0F' ? 'small' : fontSize === '\u5927' ? 'large' : 'medium',
+      notifications,
+      autoplay,
       isLogin,
     });
   },
 
-  async syncSettings(nextTheme, nextFontSize) {
+  async syncSettings(nextTheme, nextFontSize, preferences = {}) {
     const app = getApp();
-    app.applySettings({ theme: nextTheme, fontSize: nextFontSize }, { persist: true, broadcast: true });
+    const notifications = preferences.notifications !== undefined ? preferences.notifications : this.data.notifications;
+    const autoplay = preferences.autoplay !== undefined ? preferences.autoplay : this.data.autoplay;
+    app.applySettings({ theme: nextTheme, fontSize: nextFontSize, notifications, autoplay }, { persist: true, broadcast: true });
     const fontSizeIndex = this.data.fontSizes.indexOf(nextFontSize);
     this.setData({
       currentTheme: nextTheme,
       currentFontSize: nextFontSize,
       fontSizeIndex: fontSizeIndex >= 0 ? fontSizeIndex : 1,
       fontSizeClass: nextFontSize === '\u5C0F' ? 'small' : nextFontSize === '\u5927' ? 'large' : 'medium',
+      notifications,
+      autoplay,
     });
 
     if (!app.globalData.isLogin) {
-      return;
+      return true;
     }
 
     try {
-      await settingsApi.update(nextTheme, nextFontSize);
+      await settingsApi.update({ theme: nextTheme, fontSize: nextFontSize, notifications, autoplay });
+      return true;
     } catch (error) {
       wx.showToast({ title: '\u8BBE\u7F6E\u540C\u6B65\u5931\u8D25\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5', icon: 'none' });
+      return false;
     }
   },
 
@@ -163,6 +182,46 @@ Page({
     }
     const fontSize = this.data.fontSizes[index] || '\u4E2D';
     this.syncSettings(this.data.currentTheme, fontSize);
+  },
+
+  async changeLearningReminder(e) {
+    const enabled = !!(e.detail && e.detail.value);
+    if (enabled) {
+      const extConfig = wx.getExtConfigSync ? wx.getExtConfigSync() : {};
+      const templateId = this.data.reminderTemplateId || extConfig.learningReminderTemplateId || getApp().globalData.learningReminderTemplateId;
+      if (templateId && wx.requestSubscribeMessage) {
+        try {
+          const result = await wx.requestSubscribeMessage({ tmplIds: [templateId] });
+          if (result[templateId] !== 'accept') {
+            this.setData({ notifications: false });
+            wx.showToast({ title: '未获得通知授权，提醒未开启', icon: 'none' });
+            return;
+          }
+        } catch (error) {
+          this.setData({ notifications: false });
+          wx.showToast({ title: '通知授权失败，请稍后重试', icon: 'none' });
+          return;
+        }
+      }
+    }
+    const saved = await this.syncSettings(this.data.currentTheme, this.data.currentFontSize, { notifications: enabled });
+    if (!saved) {
+      getApp().applySettings({ notifications: !enabled }, { persist: true, broadcast: false });
+      this.setData({ notifications: !enabled });
+      return;
+    }
+    wx.showToast({ title: enabled ? '学习提醒已开启' : '学习提醒已关闭', icon: 'success' });
+  },
+
+  async changeAutoplay(e) {
+    const enabled = !!(e.detail && e.detail.value);
+    const saved = await this.syncSettings(this.data.currentTheme, this.data.currentFontSize, { autoplay: enabled });
+    if (!saved) {
+      getApp().applySettings({ autoplay: !enabled }, { persist: true, broadcast: false });
+      this.setData({ autoplay: !enabled });
+      return;
+    }
+    wx.showToast({ title: enabled ? '自动播放已开启' : '自动播放已关闭', icon: 'success' });
   },
 
   changeApiMode(e) {

@@ -209,6 +209,12 @@ export declare class MiniappSearchController {
             culturalNote: string | null;
             zhSortKey: string;
         })[];
+        pagination: {
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
     }>;
     suggestPublic(keyword: string): Promise<{
         dictionary: ({
@@ -532,5 +538,11 @@ export declare class MiniappSearchController {
         }) & {
             isFavorited: boolean;
         })[];
+        pagination: {
+            page: number;
+            pageSize: number;
+            total: number;
+            totalPages: number;
+        };
     }>;
 }

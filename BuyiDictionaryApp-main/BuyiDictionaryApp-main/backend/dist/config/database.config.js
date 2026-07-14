@@ -16,12 +16,14 @@ const learning_record_entity_1 = require("../entities/learning-record.entity");
 const media_asset_entity_1 = require("../entities/media-asset.entity");
 const phrase_entity_1 = require("../entities/phrase.entity");
 const proverb_entity_1 = require("../entities/proverb.entity");
+const quiz_attempt_entity_1 = require("../entities/quiz-attempt.entity");
 const song_entity_1 = require("../entities/song.entity");
 const user_setting_entity_1 = require("../entities/user-setting.entity");
 const user_entity_1 = require("../entities/user.entity");
 const wechat_account_entity_1 = require("../entities/wechat-account.entity");
 const _1710000000000_baseline_schema_1 = require("../migrations/1710000000000-baseline-schema");
 const _1721000000000_add_culture_exhibits_1 = require("../migrations/1721000000000-add-culture-exhibits");
+const _1722000000000_add_quiz_attempts_1 = require("../migrations/1722000000000-add-quiz-attempts");
 exports.entities = [
     admin_entity_1.Admin,
     agent_cache_entity_1.AgentCache,
@@ -36,11 +38,12 @@ exports.entities = [
     song_entity_1.Song,
     favorite_entity_1.Favorite,
     learning_record_entity_1.LearningRecord,
+    quiz_attempt_entity_1.QuizAttempt,
     badge_entity_1.Badge,
     culture_exhibit_entity_1.CultureExhibit,
     content_culture_link_entity_1.ContentCultureLink,
 ];
-exports.migrations = [_1710000000000_baseline_schema_1.BaselineSchema1710000000000, _1721000000000_add_culture_exhibits_1.AddCultureExhibits1721000000000];
+exports.migrations = [_1710000000000_baseline_schema_1.BaselineSchema1710000000000, _1721000000000_add_culture_exhibits_1.AddCultureExhibits1721000000000, _1722000000000_add_quiz_attempts_1.AddQuizAttempts1722000000000];
 function buildTypeOrmOptions(config) {
     const { db } = config;
     const synchronize = db.synchronize;

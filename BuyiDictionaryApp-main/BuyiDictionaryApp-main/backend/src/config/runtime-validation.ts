@@ -25,6 +25,10 @@ export function validateEnvironmentOrThrow(env: EnvMap = process.env) {
   }
 
   const errors: string[] = [];
+  // 安全实践：生产环境默认关闭 Swagger
+  if (env.ENABLE_SWAGGER === 'true') {
+    console.warn('⚠️ 生产环境开启了 Swagger，建议关闭');
+  }
   const jwtSecret = String(env.JWT_SECRET || '').trim();
   const dbType = String(env.DB_TYPE || '').trim();
   const mediaDriver = String(env.MEDIA_DRIVER || '').trim() || 'local';
@@ -54,6 +58,8 @@ export function validateEnvironmentOrThrow(env: EnvMap = process.env) {
   requireValue(errors, 'DB_NAME', env.DB_NAME);
   requireValue(errors, 'WECHAT_APP_ID', env.WECHAT_APP_ID);
   requireValue(errors, 'WECHAT_APP_SECRET', env.WECHAT_APP_SECRET);
+  requireValue(errors, 'WECHAT_REMINDER_TEMPLATE_ID', env.WECHAT_REMINDER_TEMPLATE_ID);
+  requireValue(errors, 'WECHAT_REMINDER_TEMPLATE_DATA_JSON', env.WECHAT_REMINDER_TEMPLATE_DATA_JSON);
   requireValue(errors, 'CORS_ORIGIN', env.CORS_ORIGIN);
 
   if (mediaDriver === 'cos') {

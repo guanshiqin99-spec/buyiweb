@@ -14,12 +14,14 @@ import { LearningRecord } from '../entities/learning-record.entity';
 import { MediaAsset } from '../entities/media-asset.entity';
 import { Phrase } from '../entities/phrase.entity';
 import { Proverb } from '../entities/proverb.entity';
+import { QuizAttempt } from '../entities/quiz-attempt.entity';
 import { Song } from '../entities/song.entity';
 import { UserSetting } from '../entities/user-setting.entity';
 import { User } from '../entities/user.entity';
 import { WechatAccount } from '../entities/wechat-account.entity';
 import { BaselineSchema1710000000000 } from '../migrations/1710000000000-baseline-schema';
 import { AddCultureExhibits1721000000000 } from '../migrations/1721000000000-add-culture-exhibits';
+import { AddQuizAttempts1722000000000 } from '../migrations/1722000000000-add-quiz-attempts';
 
 export const entities = [
   Admin,
@@ -35,12 +37,13 @@ export const entities = [
   Song,
   Favorite,
   LearningRecord,
+  QuizAttempt,
   Badge,
   CultureExhibit,
   ContentCultureLink,
 ];
 
-export const migrations = [BaselineSchema1710000000000, AddCultureExhibits1721000000000];
+export const migrations = [BaselineSchema1710000000000, AddCultureExhibits1721000000000, AddQuizAttempts1722000000000];
 
 export function buildTypeOrmOptions(config: {
   db: {

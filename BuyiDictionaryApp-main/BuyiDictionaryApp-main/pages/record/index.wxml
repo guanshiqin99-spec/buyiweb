@@ -75,6 +75,9 @@
             <text class="text-sub history-time">{{item.displayTime}}</text>
           </view>
         </view>
+        <button wx:if="{{page < totalPages}}" class="btn btn-primary load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="loadMore">
+          {{loadingMore ? '正在加载' : '加载更多记录'}}
+        </button>
       </block>
       
       <view wx:else class="card status-card empty">

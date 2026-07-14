@@ -40,7 +40,8 @@ export class JwtAuthGuard implements CanActivate {
         tokenType?: 'miniapp' | 'admin';
         tokenKind?: string;
       }>(token, {
-        secret: this.configService.get<string>('jwt.secret', 'change-me'),
+        // 安全实践：JWT 密钥无默认兜底，未设置时启动失败
+        secret: this.configService.get<string>('jwt.secret'),
       });
 
       if (payload.tokenKind !== 'access') {

@@ -93,7 +93,7 @@ let AdminAuthService = class AdminAuthService {
             tokenType: 'admin',
             tokenKind: 'access',
         }, {
-            secret: this.configService.get('jwt.secret', 'change-me'),
+            secret: this.configService.get('jwt.secret'),
             expiresIn: this.configService.get('jwt.adminExpiresIn', '1d'),
         });
         const refreshToken = await this.jwtService.signAsync({
@@ -102,7 +102,7 @@ let AdminAuthService = class AdminAuthService {
             tokenType: 'admin',
             tokenKind: 'refresh',
         }, {
-            secret: this.configService.get('jwt.secret', 'change-me'),
+            secret: this.configService.get('jwt.secret'),
             expiresIn: this.configService.get('jwt.adminRefreshExpiresIn', '14d'),
         });
         if (persistSession) {
@@ -122,7 +122,7 @@ let AdminAuthService = class AdminAuthService {
     verifyRefreshToken(refreshToken) {
         try {
             const payload = this.jwtService.verify(refreshToken, {
-                secret: this.configService.get('jwt.secret', 'change-me'),
+                secret: this.configService.get('jwt.secret'),
             });
             if (payload.tokenType !== 'admin' || payload.tokenKind !== 'refresh') {
                 throw new common_1.UnauthorizedException('\u5237\u65b0\u4ee4\u724c\u4e0d\u53ef\u7528');

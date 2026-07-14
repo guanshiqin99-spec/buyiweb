@@ -28,6 +28,9 @@
         <text class="text-h3">暂无带音频的词汇</text>
         <text class="text-sub">等后台补充词条音频后，这里会自动展示。</text>
       </view>
+      <button wx:if="{{page < totalPages}}" class="btn btn-primary load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="loadMore">
+        {{loadingMore ? '正在加载' : '加载更多'}}
+      </button>
     </block>
   </view>
 </view>

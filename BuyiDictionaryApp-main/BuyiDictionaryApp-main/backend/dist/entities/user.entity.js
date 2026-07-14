@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const badge_entity_1 = require("./badge.entity");
 const favorite_entity_1 = require("./favorite.entity");
 const learning_record_entity_1 = require("./learning-record.entity");
+const quiz_attempt_entity_1 = require("./quiz-attempt.entity");
 const user_setting_entity_1 = require("./user-setting.entity");
 const wechat_account_entity_1 = require("./wechat-account.entity");
 let User = class User {
@@ -71,6 +72,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => learning_record_entity_1.LearningRecord, (record) => record.user),
     __metadata("design:type", Array)
 ], User.prototype, "learningRecords", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => quiz_attempt_entity_1.QuizAttempt, (attempt) => attempt.user),
+    __metadata("design:type", Array)
+], User.prototype, "quizAttempts", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => badge_entity_1.Badge, (badge) => badge.user),
     __metadata("design:type", Array)

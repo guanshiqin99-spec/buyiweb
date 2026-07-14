@@ -8,6 +8,7 @@ import { useAuthStore } from './stores/auth'
 import { useThemeStore } from './stores/theme'
 import { pointerGlow } from './utils/pointerGlow'
 import { logRenderError } from './utils/logger'
+import { initLearningReminder } from './utils/learningReminder'
 import './assets/styles/variables.css'
 import './assets/styles/liquid-glass.css'
 import './assets/styles/main.css'
@@ -26,6 +27,7 @@ app.directive('pointer-glow', pointerGlow)
 
 // 应用挂载前初始化主题，避免深色模式闪烁
 useThemeStore(pinia).init()
+initLearningReminder()
 
 // 全局渲染错误处理，统一走 logger 出口
 app.config.errorHandler = (err, instance, info) => {

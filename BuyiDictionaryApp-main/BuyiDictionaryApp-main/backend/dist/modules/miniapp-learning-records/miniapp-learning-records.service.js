@@ -63,6 +63,7 @@ let MiniappLearningRecordsService = class MiniappLearningRecordsService {
             total,
             page,
             pageSize,
+            totalPages: Math.max(1, Math.ceil(total / pageSize)),
             stats: await this.getStats(userId),
         };
     }

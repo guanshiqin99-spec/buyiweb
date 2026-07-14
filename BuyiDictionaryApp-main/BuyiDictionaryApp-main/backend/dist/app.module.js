@@ -36,6 +36,7 @@ const miniapp_home_module_1 = require("./modules/miniapp-home/miniapp-home.modul
 const miniapp_learning_records_module_1 = require("./modules/miniapp-learning-records/miniapp-learning-records.module");
 const miniapp_me_module_1 = require("./modules/miniapp-me/miniapp-me.module");
 const miniapp_phrases_module_1 = require("./modules/miniapp-phrases/miniapp-phrases.module");
+const miniapp_quiz_module_1 = require("./modules/miniapp-quiz/miniapp-quiz.module");
 const miniapp_proverbs_module_1 = require("./modules/miniapp-proverbs/miniapp-proverbs.module");
 const miniapp_search_module_1 = require("./modules/miniapp-search/miniapp-search.module");
 const miniapp_settings_module_1 = require("./modules/miniapp-settings/miniapp-settings.module");
@@ -87,6 +88,7 @@ exports.AppModule = AppModule = __decorate([
             miniapp_search_module_1.MiniappSearchModule,
             miniapp_dictionary_module_1.MiniappDictionaryModule,
             miniapp_phrases_module_1.MiniappPhrasesModule,
+            miniapp_quiz_module_1.MiniappQuizModule,
             miniapp_proverbs_module_1.MiniappProverbsModule,
             miniapp_songs_module_1.MiniappSongsModule,
             miniapp_favorites_module_1.MiniappFavoritesModule,

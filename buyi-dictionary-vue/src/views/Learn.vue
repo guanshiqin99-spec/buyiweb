@@ -489,4 +489,68 @@ onUnmounted(() => {
     transition: none !important;
   }
 }
+
+/* The scenic image remains part of the learning experience in dark mode, but
+   it must recede behind the content instead of becoming a second focal point. */
+[data-theme="dark"] .learn-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5, 12, 17, .78) 0%, rgba(5, 12, 17, .64) 42%, rgba(5, 12, 17, .82) 100%),
+    radial-gradient(circle at 50% 38%, rgba(58, 107, 140, .18), transparent 52%);
+}
+
+[data-theme="dark"] .learn-page__bg img {
+  filter: brightness(.54) saturate(.72) contrast(1.04);
+}
+
+/* Re-tint all glass surfaces that are used by this page.  This keeps their
+   refraction and edges, while preventing the light-theme white tint from
+   leaking into the dark theme. */
+[data-theme="dark"] .learn-stats,
+[data-theme="dark"] .progress,
+[data-theme="dark"] .card-front,
+[data-theme="dark"] .card-back {
+  --lg-tint: 12, 20, 28;
+  --lg-tint-a: .92;
+  --lg-spec: .14;
+  background-color: rgba(12, 20, 28, .92);
+  border-color: rgba(181, 211, 226, .22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .14),
+    inset 0 -1px 0 rgba(0, 0, 0, .36),
+    0 16px 36px rgba(0, 0, 0, .28);
+}
+
+[data-theme="dark"] .card-front,
+[data-theme="dark"] .card-back {
+  --lg-tint-a: .95;
+}
+
+[data-theme="dark"] .learn-stat-divider {
+  background: rgba(181, 211, 226, .26);
+}
+
+[data-theme="dark"] .action-btn {
+  background: rgba(12, 20, 28, .88);
+  border-color: rgba(181, 211, 226, .28);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, .22);
+  color: var(--c-text);
+}
+
+[data-theme="dark"] .action-btn:hover {
+  background: rgba(33, 62, 82, .94);
+  border-color: var(--c-brand-40);
+  color: var(--c-text);
+}
+
+[data-theme="dark"] .action-btn-primary,
+[data-theme="dark"] .action-btn-primary:hover {
+  background: var(--c-brand);
+  border-color: var(--c-brand);
+  color: var(--c-brand-foreground);
+}
 </style>

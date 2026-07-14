@@ -722,4 +722,10 @@ function optionId(idx) {
   .search-modal-overlay,
   .search-modal { animation: none !important; }
 }
+
+[data-theme="dark"] .search-kbd,
+[data-theme="dark"] .recent-chip {
+  background: var(--c-glass);
+  border-color: var(--c-divider);
+}
 </style>

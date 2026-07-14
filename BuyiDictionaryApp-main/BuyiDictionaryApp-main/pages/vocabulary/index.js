@@ -11,6 +11,9 @@ Page({
     fontSizeClass: 'medium',
     playingIndex: -1,
     loading: false,
+    loadingMore: false,
+    page: 1,
+    totalPages: 1,
     errorText: '',
   },
 
@@ -28,15 +31,28 @@ Page({
     }
   },
 
-  async loadItems() {
-    this.setData({ loading: true, errorText: '' });
+  async loadItems(page = 1) {
+    this.setData(page === 1 ? { loading: true, errorText: '' } : { loadingMore: true, errorText: '' });
     try {
-      const payload = await contentApi.listByType('dictionary', 1, 100);
-      const items = mapContentList(payload.items || [], 'dictionary').filter((item) => !!item.audio);
-      this.setData({ items, loading: false });
+      const payload = await contentApi.listByType('dictionary', page, 20);
+      const nextItems = mapContentList(payload.items || [], 'dictionary').filter((item) => !!item.audio);
+      const items = page === 1 ? nextItems : this.data.items.concat(nextItems.filter((item) => !this.data.items.some((current) => current.id === item.id)));
+      const totalPages = Number(payload.totalPages || Math.max(1, Math.ceil(Number(payload.total || 0) / 20)));
+      this.setData({ items, page, totalPages, loading: false, loadingMore: false }, () => {
+        if (page === 1 && getApp().globalData.autoplay && items.length) this.playAtIndex(0);
+      });
     } catch (error) {
-      this.setData({ items: [], loading: false, errorText: '词汇加载失败' });
+      this.setData({ items: page === 1 ? [] : this.data.items, loading: false, loadingMore: false, errorText: page === 1 ? '词汇加载失败' : '' });
+      if (page > 1) wx.showToast({ title: '更多词汇加载失败', icon: 'none' });
     }
+  },
+
+  loadMore() {
+    if (!this.data.loadingMore && this.data.page < this.data.totalPages) this.loadItems(this.data.page + 1);
+  },
+
+  onReachBottom() {
+    this.loadMore();
   },
 
   async onFav(e) {
@@ -81,6 +97,10 @@ Page({
 
   onPlay(e) {
     const index = e.detail.index;
+    this.playAtIndex(index);
+  },
+
+  playAtIndex(index) {
     const item = this.data.items[index];
     if (!item || !item.audio) {
       wx.showToast({ title: '暂无音频', icon: 'none' });

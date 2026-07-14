@@ -28,6 +28,9 @@ export interface AppConfig {
         appId: string;
         appSecret: string;
         mockMode: boolean;
+        reminderTemplateId: string;
+        reminderTemplateDataJson: string;
+        reminderHour: number;
     };
     media: {
         driver: string;

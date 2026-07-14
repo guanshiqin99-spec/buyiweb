@@ -2,15 +2,21 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { createQuizRound, scoreAnswers } from '@/data/quiz'
+import { quizApi } from '@/utils/api'
+import { useAuthStore } from '@/stores/auth'
 import imgBg from '@/assets/images/bouyei-nature.jpg'
 
 const phase = ref('intro')
+const authStore = useAuthStore()
 const round = ref([])
 const currentIndex = ref(0)
 const answers = ref([])
 const selectedOption = ref('')
 const isAnswered = ref(false)
 const bgParallax = ref(0)
+const isSavingResult = ref(false)
+const resultSaveMessage = ref('')
+const lastAttempt = ref(null)
 let scrollHandler = null
 
 const currentQuestion = computed(() => round.value[currentIndex.value])
@@ -30,6 +36,23 @@ function startQuiz() {
   selectedOption.value = ''
   isAnswered.value = false
   phase.value = 'question'
+  resultSaveMessage.value = ''
+}
+
+async function loadLastAttempt() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('buyi_quiz_attempts') || '[]')
+    if (Array.isArray(stored) && stored[0]) lastAttempt.value = stored[0]
+  } catch {}
+  if (!authStore.isLoggedIn) return
+  try {
+    const response = await quizApi.list({ page: 1, pageSize: 1 })
+    const remote = response?.items?.[0]
+    const localTime = lastAttempt.value ? (new Date(lastAttempt.value.createdAt).getTime() || 0) : 0
+    if (remote && (new Date(remote.createdAt).getTime() || 0) >= localTime) {
+      lastAttempt.value = remote
+    }
+  } catch {}
 }
 
 function selectOption(option) {
@@ -40,9 +63,41 @@ function selectOption(option) {
   isAnswered.value = true
 }
 
-function nextQuestion() {
+async function persistResult() {
+  const attempt = {
+    score: score.value,
+    correctCount: correctCount.value,
+    totalQuestions: round.value.length,
+    answers: answers.value.map(({ id, selected, answer, correct }) => ({ id, selected, answer, correct }))
+  }
+  let localAttempts = []
+  try {
+    const stored = JSON.parse(localStorage.getItem('buyi_quiz_attempts') || '[]')
+    localAttempts = Array.isArray(stored) ? stored : []
+  } catch {}
+  const savedAttempt = { ...attempt, createdAt: new Date().toISOString() }
+  localStorage.setItem('buyi_quiz_attempts', JSON.stringify([savedAttempt, ...localAttempts].slice(0, 20)))
+  lastAttempt.value = savedAttempt
+
+  if (!authStore.isLoggedIn) {
+    resultSaveMessage.value = '成绩已保存在本机；登录后可同步到账号。'
+    return
+  }
+  isSavingResult.value = true
+  try {
+    await quizApi.create(attempt)
+    resultSaveMessage.value = '成绩已同步到你的学习账号。'
+  } catch {
+    resultSaveMessage.value = '成绩已保存在本机，云端同步失败，可稍后再试。'
+  } finally {
+    isSavingResult.value = false
+  }
+}
+
+async function nextQuestion() {
   if (currentIndex.value === round.value.length - 1) {
     phase.value = 'result'
+    await persistResult()
     return
   }
   currentIndex.value += 1
@@ -51,6 +106,7 @@ function nextQuestion() {
 }
 
 onMounted(() => {
+  loadLastAttempt()
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const isMobile = window.matchMedia('(max-width: 768px)').matches
   const coefficient = isMobile ? 0.035 : 0.07
@@ -74,6 +130,7 @@ onUnmounted(() => {
       <p>趣味闯关</p>
       <h1>把刚刚看见的文化线索，变成一次轻松回顾。</h1>
       <span>每局随机抽取 10 道四选一问题。答对得 10 分，连续答对会获得鼓励，但不会改变分数。</span>
+      <small v-if="lastAttempt" class="quiz-intro__last">最近成绩：{{ lastAttempt.score }} 分（答对 {{ lastAttempt.correctCount }} / {{ lastAttempt.totalQuestions }} 题）</small>
       <button v-pointer-glow="{ tone: 'accent', size: 'lg' }" type="button" @click="startQuiz">开始答题 <b aria-hidden="true">→</b></button>
       <RouterLink to="/culture">先去文化页看看</RouterLink>
     </section>
@@ -117,6 +174,7 @@ onUnmounted(() => {
       <p>本局完成</p>
       <h1>{{ score }} <small>分</small></h1>
       <span>答对 {{ correctCount }} 题，正确率 {{ accuracy }}%。</span>
+      <p class="quiz-result__save" aria-live="polite">{{ isSavingResult ? '正在保存成绩…' : resultSaveMessage }}</p>
       <div class="quiz-review">
         <article v-for="answer in answers.filter(item => !item.correct)" :key="answer.id" class="liquid-glass-quiet">
           <p>需要复习</p>
@@ -148,6 +206,39 @@ onUnmounted(() => {
 .quiz-intro, .quiz-question, .quiz-result { width: min(760px, 100%); }.quiz-intro > p, .quiz-question__type, .quiz-result > p, .quiz-feedback > p, .quiz-review article p { margin: 0; color: var(--c-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }.quiz-intro h1, .quiz-question h1, .quiz-result h1 { margin: 14px 0; font: 600 clamp(38px, 6vw, 66px) / 1.08 var(--font-serif); letter-spacing: -.03em; text-wrap: balance; }.quiz-intro h1, .quiz-question h1 { color: var(--c-white); text-shadow: 0 1px 2px var(--c-shadow-40), 0 2px 18px rgba(7, 23, 36, .78); }.quiz-intro h1 { margin: 10px 0; font-size: clamp(26px, 4vw, 40px); }.quiz-intro > span, .quiz-result > span { display: block; max-width: 49ch; color: var(--c-text-70); font-size: 16px; line-height: 1.85; }.quiz-intro > span { color: var(--c-white-78); text-shadow: 0 1px 2px var(--c-shadow-40), 0 1px 12px rgba(7, 23, 36, .84); }.quiz-intro button, .quiz-feedback button, .quiz-result__actions button { margin-top: 28px; padding: 14px 22px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 700 14px var(--font-sans); }.quiz-intro button:hover, .quiz-feedback button:hover, .quiz-result__actions button:hover { background: var(--c-brand-dark); }.quiz-intro button:focus-visible, .quiz-feedback button:focus-visible, .quiz-result__actions button:focus-visible, .quiz-options button:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }.quiz-intro a { display: inline-block; margin: 22px 0 0 20px; color: var(--c-brand); font-size: 14px; font-weight: 700; text-decoration: none; }
 .quiz-question header { display: flex; justify-content: space-between; color: var(--c-text-60); font: 13px var(--font-mono); }.quiz-question header strong { color: var(--c-brand); }.quiz-progress { height: 3px; margin: 18px 0 56px; overflow: hidden; background: var(--c-brand-08); }.quiz-progress i { display: block; height: 100%; background: var(--c-accent); transition: width 260ms ease; }.quiz-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 34px; }.quiz-options button { display: flex; align-items: center; justify-content: space-between; min-height: 82px; padding: 18px; border: 1px solid rgba(27, 58, 92, 0.12); border-radius: var(--radius-md); color: var(--c-text); background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); box-shadow: 0 2px 8px rgba(7, 23, 36, 0.08), 0 1px 2px rgba(7, 23, 36, 0.06); cursor: pointer; text-align: left; transition: border-color 160ms ease, background 160ms ease, transform 160ms ease, box-shadow 160ms ease; }.quiz-options button:hover:not(:disabled) { border-color: var(--c-brand); background: rgba(255, 255, 255, 0.96); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(7, 23, 36, 0.12), 0 2px 4px rgba(7, 23, 36, 0.08); }.quiz-options button:disabled { cursor: default; }.quiz-options button.is-selected { border-color: var(--c-brand); background: rgba(235, 242, 247, 0.95); }.quiz-options button.is-correct { border-color: var(--c-success); color: #0f5c26; background: rgba(220, 244, 228, 0.95); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); box-shadow: 0 2px 10px rgba(28, 119, 54, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6); }.quiz-options button.is-wrong { border-color: var(--c-danger); color: #8a2a2a; background: rgba(248, 226, 226, 0.95); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); box-shadow: 0 2px 10px rgba(181, 64, 64, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6); }.quiz-options b { font-size: 20px; font-weight: 700; }.quiz-feedback { margin-top: 24px; padding: 24px; }.quiz-feedback--right { border-color: color-mix(in srgb, var(--c-success) 38%, transparent); }.quiz-feedback h2 { margin: 8px 0; font: 600 24px var(--font-serif); }.quiz-feedback > span { display: block; color: var(--c-text-70); line-height: 1.75; }.quiz-feedback small { display: block; margin-top: 13px; color: var(--c-text-50); font-size: 12px; }
 .quiz-result { text-align: center; }.quiz-result h1 { margin-bottom: 2px; color: var(--c-brand); font-family: var(--font-mono); font-size: clamp(68px, 12vw, 130px); }.quiz-result h1 small { color: var(--c-accent); font: 700 26px var(--font-sans); }.quiz-result > span { margin: 0 auto; }.quiz-review { display: grid; gap: 10px; margin: 38px 0; text-align: left; }.quiz-review article { padding: 20px; }.quiz-review h2 { margin: 8px 0; font: 600 18px var(--font-serif); }.quiz-review article > span { color: var(--c-text-70); font-size: 13px; }.quiz-review__perfect { margin: 0; padding: 22px; color: var(--c-brand); background: var(--c-brand-06); line-height: 1.7; }.quiz-result__actions { display: flex; justify-content: center; gap: 16px; }.quiz-result__actions button { margin-top: 0; }.quiz-result__actions a { padding: 14px 0; color: var(--c-brand); font-size: 14px; font-weight: 700; text-decoration: none; }
+.quiz-result__save { min-height: 22px; margin: 12px auto 0; color: var(--c-text-70); font-size: 13px; }
+.quiz-intro__last { display: block; margin-top: 14px; color: var(--c-white-78); font-size: 13px; }
 @media (max-width: 580px) { .quiz-page { padding-right: 20px; padding-left: 20px; }.quiz-options { grid-template-columns: 1fr; }.quiz-intro a { display: block; margin-left: 0; }.quiz-result__actions { flex-direction: column; align-items: center; } }
 @media (prefers-reduced-motion: reduce) { .quiz-progress i, .quiz-options button { transition: none; }.quiz-options button:hover:not(:disabled) { transform: none; } }
+
+[data-theme="dark"] .quiz-options button {
+  background: rgba(22, 28, 36, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--c-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .quiz-options button:hover:not(:disabled) {
+  background: rgba(22, 28, 36, 0.96);
+  border-color: var(--c-brand);
+}
+
+[data-theme="dark"] .quiz-options button.is-selected {
+  background: rgba(58, 107, 140, 0.2);
+  border-color: var(--c-brand);
+}
+
+[data-theme="dark"] .quiz-options button.is-correct {
+  background: rgba(28, 119, 54, 0.25);
+  border-color: var(--c-success);
+  color: var(--c-success);
+  box-shadow: 0 2px 10px rgba(28, 119, 54, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .quiz-options button.is-wrong {
+  background: rgba(181, 64, 64, 0.25);
+  border-color: var(--c-danger);
+  color: var(--c-danger);
+  box-shadow: 0 2px 10px rgba(181, 64, 64, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
 </style>

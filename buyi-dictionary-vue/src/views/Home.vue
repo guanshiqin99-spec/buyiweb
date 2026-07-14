@@ -70,7 +70,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main id="main" ref="homeRef" class="museum-home">
+  <main id="main" ref="homeRef" class="museum-home" data-nav-tone="light">
     <section class="museum-hero" data-nav-tone="dark" :style="{ '--hero-image': `url(${imgHero})`, '--hero-parallax': `${heroParallax}px` }">
       <div class="museum-hero__content">
         <p>布依数字文化馆</p>

@@ -87,6 +87,9 @@
       <text class="text-h3">暂无民歌内容</text>
       <text class="text-sub">后台发布后，这里会自动展示最新民歌。</text>
     </view>
+    <button wx:if="{{page < totalPages}}" class="btn btn-primary load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="loadMore">
+      {{loadingMore ? '正在加载' : '加载更多民歌'}}
+    </button>
   </block>
 
 </view>

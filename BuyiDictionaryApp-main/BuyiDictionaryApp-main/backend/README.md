@@ -94,6 +94,22 @@ npm run admin:init -- --username=admin --password=Admin@123456
 - 图片白名单：`image/jpeg`、`image/png`、`image/webp`、`image/gif`
 - 音频白名单：`audio/mpeg`、`audio/mp3`、`audio/wav`、`audio/x-wav`、`audio/mp4`、`audio/aac`、`audio/ogg`
 
+## 微信学习提醒
+
+生产环境需要配置以下变量，后端会按北京时间每天投递一次订阅消息：
+
+- `WECHAT_REMINDER_TEMPLATE_ID`：小程序后台申请的订阅消息模板 ID
+- `WECHAT_REMINDER_TEMPLATE_DATA_JSON`：模板数据 JSON，字段名必须与所选模板一致；值中可使用 `{{date}}`
+- `WECHAT_REMINDER_HOUR`：提醒小时，默认 `20`
+
+示例：
+
+```env
+WECHAT_REMINDER_TEMPLATE_ID=your-template-id
+WECHAT_REMINDER_TEMPLATE_DATA_JSON={"thing1":{"value":"布依语每日学习"},"thing2":{"value":"打开小程序复习词条或完成答题"},"date3":{"value":"{{date}}"}}
+WECHAT_REMINDER_HOUR=20
+```
+
 ## Excel 导入
 
 模板下载接口：

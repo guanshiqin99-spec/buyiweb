@@ -59,6 +59,7 @@ export declare class MiniappLearningRecordsService {
         total: number;
         page: number;
         pageSize: number;
+        totalPages: number;
         stats: {
             today: number;
             total: number;

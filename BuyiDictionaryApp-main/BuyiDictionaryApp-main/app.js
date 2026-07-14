@@ -23,16 +23,21 @@ App({
   onShow() {
     this.refreshApiConfig();
     this._applyTabBarThemeWithDelay(16);
+    this.showDailyLearningReminder();
   },
 
   initializeThemeAndFont() {
     const theme = wx.getStorageSync('theme') || '\u006c\u0069\u0067\u0068\u0074';
     const fontSize = wx.getStorageSync('fontSize') || '\u4e2d';
+    const notifications = wx.getStorageSync('notifications') === true;
+    const autoplay = wx.getStorageSync('autoplay') === true;
     const loginState = wx.getStorageSync('loginState') || {};
     const apiConfig = loadApiConfig();
 
     this.globalData.theme = theme;
     this.globalData.fontSize = fontSize;
+    this.globalData.notifications = notifications;
+    this.globalData.autoplay = autoplay;
     this.globalData.isLogin = !!loginState.isLogin && !!loginState.token;
     this.globalData.userInfo = loginState.userInfo || null;
     this.globalData.token = loginState.token || '';
@@ -218,13 +223,46 @@ App({
       }
     }
 
+    if (settings.notifications !== undefined) {
+      this.globalData.notifications = settings.notifications === true;
+      if (persist) wx.setStorageSync('notifications', this.globalData.notifications);
+    }
+
+    if (settings.autoplay !== undefined) {
+      this.globalData.autoplay = settings.autoplay === true;
+      if (persist) wx.setStorageSync('autoplay', this.globalData.autoplay);
+    }
+
     this._applyTabBarThemeWithDelay(0);
+  },
+
+  showDailyLearningReminder() {
+    if (!this.globalData.notifications) return;
+    const now = new Date();
+    if (now.getHours() < 20) return;
+    const dayKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    if (wx.getStorageSync('lastLearningReminderDay') === dayKey) return;
+    wx.setStorageSync('lastLearningReminderDay', dayKey);
+    wx.showModal({
+      title: '今日学习提醒',
+      content: '来复习几个布依语词条，或完成一轮文化答题吧。',
+      confirmText: '去学习',
+      cancelText: '稍后',
+      success: (result) => {
+        if (result.confirm) wx.switchTab({ url: '/pages/app/index' });
+      },
+    });
   },
 
   updateLoginState(userInfo, token, refreshTokenOrSettings, maybeSettings = {}) {
     const refreshToken = typeof refreshTokenOrSettings === 'string' ? refreshTokenOrSettings : '';
     const settings =
       typeof refreshTokenOrSettings === 'string' ? maybeSettings || {} : refreshTokenOrSettings || {};
+    const normalizedSettings = {
+      ...settings,
+      notifications: settings.notifications === true || settings.notifications === 'true',
+      autoplay: settings.autoplay === true || settings.autoplay === 'true',
+    };
     const safeUser = userInfo
       ? {
           id: userInfo.id || null,
@@ -241,8 +279,9 @@ App({
     this.globalData.refreshToken = refreshToken || '';
     this._persistLoginState();
 
-    if (settings && (settings.theme || settings.fontSize)) {
-      this.applySettings(settings, { persist: true, broadcast: true });
+    if (settings && Object.keys(settings).length) {
+      this.applySettings(normalizedSettings, { persist: true, broadcast: true });
+      this.showDailyLearningReminder();
     }
 
     try {
@@ -567,6 +606,9 @@ App({
     wechatEnvVersion: 'develop',
     theme: 'light',
     fontSize: '\u4e2d',
+    notifications: false,
+    autoplay: false,
+    learningReminderTemplateId: '',
     isLogin: false,
     token: '',
     refreshToken: '',

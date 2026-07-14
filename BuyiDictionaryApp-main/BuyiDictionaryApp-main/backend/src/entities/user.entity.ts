@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Up
 import { Badge } from './badge.entity';
 import { Favorite } from './favorite.entity';
 import { LearningRecord } from './learning-record.entity';
+import { QuizAttempt } from './quiz-attempt.entity';
 import { UserSetting } from './user-setting.entity';
 import { WechatAccount } from './wechat-account.entity';
 
@@ -46,6 +47,9 @@ export class User {
 
   @OneToMany(() => LearningRecord, (record) => record.user)
   learningRecords!: LearningRecord[];
+
+  @OneToMany(() => QuizAttempt, (attempt) => attempt.user)
+  quizAttempts!: QuizAttempt[];
 
   @OneToMany(() => Badge, (badge) => badge.user)
   badges!: Badge[];

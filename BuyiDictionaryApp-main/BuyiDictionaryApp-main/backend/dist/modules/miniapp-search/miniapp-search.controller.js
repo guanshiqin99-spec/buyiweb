@@ -69,6 +69,7 @@ let MiniappSearchController = class MiniappSearchController {
             phrases: await this.favoritesService.annotate(user.sub, content_type_enum_1.ContentType.PHRASE, result.phrases),
             proverbs: await this.favoritesService.annotate(user.sub, content_type_enum_1.ContentType.PROVERB, result.proverbs),
             songs: await this.favoritesService.annotate(user.sub, content_type_enum_1.ContentType.SONG, result.songs),
+            pagination: result.pagination,
         };
     }
 };

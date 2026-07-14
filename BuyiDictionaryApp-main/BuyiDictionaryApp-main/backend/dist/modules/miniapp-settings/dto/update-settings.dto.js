@@ -17,7 +17,7 @@ exports.UpdateSettingsDto = UpdateSettingsDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['light', 'dark']),
+    (0, class_validator_1.IsIn)(['light', 'dark', 'auto']),
     __metadata("design:type", String)
 ], UpdateSettingsDto.prototype, "theme", void 0);
 __decorate([
@@ -26,4 +26,20 @@ __decorate([
     (0, class_validator_1.IsIn)(['small', 'medium', 'large', '小', '中', '大']),
     __metadata("design:type", String)
 ], UpdateSettingsDto.prototype, "fontSize", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateSettingsDto.prototype, "notifications", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateSettingsDto.prototype, "autoplay", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsIn)(['zh-CN', 'en-US']),
+    __metadata("design:type", String)
+], UpdateSettingsDto.prototype, "language", void 0);
 //# sourceMappingURL=update-settings.dto.js.map

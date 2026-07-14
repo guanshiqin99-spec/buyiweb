@@ -12,6 +12,9 @@ Page({
     currentTheme: 'light',
     fontSizeClass: 'medium',
     loading: false,
+    loadingMore: false,
+    page: 1,
+    totalPages: 1,
     errorText: '',
     emptyText: '请输入关键词开始查询',
     suggestions: [],
@@ -68,11 +71,7 @@ Page({
       this.audioContext.stop();
       this.setData({ playingIndex: -1 });
     } else {
-      // 切换/播放新词条录音
-      this.audioContext.stop();
-      this.audioContext.src = audioUrl;
-      this.audioContext.play();
-      this.setData({ playingIndex: index });
+      this.playResultAtIndex(index);
     }
   },
 
@@ -136,36 +135,69 @@ Page({
     this.fetchResults(word);
   },
 
-  async fetchResults(keyword) {
-    this.setData({ loading: true, errorText: '', emptyText: '没有找到相关结果' });
+  async fetchResults(keyword, page = 1) {
+    this.setData(page === 1
+      ? { loading: true, errorText: '', emptyText: '没有找到相关结果' }
+      : { loadingMore: true, errorText: '' });
     try {
-      const payload = await contentApi.search(keyword);
-      const results = flattenSearchResults(payload);
+      const payload = await contentApi.search(keyword, page, 20);
+      const nextResults = flattenSearchResults(payload);
+      const results = page === 1
+        ? nextResults
+        : this.data.results.concat(nextResults.filter((item) => !this.data.results.some((current) => `${current.contentType}:${current.id}` === `${item.contentType}:${item.id}`)));
       this.setData({
         results,
         word: keyword,
         loading: false,
+        loadingMore: false,
+        page,
+        totalPages: Number((payload.pagination && payload.pagination.totalPages) || 1),
         errorText: '',
         emptyText: results.length ? '' : '没有找到相关结果',
+      }, () => {
+        if (page !== 1 || !getApp().globalData.autoplay) return;
+        const audioIndex = results.findIndex((item) => item.audio || item.audioUrl);
+        if (audioIndex >= 0) this.playResultAtIndex(audioIndex);
       });
 
-      const firstDictionary = results.find((item) => item.contentType === 'dictionary');
+      const firstDictionary = page === 1 && results.find((item) => item.contentType === 'dictionary');
       if (firstDictionary) {
         History.add(firstDictionary, 'view');
       }
     } catch (error) {
       this.setData({
-        results: [],
+        results: page === 1 ? [] : this.data.results,
         loading: false,
-        errorText: '查询失败，请稍后重试',
-        emptyText: '查询失败，请稍后重试',
+        loadingMore: false,
+        errorText: page === 1 ? '查询失败，请稍后重试' : '',
+        emptyText: page === 1 ? '查询失败，请稍后重试' : this.data.emptyText,
       });
+      if (page > 1) wx.showToast({ title: '更多结果加载失败', icon: 'none' });
     }
+  },
+
+  loadMore() {
+    if (!this.data.loadingMore && this.data.page < this.data.totalPages) this.fetchResults(this.data.word, this.data.page + 1);
+  },
+
+  onReachBottom() {
+    this.loadMore();
   },
 
   switchLang(e) {
     const lang = e.currentTarget.dataset.lang;
     this.setData({ activeLang: lang || 'buyi' });
+  },
+
+  playResultAtIndex(index) {
+    const item = this.data.results[index];
+    const audioUrl = item && (item.audio || item.audioUrl);
+    if (!audioUrl || !this.audioContext) return;
+    this.audioContext.stop();
+    this.audioContext.src = audioUrl;
+    this.audioContext.play();
+    this.setData({ playingIndex: index });
+    History.add(item, 'play');
   },
 
   async toggleFavorite(e) {

@@ -1,6 +1,7 @@
 import { Badge } from './badge.entity';
 import { Favorite } from './favorite.entity';
 import { LearningRecord } from './learning-record.entity';
+import { QuizAttempt } from './quiz-attempt.entity';
 import { UserSetting } from './user-setting.entity';
 import { WechatAccount } from './wechat-account.entity';
 export declare class User {
@@ -17,6 +18,7 @@ export declare class User {
     wechatAccounts: WechatAccount[];
     favorites: Favorite[];
     learningRecords: LearningRecord[];
+    quizAttempts: QuizAttempt[];
     badges: Badge[];
     settings: UserSetting[];
 }

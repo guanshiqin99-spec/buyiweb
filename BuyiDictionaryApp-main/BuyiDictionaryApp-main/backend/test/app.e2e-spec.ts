@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { existsSync, unlinkSync } from 'fs';
 import * as request from 'supertest';
 import * as XLSX from 'xlsx';
 import { AppModule } from '../src/app.module';
@@ -30,11 +31,12 @@ const songEnglishHeaders = {
 
 describe('Buyi Dictionary Backend (e2e)', () => {
   let app: INestApplication;
+  const testDatabase = `buyi-test-${process.pid}.sqlite`;
 
   beforeAll(async () => {
     process.env.NODE_ENV = 'test';
     process.env.DB_TYPE = 'sqljs';
-    process.env.DB_NAME = 'buyi-test.sqlite';
+    process.env.DB_NAME = testDatabase;
     process.env.DB_SYNCHRONIZE = 'true';
     process.env.WECHAT_MOCK_MODE = 'true';
     process.env.SEED_ON_BOOT = 'true';
@@ -64,6 +66,7 @@ describe('Buyi Dictionary Backend (e2e)', () => {
     if (app) {
       await app.close();
     }
+    if (existsSync(testDatabase)) unlinkSync(testDatabase);
   });
 
   it('logs in admin and loads dashboard', async () => {
@@ -142,12 +145,56 @@ describe('Buyi Dictionary Backend (e2e)', () => {
     expect(refreshResponse.body.accessToken).toBeDefined();
     expect(refreshResponse.body.refreshToken).toBeDefined();
 
+    const settingsResponse = await request(app.getHttpServer())
+      .put('/api/miniapp/settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ theme: 'auto', fontSize: '中', notifications: true, autoplay: true, language: 'zh-CN' })
+      .expect(200);
+
+    expect(settingsResponse.body.notifications).toBe(true);
+    expect(settingsResponse.body.autoplay).toBe(true);
+    expect(settingsResponse.body.theme).toBe('auto');
+
+    const reminderConfigResponse = await request(app.getHttpServer())
+      .get('/api/miniapp/settings/reminder-config')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(reminderConfigResponse.body.enabled).toBe(false);
+
+    const quizAttemptResponse = await request(app.getHttpServer())
+      .post('/api/miniapp/quiz-attempts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        score: 10,
+        correctCount: 1,
+        totalQuestions: 2,
+        answers: [
+          { id: 'q1', selected: 'A', answer: 'A', correct: true },
+          { id: 'q2', selected: 'B', answer: 'C', correct: false },
+        ],
+      })
+      .expect(201);
+
+    expect(quizAttemptResponse.body.score).toBe(10);
+
+    const quizListResponse = await request(app.getHttpServer())
+      .get('/api/miniapp/quiz-attempts')
+      .query({ page: 1, pageSize: 10 })
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(quizListResponse.body.items).toHaveLength(1);
+    expect(quizListResponse.body.totalPages).toBe(1);
+
     const searchResponse = await request(app.getHttpServer())
       .get('/api/miniapp/search')
       .query({ keyword: 'noi' })
       .expect(200);
 
     expect(searchResponse.body.dictionary.length).toBeGreaterThan(0);
+    expect(searchResponse.body.pagination.page).toBe(1);
+    expect(searchResponse.body.pagination.totalPages).toBeGreaterThanOrEqual(1);
 
     const dictionaryId = searchResponse.body.dictionary[0].id;
 
@@ -176,6 +223,7 @@ describe('Buyi Dictionary Backend (e2e)', () => {
       .expect(200);
 
     expect(recordsResponse.body.items.length).toBeGreaterThan(0);
+    expect(recordsResponse.body.totalPages).toBe(1);
     expect(recordsResponse.body.stats.total).toBeGreaterThan(0);
 
     const clearFavoritesResponse = await request(app.getHttpServer())

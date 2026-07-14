@@ -27,6 +27,7 @@ import { MiniappHomeModule } from './modules/miniapp-home/miniapp-home.module';
 import { MiniappLearningRecordsModule } from './modules/miniapp-learning-records/miniapp-learning-records.module';
 import { MiniappMeModule } from './modules/miniapp-me/miniapp-me.module';
 import { MiniappPhrasesModule } from './modules/miniapp-phrases/miniapp-phrases.module';
+import { MiniappQuizModule } from './modules/miniapp-quiz/miniapp-quiz.module';
 import { MiniappProverbsModule } from './modules/miniapp-proverbs/miniapp-proverbs.module';
 import { MiniappSearchModule } from './modules/miniapp-search/miniapp-search.module';
 import { MiniappSettingsModule } from './modules/miniapp-settings/miniapp-settings.module';
@@ -75,6 +76,7 @@ import { UsersModule } from './modules/users/users.module';
     MiniappSearchModule,
     MiniappDictionaryModule,
     MiniappPhrasesModule,
+    MiniappQuizModule,
     MiniappProverbsModule,
     MiniappSongsModule,
     MiniappFavoritesModule,
