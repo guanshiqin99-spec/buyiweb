@@ -1,7 +1,8 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { contentApi } from '@/utils/api'
+import { contentApi, recordsApi } from '@/utils/api'
+import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
 import AudioSpectrum from '@/components/specific/AudioSpectrum.vue'
 import { fallbackSongs, normalizePlayableSongs } from '@/data/playableSongs'
@@ -11,6 +12,7 @@ import IconPause from '@/components/icons/IconPause.vue'
 import IconPlay from '@/components/icons/IconPlay.vue'
 
 const playerStore = usePlayerStore()
+const authStore = useAuthStore()
 const route = useRoute()
 const songs = ref(fallbackSongs)
 const isLoading = ref(false)
@@ -19,6 +21,7 @@ const songsPageRef = ref(null)
 const heroParallax = ref(0)
 let revealObserver = null
 let scrollHandler = null
+const recordedSongIds = new Set()
 
 const requestedSong = computed(() => songs.value.find((song) => String(song.id) === String(route.query.song || '')) || null)
 const heroSong = computed(() => playerStore.currentSong || requestedSong.value || songs.value[0] || null)
@@ -43,6 +46,27 @@ async function loadSongs() {
 function playSong(song) {
   playerStore.playSong(song)
 }
+
+async function recordSongPlay(song) {
+  const contentId = Number(song?.id)
+  if (!authStore.isLoggedIn || !Number.isSafeInteger(contentId) || contentId < 1 || recordedSongIds.has(contentId)) return
+
+  recordedSongIds.add(contentId)
+  try {
+    await recordsApi.create({ contentType: 'song', contentId, actionType: 'play' })
+  } catch (error) {
+    recordedSongIds.delete(contentId)
+    console.error('民歌播放记录保存失败', error)
+  }
+}
+
+// 等到媒体真正进入播放态后再计入学习记录，避免把加载失败的点击算作聆听。
+watch(
+  () => [playerStore.currentSong, playerStore.status],
+  ([song, status]) => {
+    if (status === 'playing') recordSongPlay(song)
+  }
+)
 
 function initRevealObserver() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return

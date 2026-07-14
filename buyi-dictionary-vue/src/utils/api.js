@@ -1,6 +1,11 @@
 import axios from 'axios'
 import { logApiError } from './logger'
 import { getContentApiPath } from './contentTypes'
+import {
+  normalizeBadgesResponse,
+  normalizeLearningStats,
+  notifyUserProgressUpdated
+} from './userProgress'
 
 export const apiBaseURL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
@@ -78,15 +83,33 @@ export const healthApi = {
 
 export const favoritesApi = {
   list() { return api.get('/miniapp/favorites') },
-  toggle(contentType, contentId) { return api.post('/miniapp/favorites/toggle', { contentType, contentId }) },
-  clear() { return api.delete('/miniapp/favorites') }
+  async toggle(contentType, contentId) {
+    const response = await api.post('/miniapp/favorites/toggle', { contentType, contentId })
+    notifyUserProgressUpdated('favorite')
+    return response
+  },
+  async clear() {
+    const response = await api.delete('/miniapp/favorites')
+    notifyUserProgressUpdated('favorite-clear')
+    return response
+  }
 }
 
 export const recordsApi = {
   list(params) { return api.get('/miniapp/learning-records', { params }) },
-  stats() { return api.get('/miniapp/learning-records/stats') },
-  create(data) { return api.post('/miniapp/learning-records', data) },
-  clear() { return api.delete('/miniapp/learning-records') }
+  async stats() {
+    return normalizeLearningStats(await api.get('/miniapp/learning-records/stats'))
+  },
+  async create(data) {
+    const response = await api.post('/miniapp/learning-records', data)
+    notifyUserProgressUpdated('learning-record')
+    return response
+  },
+  async clear() {
+    const response = await api.delete('/miniapp/learning-records')
+    notifyUserProgressUpdated('learning-record-clear')
+    return response
+  }
 }
 
 export const quizApi = {
@@ -95,7 +118,9 @@ export const quizApi = {
 }
 
 export const badgesApi = {
-  list() { return api.get('/miniapp/badges') }
+  async list() {
+    return normalizeBadgesResponse(await api.get('/miniapp/badges'))
+  }
 }
 
 export default api

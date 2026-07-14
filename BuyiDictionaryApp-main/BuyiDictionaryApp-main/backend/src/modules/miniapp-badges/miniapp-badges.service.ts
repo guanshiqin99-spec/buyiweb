@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ContentType } from '../../common/enums/content-type.enum';
 import { Badge } from '../../entities/badge.entity';
+import { Favorite } from '../../entities/favorite.entity';
+import { LearningRecord } from '../../entities/learning-record.entity';
+import { calculateLearningStats } from '../miniapp-learning-records/learning-stats';
 
 // 徽章定义表：code → 名称/描述/纹样，前端徽章墙展示用
 export const BADGE_DEFINITIONS: Record<string, { name: string; description: string; pattern: 'batik' | 'drum' | 'weaving' }> = {
@@ -18,31 +22,73 @@ export class MiniappBadgesService {
   constructor(
     @InjectRepository(Badge)
     private readonly badgeRepository: Repository<Badge>,
+    @InjectRepository(Favorite)
+    private readonly favoriteRepository: Repository<Favorite>,
+    @InjectRepository(LearningRecord)
+    private readonly learningRecordRepository: Repository<LearningRecord>,
   ) {}
 
   async list(userId: number) {
-    const badges = await this.badgeRepository.find({
-      where: { userId },
-      order: { unlockedAt: 'DESC' },
-    });
+    const badges = await this.syncProgressBadges(userId);
     // 合并定义：已解锁返回 unlockedAt，未解锁返回 locked:true
-    const unlockedCodes = new Set(badges.map((b) => b.code));
+    const badgeByCode = new Map(badges.map((badge) => [badge.code, badge]));
     const all = Object.entries(BADGE_DEFINITIONS).map(([code, def]) => {
-      const unlocked = badges.find((b) => b.code === code);
+      const unlocked = badgeByCode.get(code);
+      const isUnlocked = Boolean(unlocked);
       return {
+        id: unlocked?.id ?? code,
         code,
         name: def.name,
         description: def.description,
         pattern: def.pattern,
-        locked: !unlockedCodes.has(code),
-        unlockedAt: unlocked ? unlocked.unlockedAt : null,
+        locked: !isUnlocked,
+        unlocked: isUnlocked,
+        isUnlocked,
+        unlockedAt: unlocked?.unlockedAt ?? null,
       };
     });
     return {
       items: all,
       total: all.length,
-      unlockedCount: badges.length,
+      unlockedCount: badgeByCode.size,
     };
+  }
+
+  private async syncProgressBadges(userId: number) {
+    const [badges, records, favoriteCount] = await Promise.all([
+      this.badgeRepository.find({
+        where: { userId },
+        order: { unlockedAt: 'DESC' },
+      }),
+      this.learningRecordRepository.find({ where: { userId } }),
+      this.favoriteRepository.count({ where: { userId } }),
+    ]);
+
+    const stats = calculateLearningStats(records);
+    const contentTypes = new Set(records.map((record) => record.contentType));
+    const listenedSongIds = new Set(
+      records
+        .filter((record) => record.contentType === ContentType.SONG && record.actionType === 'play')
+        .map((record) => record.contentId),
+    );
+
+    const eligibleCodes = [
+      records.some((record) => record.contentType === ContentType.DICTIONARY) && 'first-word',
+      stats.streakDays >= 7 && 'streak-7',
+      stats.streakDays >= 30 && 'streak-30',
+      Object.values(ContentType).every((type) => contentTypes.has(type)) && 'explorer',
+      favoriteCount >= 10 && 'collector',
+      listenedSongIds.size >= 5 && 'singer',
+    ].filter((code): code is string => Boolean(code));
+
+    const unlockedCodes = new Set(badges.map((badge) => badge.code));
+    const missingCodes = eligibleCodes.filter((code) => !unlockedCodes.has(code));
+    if (!missingCodes.length) return badges;
+
+    const unlocked = await this.badgeRepository.save(
+      missingCodes.map((code) => this.badgeRepository.create({ userId, code })),
+    );
+    return [...unlocked, ...badges];
   }
 
   async unlock(userId: number, code: string) {

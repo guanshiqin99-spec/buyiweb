@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mock } from 'node:test'
-import api, { contentApi, homeApi, quizApi, searchApi, settingsApi } from '../src/utils/api.js'
+import api, { badgesApi, contentApi, homeApi, quizApi, recordsApi, searchApi, settingsApi } from '../src/utils/api.js'
 import { logApiError, logRenderError, logRouteChunkError } from '../src/utils/logger.js'
 
 // 提供最小化的 localStorage 占位，请求拦截器从中读取 token
@@ -102,6 +102,33 @@ test('设置与答题成绩使用账号同步接口', async () => {
   assert.equal(captured[0].method, 'put')
   assert.equal(captured[1].url, '/miniapp/quiz-attempts')
   assert.equal(captured[1].method, 'post')
+})
+
+test('学习统计与徽章响应兼容服务端字段并输出统一状态', async () => {
+  useLocalStorage()
+  api.defaults.adapter = (config) => {
+    if (config.url.endsWith('/stats')) {
+      return Promise.resolve(okResponse({ today: 2, total: 7, streak: 3, typeCounts: { dictionary: 7 } }, config))
+    }
+    return Promise.resolve(okResponse({
+      items: [
+        { code: 'first-word', name: '初识布依', locked: false },
+        { code: 'streak-7', name: '七日不辍', locked: true }
+      ]
+    }, config))
+  }
+
+  const stats = await recordsApi.stats()
+  const badges = await badgesApi.list()
+
+  assert.equal(stats.todayCount, 2)
+  assert.equal(stats.totalCount, 7)
+  assert.equal(stats.streakDays, 3)
+  assert.equal(stats.total, 7)
+  assert.equal(badges.items[0].isUnlocked, true)
+  assert.equal(badges.items[0].id, 'first-word')
+  assert.equal(badges.items[1].isUnlocked, false)
+  assert.equal(badges.unlockedCount, 1)
 })
 
 test('响应拦截器对失败响应调用 logApiError 并向外抛出', async () => {

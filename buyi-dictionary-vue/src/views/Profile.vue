@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import imgBg from '@/assets/images/generated/profile-learning-journal.png'
@@ -12,12 +12,20 @@ import IconSettings from '@/components/icons/IconSettings.vue'
 import IconUser from '@/components/icons/IconUser.vue'
 import IconAchievementBadge from '@/components/icons/IconAchievementBadge.vue'
 import { getContentLabel } from '../utils/contentTypes'
+import {
+  USER_PROGRESS_STORAGE_KEY,
+  USER_PROGRESS_UPDATED_EVENT
+} from '@/utils/userProgress'
 
 const authStore = useAuthStore()
 const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
 // 学习统计仪表盘：今日/总数/连续天数/各类型计数
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
 const badges = ref([])
+let refreshPromise = null
+let refreshTimer = null
+let refreshQueued = false
+let isProgressActive = false
 
 // 将 typeCounts 对象映射为 BarChart 数据
 const typeChartData = computed(() => {
@@ -40,8 +48,9 @@ const handleLogout = () => {
   }
 }
 
+const isBadgeUnlocked = (badge) => badge?.isUnlocked || badge?.unlocked || badge?.locked === false
 // 已解锁徽章数
-const unlockedCount = computed(() => badges.value.filter(b => b.unlocked || b.isUnlocked).length)
+const unlockedCount = computed(() => badges.value.filter(isBadgeUnlocked).length)
 
 // 徽章不使用奖杯、星级等游戏化符号；根据服务端标识、名称和描述映射为布依族纹样。
 // 新增的后端徽章若尚未配置关键词，会回退到蜡染旋花，保持视觉一致性。
@@ -59,15 +68,81 @@ const badgeMotif = (badge) => {
   return 'batik'
 }
 
-onMounted(async () => {
-  if (!authStore.isLoggedIn) return
+async function refreshProfileProgress() {
+  if (!authStore.isLoggedIn || !isProgressActive) return
+  if (refreshPromise) {
+    refreshQueued = true
+    return refreshPromise
+  }
+
   // 并行拉取用户信息 + 学习统计 + 徽章
-  const tasks = [
-    meApi.get().then(res => { userStats.value = res.stats || userStats.value }).catch(e => console.error('获取用户信息失败', e)),
-    recordsApi.stats().then(res => { learnStats.value = res || learnStats.value }).catch(e => console.error('获取学习统计失败', e)),
-    badgesApi.list().then(res => { badges.value = res?.items || res?.list || res || [] }).catch(e => console.error('获取徽章失败', e))
-  ]
-  await Promise.allSettled(tasks)
+  refreshPromise = Promise.allSettled([
+    meApi.get(),
+    recordsApi.stats(),
+    badgesApi.list()
+  ]).then(([profileResult, statsResult, badgesResult]) => {
+    if (profileResult.status === 'fulfilled') {
+      userStats.value = profileResult.value?.stats || userStats.value
+    } else {
+      console.error('获取用户信息失败', profileResult.reason)
+    }
+
+    if (statsResult.status === 'fulfilled') {
+      learnStats.value = statsResult.value || learnStats.value
+      userStats.value = {
+        ...userStats.value,
+        learningRecordCount: statsResult.value?.totalCount ?? userStats.value.learningRecordCount
+      }
+    } else {
+      console.error('获取学习统计失败', statsResult.reason)
+    }
+
+    if (badgesResult.status === 'fulfilled') {
+      badges.value = badgesResult.value?.items || badgesResult.value?.list || badgesResult.value || []
+    } else {
+      console.error('获取徽章失败', badgesResult.reason)
+    }
+  }).finally(() => {
+    refreshPromise = null
+    if (refreshQueued && isProgressActive) {
+      refreshQueued = false
+      refreshProfileProgress()
+    }
+  })
+
+  return refreshPromise
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible') refreshProfileProgress()
+}
+
+function handleStorageChange(event) {
+  if (event.key === USER_PROGRESS_STORAGE_KEY) refreshProfileProgress()
+}
+
+onMounted(() => {
+  isProgressActive = true
+  refreshProfileProgress()
+  window.addEventListener(USER_PROGRESS_UPDATED_EVENT, refreshProfileProgress)
+  window.addEventListener('focus', refreshProfileProgress)
+  window.addEventListener('storage', handleStorageChange)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+
+  // 同步来自其他客户端的变化；标签页隐藏时不产生额外请求。
+  refreshTimer = window.setInterval(() => {
+    if (document.visibilityState === 'visible') refreshProfileProgress()
+  }, 30000)
+})
+
+onUnmounted(() => {
+  isProgressActive = false
+  refreshQueued = false
+  window.removeEventListener(USER_PROGRESS_UPDATED_EVENT, refreshProfileProgress)
+  window.removeEventListener('focus', refreshProfileProgress)
+  window.removeEventListener('storage', handleStorageChange)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (refreshTimer) window.clearInterval(refreshTimer)
 })
 </script>
 
@@ -124,9 +199,9 @@ onMounted(async () => {
           <div class="badge-grid">
             <div
               v-for="badge in badges"
-              :key="badge.id"
+              :key="badge.id || badge.code || badge.name"
               class="badge-item"
-              :class="{ 'badge-locked': !(badge.unlocked || badge.isUnlocked) }"
+              :class="{ 'badge-locked': !isBadgeUnlocked(badge) }"
               :title="badge.description || badge.name"
             >
               <div class="badge-icon" :class="`badge-icon--${badgeMotif(badge)}`" aria-hidden="true">

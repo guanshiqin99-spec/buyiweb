@@ -225,6 +225,19 @@ describe('Buyi Dictionary Backend (e2e)', () => {
     expect(recordsResponse.body.items.length).toBeGreaterThan(0);
     expect(recordsResponse.body.totalPages).toBe(1);
     expect(recordsResponse.body.stats.total).toBeGreaterThan(0);
+    expect(recordsResponse.body.stats.totalCount).toBe(recordsResponse.body.stats.total);
+    expect(recordsResponse.body.stats.todayCount).toBe(recordsResponse.body.stats.today);
+    expect(recordsResponse.body.stats.streakDays).toBe(recordsResponse.body.stats.streak);
+
+    const badgesResponse = await request(app.getHttpServer())
+      .get('/api/miniapp/badges')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const firstWordBadge = badgesResponse.body.items.find((badge: { code: string }) => badge.code === 'first-word');
+    expect(firstWordBadge.isUnlocked).toBe(true);
+    expect(firstWordBadge.locked).toBe(false);
+    expect(badgesResponse.body.unlockedCount).toBeGreaterThanOrEqual(1);
 
     const clearFavoritesResponse = await request(app.getHttpServer())
       .delete('/api/miniapp/favorites')
