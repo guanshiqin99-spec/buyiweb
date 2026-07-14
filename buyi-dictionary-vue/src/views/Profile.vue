@@ -85,7 +85,7 @@ onMounted(async () => {
         <div class="avatar-wrapper">
           <div class="avatar">
             <img v-if="authStore.userInfo?.avatarUrl" :src="authStore.userInfo.avatarUrl" alt="头像" width="80" height="80" class="avatar-img" />
-            <span v-else class="avatar-icon">👤</span>
+            <IconUser v-else class="avatar-icon" :size="36" aria-hidden="true" />
           </div>
           <div class="avatar-border"></div>
         </div>

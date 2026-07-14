@@ -3,6 +3,7 @@ import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { searchApi } from '@/utils/api'
 import IconSearch from '@/components/icons/IconSearch.vue'
+import IconClose from '@/components/icons/IconClose.vue'
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false }
@@ -29,6 +30,7 @@ const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:
 const RECENT_KEY = 'buyi_recent_searches'
 const RECENT_MAX = 6
 const recentSearches = ref([])
+const historyStatus = ref('')
 
 // 热门搜索词（后端基于学习记录聚合，失败静默忽略）
 const hotSearches = ref([])
@@ -50,7 +52,8 @@ async function fetchHot() {
 function getRecent() {
   try {
     const raw = localStorage.getItem(RECENT_KEY)
-    return raw ? JSON.parse(raw) : []
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === 'string' && item.trim()) : []
   } catch (e) { return [] }
 }
 function saveRecent(kw) {
@@ -62,6 +65,24 @@ function saveRecent(kw) {
     if (list.length > RECENT_MAX) list = list.slice(0, RECENT_MAX)
     localStorage.setItem(RECENT_KEY, JSON.stringify(list))
   } catch (e) { /* localStorage 不可用时静默忽略 */ }
+}
+
+function updateRecent(list) {
+  recentSearches.value = list
+  try {
+    if (list.length) localStorage.setItem(RECENT_KEY, JSON.stringify(list))
+    else localStorage.removeItem(RECENT_KEY)
+  } catch (e) { /* localStorage 不可用时仍更新当前界面 */ }
+}
+
+function removeRecent(kw) {
+  updateRecent(recentSearches.value.filter((item) => item !== kw))
+  historyStatus.value = `已删除搜索记录“${kw}”`
+}
+
+function clearRecent() {
+  updateRecent([])
+  historyStatus.value = '已清空全部搜索记录'
 }
 
 // 防抖搜索 + 竞态保护
@@ -317,17 +338,20 @@ function optionId(idx) {
         <!-- 空输入：最近搜索 / 热门搜索 / 引导文案 -->
         <template v-else>
           <div v-if="recentSearches.length" class="recent-section">
-            <p class="recent-title">最近搜索</p>
+            <div class="recent-heading">
+              <p class="recent-title">最近搜索</p>
+              <button type="button" class="recent-clear" @click="clearRecent">清空全部</button>
+            </div>
             <div class="recent-list">
-              <button
-                v-for="(kw, i) in recentSearches"
-                :key="i"
-                type="button"
-                class="recent-item"
-                @click="selectRecent(kw)"
-              >{{ kw }}</button>
+              <span v-for="kw in recentSearches" :key="kw" class="recent-chip">
+                <button type="button" class="recent-item" @click="selectRecent(kw)">{{ kw }}</button>
+                <button type="button" class="recent-remove" :aria-label="`删除搜索记录“${kw}”`" @click="removeRecent(kw)">
+                  <IconClose :size="14" aria-hidden="true" />
+                </button>
+              </span>
             </div>
           </div>
+          <p class="sr-only" aria-live="polite">{{ historyStatus }}</p>
           <div v-if="hotSearches.length" class="hot-section">
             <p class="recent-title">热门搜索</p>
             <div class="hot-list">
@@ -529,13 +553,34 @@ function optionId(idx) {
   padding: 14px 26px 18px;
 }
 
+.recent-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
 .recent-title {
   font: 500 11px var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-text-60);
-  margin: 0 0 12px 0;
+  margin: 0;
 }
+
+.recent-clear {
+  min-height: 32px;
+  padding: 0 4px;
+  border: 0;
+  color: var(--c-text-60);
+  background: transparent;
+  cursor: pointer;
+  font: 600 12px var(--font-sans);
+}
+
+.recent-clear:hover { color: var(--c-brand); }
+.recent-clear:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 .recent-list {
   display: flex;
@@ -543,25 +588,46 @@ function optionId(idx) {
   gap: 8px;
 }
 
-.recent-item {
+.recent-chip {
+  display: inline-flex;
+  overflow: hidden;
   border: 1px solid var(--c-brand-25);
-  background: var(--c-white-50);
-  color: var(--c-text);
-  font: 400 13px var(--font-sans);
-  padding: 6px 14px;
   border-radius: 999px;
-  cursor: pointer;
+  background: var(--c-white-50);
   transition: background 160ms ease, border-color 160ms ease;
 }
 
-.recent-item:hover {
-  background: var(--c-brand-08);
+.recent-chip:hover {
   border-color: var(--c-brand-40);
+  background: var(--c-brand-08);
 }
 
-.recent-item:focus-visible {
+.recent-item {
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font: 400 13px var(--font-sans);
+  padding: 6px 6px 6px 14px;
+  cursor: pointer;
+}
+
+.recent-remove {
+  display: grid;
+  width: 34px;
+  padding: 0;
+  border: 0;
+  color: var(--c-text-50);
+  background: transparent;
+  cursor: pointer;
+  place-items: center;
+}
+
+.recent-remove:hover { color: var(--c-danger); }
+
+.recent-item:focus-visible,
+.recent-remove:focus-visible {
   outline: 2px solid var(--c-focus);
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 /* 热门搜索：纵向带序号列表 */
@@ -570,6 +636,8 @@ function optionId(idx) {
   border-top: 1px solid var(--c-divider);
   margin-top: 6px;
 }
+
+.hot-section .recent-title { margin-bottom: 12px; }
 
 .hot-list {
   display: flex;

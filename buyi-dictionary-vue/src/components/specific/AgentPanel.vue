@@ -106,7 +106,7 @@ onUnmounted(() => {
     <section
       id="agent-panel"
       ref="panelRef"
-      class="agent-panel liquid-glass glow-card"
+      class="agent-panel liquid-glass"
       role="dialog"
       aria-modal="true"
       aria-label="布依文化导览员"

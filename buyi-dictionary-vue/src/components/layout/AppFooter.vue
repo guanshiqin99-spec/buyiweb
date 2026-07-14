@@ -20,9 +20,9 @@ import { RouterLink } from 'vue-router'
 
         <div class="footer-section">
           <h4>关于</h4>
-          <span class="footer-link-text">项目介绍</span>
-          <span class="footer-link-text">使用帮助</span>
-          <span class="footer-link-text">联系我们</span>
+          <RouterLink to="/about#project">项目介绍</RouterLink>
+          <RouterLink to="/about#help">使用帮助</RouterLink>
+          <RouterLink to="/about#contact">联系我们</RouterLink>
         </div>
       </div>
 
@@ -95,13 +95,6 @@ import { RouterLink } from 'vue-router'
 
 .footer-section a:hover {
   color: var(--c-white);
-}
-
-.footer-link-text {
-  display: block;
-  font-size: 14px;
-  color: var(--c-white-50);
-  padding: 4px 0;
 }
 
 .footer-bottom {

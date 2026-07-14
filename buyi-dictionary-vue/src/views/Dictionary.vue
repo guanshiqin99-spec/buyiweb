@@ -26,9 +26,11 @@ const serviceState = ref('unknown')
 const actionMsg = ref('')
 const cacheNotice = ref('')
 const bgParallax = ref(0)
+const playingId = ref(null)
 let debounceTimer = null
 let requestSequence = 0
 let scrollHandler = null
+let pronunciationAudio = null
 const SEARCH_CACHE_KEY = 'buyi-dictionary-search-cache-v1'
 
 const filters = [
@@ -160,7 +162,12 @@ function selectItem(item) { selectedId.value = item.id }
 async function handleFavorite(item) {
   if (!authStore.isLoggedIn) return notify('登录后可以把词条加入收藏。')
   try {
-    await favoritesStore.toggleFavorite(typeToContentType[item.type] || 'dictionary', item.rawId)
+    await favoritesStore.toggleFavorite(typeToContentType[item.type] || 'dictionary', item.rawId, {
+      buyiText: item.bouyei,
+      zhText: item.chinese,
+      title: item.bouyei || item.chinese,
+      subtitle: item.chinese || item.english
+    })
     notify('已更新收藏。')
   } catch {
     notify('收藏未完成，请稍后重试。')
@@ -177,8 +184,53 @@ async function handleLearn(item) {
   }
 }
 
-function handlePlay(item) {
-  notify(item.audioUrl ? '该词条已收录发音，播放能力将在播放器接入后提供。' : '该词条暂未收录可播放发音。')
+function stopPronunciation() {
+  if (pronunciationAudio) {
+    pronunciationAudio.onended = null
+    pronunciationAudio.onerror = null
+    pronunciationAudio.pause()
+    try { pronunciationAudio.currentTime = 0 } catch { /* 尚未加载元数据时无需重置进度 */ }
+  }
+  pronunciationAudio = null
+  playingId.value = null
+}
+
+async function handlePlay(item) {
+  const audioUrl = String(item.audioUrl || '').trim()
+  if (!audioUrl) {
+    notify('该词条暂未收录可播放发音。')
+    return
+  }
+
+  if (playingId.value === item.id && pronunciationAudio && !pronunciationAudio.paused) {
+    stopPronunciation()
+    notify('已停止播放。')
+    return
+  }
+
+  stopPronunciation()
+  const audio = new Audio(audioUrl)
+  audio.preload = 'auto'
+  pronunciationAudio = audio
+  playingId.value = item.id
+  audio.onended = () => {
+    if (pronunciationAudio === audio) stopPronunciation()
+  }
+  audio.onerror = () => {
+    if (pronunciationAudio !== audio) return
+    stopPronunciation()
+    notify('发音加载失败，请检查网络后重试。')
+  }
+
+  try {
+    await audio.play()
+    notify(`正在播放“${item.bouyei || item.chinese}”的发音。`)
+  } catch {
+    if (pronunciationAudio === audio) {
+      stopPronunciation()
+      notify('浏览器未能播放该发音，请稍后重试。')
+    }
+  }
 }
 
 function handleAskAgent(item) {
@@ -218,6 +270,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearTimeout(debounceTimer)
+  stopPronunciation()
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
 })
 </script>
@@ -297,7 +350,13 @@ onUnmounted(() => {
           <p v-if="selectedItem.example" class="entry-detail__note">{{ selectedItem.example }}</p>
 
           <div class="entry-actions">
-            <button v-pointer-glow="{ tone: 'brand', size: 'sm' }" type="button" @click="handlePlay(selectedItem)"><IconVolume :size="16" />播放发音</button>
+            <button
+              v-pointer-glow="{ tone: 'brand', size: 'sm' }"
+              type="button"
+              :class="{ 'is-playing': playingId === selectedItem.id }"
+              :aria-pressed="playingId === selectedItem.id"
+              @click="handlePlay(selectedItem)"
+            ><IconVolume :size="16" />{{ playingId === selectedItem.id ? '停止播放' : '播放发音' }}</button>
             <button v-pointer-glow="{ tone: 'accent', size: 'sm' }" type="button" :aria-pressed="isFavoriteSelected" :aria-label="isFavoriteSelected ? '取消收藏' : '收藏词条'" @click="handleFavorite(selectedItem)"><IconHeart :size="16" :filled="isFavoriteSelected" />{{ isFavoriteSelected ? '已收藏' : '收藏词条' }}</button>
             <button type="button" @click="handleLearn(selectedItem)">加入学习</button>
             <button type="button" @click="handleAskAgent(selectedItem)">请求解释</button>
@@ -338,6 +397,7 @@ onUnmounted(() => {
 .dictionary-search { padding: 24px; }.dictionary-search :deep(.search-bar) { border-color: transparent; background: var(--c-glass); box-shadow: none; }.dictionary-search :deep(.search-bar:focus-within) { box-shadow: 0 0 0 4px var(--c-brand-08); }.dictionary-search__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }.dictionary-search__meta p { margin: 0; color: var(--c-text-60); font-size: .875rem; }.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }.filter-pills button { min-height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; color: var(--c-text-70); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.filter-pills button:hover { color: var(--c-text); background: var(--c-brand-06); }.filter-pills button.active { color: var(--c-white); background: var(--c-brand); }.filter-pills button:focus-visible, .entry-actions button:focus-visible, .state-panel button:focus-visible, .result-row:focus-visible, .culture-links a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
 .dictionary-results { display: grid; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr); gap: 32px; align-items: start; margin-top: 28px; }.result-list { min-height: 420px; padding: 4px 8px 12px; }.result-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; width: 100%; padding: 18px 14px; border: 0; border-bottom: 1px solid var(--c-divider); color: inherit; background: transparent; cursor: pointer; text-align: left; }.result-row:hover { background: var(--c-brand-06); }.result-row.selected { background: var(--c-brand-08); box-shadow: inset 3px 0 0 var(--c-brand); }.result-row__type { grid-row: span 2; align-self: start; padding: 4px 7px; border-radius: 999px; color: var(--c-brand); background: var(--c-brand-08); font-size: .6875rem; font-weight: 700; }.result-row strong { overflow: hidden; color: var(--c-text); font-size: 1.0625rem; text-overflow: ellipsis; white-space: nowrap; }.result-row > span:not(.result-row__type) { overflow: hidden; color: var(--c-text-70); font-size: .875rem; text-overflow: ellipsis; white-space: nowrap; }.result-row small { grid-column: 2; color: var(--c-accent); font-size: .75rem; }
 .entry-detail { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px) + 20px); min-height: 420px; padding: clamp(24px, 4vw, 46px); }.entry-detail__topline { display: flex; justify-content: space-between; gap: 16px; color: var(--c-text-60); font-size: .75rem; }.entry-detail__topline span:first-child { color: var(--c-accent); font-weight: 700; }.entry-detail h2 { margin: 26px 0 6px; font: 600 3rem / 1.1 var(--font-serif); letter-spacing: -.025em; }.entry-detail__meaning { margin: 0; color: var(--c-text); font-size: 1.25rem; font-weight: 600; }.entry-detail__note { max-width: 55ch; margin: 28px 0; padding-left: 16px; border-left: 1px solid var(--c-brand-40); color: var(--c-text-70); line-height: 1.8; }.entry-actions { display: flex; flex-wrap: wrap; gap: 8px; }.entry-actions button { min-height: 40px; padding: 0 14px; border: 1px solid var(--c-brand-25); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.entry-actions button:hover { color: var(--c-white); background: var(--c-brand); }
+.entry-actions button.is-playing { color: var(--c-white); background: var(--c-brand); }
 .culture-links { display: grid; gap: 10px; margin-top: 38px; padding-top: 28px; border-top: 1px solid var(--c-divider); }.culture-links h3 { margin: 0 0 4px; font: 600 1.5rem var(--font-serif); }.culture-links a { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 15px 0; border-bottom: 1px solid var(--c-divider); color: inherit; text-decoration: none; }.culture-links a:hover strong { color: var(--c-brand); }.culture-links a span { color: var(--c-text-60); font-size: .75rem; }.culture-links a strong { color: var(--c-text); font-size: 1rem; }.culture-links a b { grid-row: span 2; align-self: center; color: var(--c-accent); }
 .state-panel { max-width: 34rem; margin: 40px auto; padding: 28px; border: 1px solid var(--c-divider); border-radius: var(--radius-md); background: var(--c-bg-silver); }.state-panel strong { color: var(--c-text); }.state-panel p { margin: 8px 0 20px; color: var(--c-text-70); line-height: 1.7; }.state-panel button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 600 .875rem var(--font-sans); }.state-panel--error { background: var(--c-danger-08); border-color: color-mix(in srgb, var(--c-danger) 28%, transparent); }.state-copy { margin: 16px 0; color: var(--c-text-60); font-size: .875rem; }.result-skeleton { display: grid; grid-template-columns: 50px 1fr; gap: 10px; padding: 20px 14px; border-bottom: 1px solid var(--c-divider); }.result-skeleton i, .result-skeleton b, .result-skeleton span { display: block; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-06), var(--c-brand-08), var(--c-brand-06)); animation: shimmer 1.4s ease-in-out infinite; }.result-skeleton i { grid-row: span 2; height: 22px; }.result-skeleton b { height: 17px; width: 44%; }.result-skeleton span { height: 12px; width: 64%; }.entry-detail__empty { display: grid; min-height: 340px; place-content: center; gap: 14px; color: var(--c-text-60); text-align: center; }.entry-detail__empty span { color: var(--c-accent); font: 3rem var(--font-serif); }.entry-detail__empty p { max-width: 25ch; margin: 0; line-height: 1.8; }.action-message { position: absolute; right: 24px; bottom: 18px; left: 24px; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--c-text); background: var(--c-accent-10); font-size: .8125rem; }
 .service-status { display: block; margin: -8px 0 20px; color: var(--c-text-60); font-size: .75rem; }.service-status--ready { color: var(--c-brand); }.service-status--degraded, .service-status--offline { color: var(--c-danger); }

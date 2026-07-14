@@ -19,6 +19,9 @@ const actionMsg = ref('')
 const bgParallax = ref(0)
 let msgTimer = null
 let scrollHandler = null
+let currentVisitId = 0
+const recordedVisitIds = new Set()
+const recordingVisitIds = new Set()
 // 学习统计（登录态拉取）
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
 
@@ -49,14 +52,38 @@ async function handleFavorite() {
   }
   if (!currentWord.value?.id) return
   try {
-    await favoritesStore.toggleFavorite('dictionary', currentWord.value.id)
+    await favoritesStore.toggleFavorite('dictionary', currentWord.value.id, {
+      buyiText: currentWord.value.bouyei,
+      zhText: currentWord.value.chinese,
+      title: currentWord.value.bouyei || currentWord.value.chinese,
+      subtitle: currentWord.value.chinese || currentWord.value.english
+    })
     showMsg('已更新收藏')
   } catch (e) {
     showMsg('操作失败，请重试')
   }
 }
 
-// 标记复习
+async function recordCurrentView() {
+  const visitId = currentVisitId
+  if (!authStore.isLoggedIn || !currentWord.value?.id || recordedVisitIds.has(visitId) || recordingVisitIds.has(visitId)) return false
+  recordingVisitIds.add(visitId)
+  try {
+    await recordsApi.create({
+      contentType: 'dictionary',
+      contentId: currentWord.value.id,
+      actionType: 'view'
+    })
+    recordingVisitIds.delete(visitId)
+    if (visitId === currentVisitId) recordedVisitIds.add(visitId)
+    return true
+  } catch (error) {
+    recordingVisitIds.delete(visitId)
+    throw error
+  }
+}
+
+// 标记复习。同一张卡片在本次停留期间只写入一次 view 记录。
 async function handleReview() {
   if (!authStore.isLoggedIn) {
     showMsg('请先登录后再标记复习')
@@ -64,12 +91,8 @@ async function handleReview() {
   }
   if (!currentWord.value?.id) return
   try {
-    await recordsApi.create({
-      contentType: 'dictionary',
-      contentId: currentWord.value.id,
-      actionType: 'view'
-    })
-    showMsg('已加入复习清单')
+    const created = await recordCurrentView()
+    showMsg(created ? '已加入复习清单' : '这张卡片已记录，无需重复添加')
   } catch (e) {
     showMsg('操作失败，请重试')
   }
@@ -79,14 +102,12 @@ const nextWord = () => {
   isFlipped.value = false
   if (words.value.length > 0) {
     // 先记录当前词，再切换索引，避免把“下一词”写入学习记录
-    if (authStore.isLoggedIn && currentWord.value?.id) {
-      recordsApi.create({
-        contentType: 'dictionary',
-        contentId: currentWord.value.id,
-        actionType: 'view'
-      }).catch(() => { /* 记录失败静默忽略 */ })
-    }
+    const previousVisitId = currentVisitId
+    recordCurrentView().catch(() => { /* 记录失败静默忽略 */ })
     currentIndex.value = (currentIndex.value + 1) % words.value.length
+    currentVisitId += 1
+    recordedVisitIds.delete(previousVisitId)
+    recordingVisitIds.delete(previousVisitId)
     learnedCount.value++
   }
 }

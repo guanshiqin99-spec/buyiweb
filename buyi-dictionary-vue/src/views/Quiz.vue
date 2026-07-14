@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { createQuizRound, scoreAnswers } from '@/data/quiz'
 import imgBg from '@/assets/images/bouyei-nature.jpg'
 

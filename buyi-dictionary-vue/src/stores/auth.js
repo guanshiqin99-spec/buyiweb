@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { authApi, meApi } from '@/utils/api'
+import {
+  AUTH_SESSION_CLEARED_EVENT,
+  AUTH_SESSION_UPDATED_EVENT,
+  authApi,
+  meApi
+} from '@/utils/api'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
@@ -11,17 +16,31 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoggedIn = computed(() => !!token.value)
   const userName = computed(() => userInfo.value?.nickname || userInfo.value?.username || '未登录')
 
+  function setSession(accessToken, nextRefreshToken, user = userInfo.value) {
+    token.value = accessToken || ''
+    refreshToken.value = nextRefreshToken || ''
+    userInfo.value = user || null
+
+    if (token.value) localStorage.setItem('token', token.value)
+    else localStorage.removeItem('token')
+    if (refreshToken.value) localStorage.setItem('refreshToken', refreshToken.value)
+    else localStorage.removeItem('refreshToken')
+    if (userInfo.value) localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+    else localStorage.removeItem('userInfo')
+  }
+
+  window.addEventListener(AUTH_SESSION_UPDATED_EVENT, (event) => {
+    setSession(event.detail?.accessToken, event.detail?.refreshToken)
+  })
+  window.addEventListener(AUTH_SESSION_CLEARED_EVENT, () => {
+    setSession('', '', null)
+  })
+
   async function login(credentials) {
     isLoading.value = true
     try {
       const response = await authApi.login(credentials)
-      token.value = response.accessToken
-      refreshToken.value = response.refreshToken
-      userInfo.value = response.user
-
-      localStorage.setItem('token', response.accessToken)
-      localStorage.setItem('refreshToken', response.refreshToken)
-      localStorage.setItem('userInfo', JSON.stringify(response.user))
+      setSession(response.accessToken, response.refreshToken, response.user)
 
       return response
     } finally {
@@ -34,13 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authApi.register(userData)
-      token.value = response.accessToken
-      refreshToken.value = response.refreshToken
-      userInfo.value = response.user
-
-      localStorage.setItem('token', response.accessToken)
-      localStorage.setItem('refreshToken', response.refreshToken)
-      localStorage.setItem('userInfo', JSON.stringify(response.user))
+      setSession(response.accessToken, response.refreshToken, response.user)
 
       return response
     } finally {
@@ -55,12 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (e) {
       // 忽略登出请求失败，前端仍然要清理本地状态
     } finally {
-      token.value = ''
-      refreshToken.value = ''
-      userInfo.value = null
-      localStorage.removeItem('token')
-      localStorage.removeItem('refreshToken')
-      localStorage.removeItem('userInfo')
+      setSession('', '', null)
     }
   }
 

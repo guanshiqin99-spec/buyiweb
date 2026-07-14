@@ -10,7 +10,39 @@ export const useFavoritesStore = defineStore('favorites', () => {
 
   function isFavorite(contentType, contentId) {
     return favorites.value.some(
-      (item) => item.contentType === contentType && item.contentId === contentId
+      (item) => item.contentType === contentType && String(item.contentId) === String(contentId)
+    )
+  }
+
+  function normalizeFavorite(item = {}, fallbackType = 'dictionary', fallbackId = null) {
+    const contentType = item.contentType || fallbackType
+    const contentId = item.contentId ?? item.id ?? fallbackId
+    return {
+      ...item,
+      contentType,
+      contentId,
+      title: item.title || item.buyiText || item.zhText || '',
+      buyiText: item.buyiText || item.bouyei || '',
+      zhText: item.zhText || item.chinese || '',
+      subtitle: item.subtitle || item.artist || item.description || '',
+      chinese: item.chinese || item.zhText || ''
+    }
+  }
+
+  function normalizeFavoriteList(response) {
+    if (Array.isArray(response)) return response.map((item) => normalizeFavorite(item))
+
+    const flatList = response?.items || response?.list
+    if (Array.isArray(flatList)) return flatList.map((item) => normalizeFavorite(item))
+
+    const groups = [
+      ['dictionary', 'dictionary'],
+      ['phrases', 'phrase'],
+      ['proverbs', 'proverb'],
+      ['songs', 'song']
+    ]
+    return groups.flatMap(([key, contentType]) =>
+      (response?.[key] || []).map((item) => normalizeFavorite(item, contentType))
     )
   }
 
@@ -18,7 +50,7 @@ export const useFavoritesStore = defineStore('favorites', () => {
     isLoading.value = true
     try {
       const response = await favoritesApi.list()
-      favorites.value = Array.isArray(response) ? response : (response.items || [])
+      favorites.value = normalizeFavoriteList(response)
       return response
     } catch (error) {
       console.error('获取收藏列表失败:', error)
@@ -29,17 +61,19 @@ export const useFavoritesStore = defineStore('favorites', () => {
   }
 
   // 切换收藏状态（后端为 toggle 模式）
-  async function toggleFavorite(contentType, contentId) {
+  async function toggleFavorite(contentType, contentId, content = {}) {
     try {
       const result = await favoritesApi.toggle(contentType, contentId)
-      // 后端返回 { favorited } 据此同步本地列表
-      if (result.favorited) {
-        if (!isFavorite(contentType, contentId)) {
-          favorites.value.unshift({ contentType, contentId })
-        }
+      // 兼容当前 NestJS 的 isFavorited 与旧接口的 favorited 字段。
+      const favorited = result?.isFavorited ?? result?.favorited ?? result?.data?.isFavorited ?? result?.data?.favorited
+      if (favorited) {
+        favorites.value = favorites.value.filter(
+          (item) => !(item.contentType === contentType && String(item.contentId) === String(contentId))
+        )
+        favorites.value.unshift(normalizeFavorite(content, contentType, contentId))
       } else {
         favorites.value = favorites.value.filter(
-          (item) => !(item.contentType === contentType && item.contentId === contentId)
+          (item) => !(item.contentType === contentType && String(item.contentId) === String(contentId))
         )
       }
       return result

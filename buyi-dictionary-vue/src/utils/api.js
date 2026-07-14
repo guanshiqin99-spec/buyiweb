@@ -19,6 +19,30 @@ api.interceptors.request.use((config) => {
 let isRefreshing = false
 let pendingQueue = []
 
+export const AUTH_SESSION_UPDATED_EVENT = 'buyi:auth-session-updated'
+export const AUTH_SESSION_CLEARED_EVENT = 'buyi:auth-session-cleared'
+
+function notifySessionUpdated(accessToken, refreshToken) {
+  localStorage.setItem('token', accessToken)
+  localStorage.setItem('refreshToken', refreshToken)
+  window.dispatchEvent(new CustomEvent(AUTH_SESSION_UPDATED_EVENT, {
+    detail: { accessToken, refreshToken }
+  }))
+}
+
+function settlePendingRequests(error, accessToken = '') {
+  pendingQueue.forEach(({ resolve, reject, request }) => {
+    if (error) {
+      reject(error)
+      return
+    }
+    request.headers = request.headers || {}
+    request.headers.Authorization = `Bearer ${accessToken}`
+    resolve(api.request(request))
+  })
+  pendingQueue = []
+}
+
 api.interceptors.response.use(
   (response) => response.data,
   async (error) => {
@@ -33,6 +57,7 @@ api.interceptors.response.use(
 
       // 刷新进行中则挂起当前请求
       if (isRefreshing) {
+        originalRequest._retry = true
         return new Promise((resolve, reject) => {
           pendingQueue.push({ resolve, reject, request: originalRequest })
         })
@@ -43,20 +68,15 @@ api.interceptors.response.use(
       try {
         const res = await axios.post(`${apiBaseURL}/miniapp/auth/refresh`, { refreshToken })
         const newToken = res.data.accessToken
-        const newRefresh = res.data.refreshToken
-        localStorage.setItem('token', newToken)
-        localStorage.setItem('refreshToken', newRefresh)
+        const newRefresh = res.data.refreshToken || refreshToken
+        notifySessionUpdated(newToken, newRefresh)
+        settlePendingRequests(null, newToken)
 
-        pendingQueue.forEach(({ resolve, request }) => {
-          request.headers.Authorization = `Bearer ${newToken}`
-          resolve(api.request(request))
-        })
-        pendingQueue = []
-
+        originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return api.request(originalRequest)
       } catch (refreshError) {
-        pendingQueue = []
+        settlePendingRequests(refreshError)
         clearAuthAndRedirect()
         return Promise.reject(refreshError)
       } finally {
@@ -92,6 +112,7 @@ function clearAuthAndRedirect() {
   localStorage.removeItem('token')
   localStorage.removeItem('refreshToken')
   localStorage.removeItem('userInfo')
+  window.dispatchEvent(new CustomEvent(AUTH_SESSION_CLEARED_EVENT))
   if (window.location.pathname !== '/login') {
     window.location.href = '/login'
   }

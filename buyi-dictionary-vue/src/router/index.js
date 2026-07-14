@@ -9,6 +9,7 @@ const router = createRouter({
   // 路由跳转后回到顶部，浏览器前进/后退保留滚动位置
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, top: 88 }
     return { top: 0 }
   },
   routes: [
@@ -23,6 +24,12 @@ const router = createRouter({
       name: 'login',
       component: () => import('../views/Login.vue'),
       meta: { navContrast: 'on-dark' }
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: () => import('../views/About.vue'),
+      meta: { navContrast: 'on-light' }
     },
     {
       path: '/dictionary',
