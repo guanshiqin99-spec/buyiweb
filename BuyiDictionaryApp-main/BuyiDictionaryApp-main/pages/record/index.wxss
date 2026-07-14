@@ -1,0 +1,161 @@
+/* 学习记录页青花瓷风格样式 */
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 48rpx;
+}
+
+.clear-text {
+  color: var(--color-primary);
+  padding: 10rpx;
+}
+
+/* 统计卡片网格 */
+.stat-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  margin-bottom: 32rpx;
+}
+
+.stat-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 16rpx;
+  margin-bottom: 0;
+}
+
+.primary-text {
+  color: var(--color-primary-dark);
+  margin-top: 12rpx;
+}
+
+/* 进度条 */
+.progress-card {
+  padding: 32rpx;
+  margin-bottom: 48rpx;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.progress-track {
+  height: 16rpx;
+  background: var(--color-bg);
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+  border-radius: 8rpx;
+  transition: width 0.3s;
+}
+
+/* 最近学习横滑列表 */
+.recent-section {
+  margin-bottom: 48rpx;
+}
+
+.section-title {
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.recent-scroll {
+  width: 100%;
+  overflow: hidden;
+}
+
+.recent-cards {
+  display: flex;
+  gap: 24rpx;
+  padding-bottom: 16rpx; /* 留出阴影空间 */
+}
+
+.recent-card {
+  min-width: 260rpx;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24rpx;
+}
+
+.recent-main {
+  margin-bottom: 8rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-sub {
+  margin-bottom: 16rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty-recent {
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: 1px dashed var(--color-primary-light);
+  box-shadow: none;
+}
+
+/* 历史列表 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.history-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  margin-bottom: 0;
+}
+
+.history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  flex: 1;
+}
+
+.history-time {
+  margin-left: 24rpx;
+  font-size: 24rpx;
+}
+
+/* 状态卡片 */
+.status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  text-align: center;
+}
+.status-card.empty {
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+}
+.status-card .text-h3 {
+  margin-bottom: 16rpx;
+}
+.login-btn {
+  margin-top: 32rpx;
+  width: 240rpx;
+}

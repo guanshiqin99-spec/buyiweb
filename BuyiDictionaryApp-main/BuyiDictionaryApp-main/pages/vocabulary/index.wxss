@@ -1,0 +1,42 @@
+/* 词汇详情/发音页青花瓷风格样式 */
+
+.header-section {
+  margin-bottom: 48rpx;
+}
+
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+/* 状态卡片 */
+.status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  text-align: center;
+}
+.status-card.empty {
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+}
+.status-card .text-h3 {
+  margin-bottom: 16rpx;
+}
+.status-card.error {
+  border-color: var(--color-error);
+  background: var(--color-danger-bg);
+}
+.text-danger {
+  color: var(--color-error);
+}

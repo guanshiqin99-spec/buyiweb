@@ -1,0 +1,124 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container landscape-bg">
+  <custom-nav title="设置"></custom-nav>
+  
+  <!-- 头部文化标题 -->
+  <view class="cultural-header">
+    <text class="text-title">设置</text>
+    <text class="text-subtitle">个性化与系统管理</text>
+  </view>
+
+  <!-- 外观偏好 -->
+  <view class="setting-group">
+    <text class="text-sub group-title">外观偏好</text>
+    <view class="card glass-card">
+      <view class="setting-item">
+        <text class="text-body">主题风格</text>
+        <view class="capsule-group">
+          <block wx:for="{{themes}}" wx:key="value">
+            <view class="capsule-btn {{currentTheme === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="changeTheme">
+              {{item.label}}
+            </view>
+          </block>
+        </view>
+      </view>
+      <view class="divider"></view>
+      <view class="setting-item">
+        <text class="text-body">字号大小</text>
+        <view class="slider-wrapper">
+          <slider value="{{fontSizeIndex}}" min="0" max="2" step="1" activeColor="#5C86C5" backgroundColor="#E0E8F5" block-color="#5C86C5" block-size="20" bindchange="changeFontSize" />
+          <view class="slider-labels text-sub">
+            <text>小</text>
+            <text>中</text>
+            <text>大</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 学习与同步 (文化感增强) -->
+  <view class="setting-group">
+    <text class="text-sub group-title">学习与同步</text>
+    <view class="card glass-card">
+      <view class="setting-item">
+        <text class="text-body">学习提醒</text>
+        <switch color="#5C86C5" checked="{{true}}" />
+      </view>
+      <view class="divider"></view>
+      <view class="setting-item">
+        <text class="text-body">自动播放发音</text>
+        <switch color="#5C86C5" checked="{{false}}" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据管理 -->
+  <view class="setting-group">
+    <text class="text-sub group-title">数据管理</text>
+    <view class="card glass-card">
+      <view class="setting-item arrow-item" bindtap="clearFavorites">
+        <text class="text-body">清空云端收藏</text>
+        <text class="arrow">></text>
+      </view>
+      <view class="divider"></view>
+      <view class="setting-item arrow-item" bindtap="clearRecords">
+        <text class="text-body">清空学习记录</text>
+        <text class="arrow">></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 关于与版本 -->
+  <view class="setting-group">
+    <text class="text-sub group-title">关于</text>
+    <view class="card glass-card">
+      <view class="setting-item arrow-item">
+        <text class="text-body">关于布依语言文化计划</text>
+        <text class="arrow">></text>
+      </view>
+      <view class="divider"></view>
+      <view class="setting-item" bindtap="onVersionClick">
+        <text class="text-body">当前版本</text>
+        <text class="text-sub">v1.2.0</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 隐藏的开发者入口 -->
+  <view class="setting-group" wx:if="{{showDeveloperMode}}">
+    <text class="text-sub group-title">开发者设置</text>
+    <view class="card glass-card">
+      <view class="setting-item col-item">
+        <view class="item-header">
+          <text class="text-body">接口环境模式</text>
+          <text class="text-sub">当前: {{activeApiMode}}</text>
+        </view>
+        <view class="capsule-group">
+          <block wx:for="{{apiModes}}" wx:key="value">
+            <view class="capsule-btn {{apiMode === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="changeApiMode">
+              {{item.label}}
+            </view>
+          </block>
+        </view>
+      </view>
+      <view class="divider"></view>
+      <view class="setting-item col-item">
+        <text class="text-body input-label">接口状态</text>
+        <text class="text-sub">{{apiStatusText}}</text>
+        <button class="btn glaze-btn save-btn" bindtap="checkApiHealth">检测连接</button>
+      </view>
+      <view class="divider"></view>
+      <view class="setting-item col-item">
+        <text class="text-body input-label">开发环境地址</text>
+        <input class="text-input" value="{{apiBaseDev}}" bindinput="onDevBaseInput" placeholder="http://192.168.215.226:3000/api" />
+        <button class="btn glaze-btn save-btn" bindtap="saveDevBase">保存地址</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 危险操作 -->
+  <view class="setting-group" wx:if="{{isLogin}}">
+    <button class="seal-btn" bindtap="logout">退出登录</button>
+  </view>
+
+</view>

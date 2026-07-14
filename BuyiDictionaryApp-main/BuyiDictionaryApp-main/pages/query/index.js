@@ -1,0 +1,202 @@
+const { contentApi } = require('../../utils/api');
+const Favorites = require('../../utils/favorites');
+const History = require('../../utils/learningHistory');
+const { flattenSearchResults } = require('../../utils/content-mapper');
+const { syncAppearance } = require('../../utils/view');
+
+Page({
+  data: {
+    word: '',
+    results: [],
+    activeLang: 'buyi',
+    currentTheme: 'light',
+    fontSizeClass: 'medium',
+    loading: false,
+    errorText: '',
+    emptyText: '请输入关键词开始查询',
+    suggestions: [],
+    showSuggestions: false,
+    playingIndex: -1,
+  },
+
+  suggestTimer: null,
+
+  onLoad(options) {
+    const word = decodeURIComponent((options && options.word) || '');
+    syncAppearance(this, { word });
+    
+    // 初始化 audioContext
+    this.audioContext = wx.createInnerAudioContext();
+    this.audioContext.onEnded(() => {
+      this.setData({ playingIndex: -1 });
+    });
+    this.audioContext.onError((err) => {
+      console.error('Audio Error:', err);
+      this.setData({ playingIndex: -1 });
+      wx.showToast({ title: '音频播放失败', icon: 'none' });
+    });
+    this.audioContext.onStop(() => {
+      this.setData({ playingIndex: -1 });
+    });
+
+    if (word) {
+      this.fetchResults(word);
+    }
+  },
+
+  onUnload() {
+    if (this.audioContext) {
+      this.audioContext.destroy();
+    }
+  },
+
+  onPlayAudio(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.results[index];
+    const audioUrl = item.audio || item.audioUrl;
+    
+    if (!audioUrl) {
+      wx.showToast({
+        title: '录音资源暂时不存在',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (this.data.playingIndex === index) {
+      // 当前词条正在播放，停止
+      this.audioContext.stop();
+      this.setData({ playingIndex: -1 });
+    } else {
+      // 切换/播放新词条录音
+      this.audioContext.stop();
+      this.audioContext.src = audioUrl;
+      this.audioContext.play();
+      this.setData({ playingIndex: index });
+    }
+  },
+
+  onShow() {
+    syncAppearance(this);
+  },
+
+  onInput(e) {
+    const value = String((e.detail && e.detail.value) || '').trim();
+    this.setData({ word: value });
+    
+    if (this.suggestTimer) {
+      clearTimeout(this.suggestTimer);
+    }
+    
+    if (!value) {
+      this.setData({ suggestions: [], showSuggestions: false });
+      return;
+    }
+    
+    this.suggestTimer = setTimeout(async () => {
+      try {
+        const payload = await contentApi.suggest(value);
+        let items = [];
+        // Flat mapping suggestions
+        if (payload.dictionary) items = items.concat(payload.dictionary);
+        if (payload.phrases) items = items.concat(payload.phrases);
+        if (payload.proverbs) items = items.concat(payload.proverbs);
+        
+        // Take top 8 suggestions max
+        items = items.slice(0, 8);
+        this.setData({ suggestions: items, showSuggestions: items.length > 0 });
+      } catch (e) {
+        console.error('Suggest error:', e);
+      }
+    }, 300);
+  },
+
+  onSelectSuggestion(e) {
+    const item = e.currentTarget.dataset.item;
+    // Hide suggestions, set word to purely Chinese or Buyi
+    const word = item.zhText || item.buyiText || this.data.word;
+    this.setData({ word, showSuggestions: false });
+    this.fetchResults(word);
+  },
+
+  onHideSuggestions() {
+    this.setData({ showSuggestions: false });
+  },
+
+  onClear() {
+    this.setData({ word: '', suggestions: [], showSuggestions: false });
+  },
+
+  onSearch() {
+    const word = String(this.data.word || '').trim();
+    if (!word) {
+      wx.showToast({ title: '请输入关键词', icon: 'none' });
+      return;
+    }
+    this.fetchResults(word);
+  },
+
+  async fetchResults(keyword) {
+    this.setData({ loading: true, errorText: '', emptyText: '没有找到相关结果' });
+    try {
+      const payload = await contentApi.search(keyword);
+      const results = flattenSearchResults(payload);
+      this.setData({
+        results,
+        word: keyword,
+        loading: false,
+        errorText: '',
+        emptyText: results.length ? '' : '没有找到相关结果',
+      });
+
+      const firstDictionary = results.find((item) => item.contentType === 'dictionary');
+      if (firstDictionary) {
+        History.add(firstDictionary, 'view');
+      }
+    } catch (error) {
+      this.setData({
+        results: [],
+        loading: false,
+        errorText: '查询失败，请稍后重试',
+        emptyText: '查询失败，请稍后重试',
+      });
+    }
+  },
+
+  switchLang(e) {
+    const lang = e.currentTarget.dataset.lang;
+    this.setData({ activeLang: lang || 'buyi' });
+  },
+
+  async toggleFavorite(e) {
+    const index = e.currentTarget.dataset.index;
+    const list = this.data.results.slice();
+    const item = list[index];
+    if (!item) {
+      return;
+    }
+
+    const previous = !!item.fav;
+    list[index] = { ...item, fav: !previous, isFavorited: !previous };
+    this.setData({ results: list });
+
+    try {
+      const result = await Favorites.toggle(item);
+      if (result && result.skipped) {
+        list[index] = { ...item, fav: previous, isFavorited: previous };
+        this.setData({ results: list });
+        return;
+      }
+      list[index] = { ...item, fav: !!result.isFavorited, isFavorited: !!result.isFavorited };
+      this.setData({ results: list });
+    } catch (error) {
+      list[index] = { ...item, fav: previous, isFavorited: previous };
+      this.setData({ results: list });
+      wx.showToast({ title: '收藏失败，请稍后重试', icon: 'none' });
+    }
+  },
+
+  toRecord() {
+    wx.navigateTo({ url: '/pages/record/index' });
+  },
+});

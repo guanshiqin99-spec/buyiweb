@@ -1,0 +1,101 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
+  <custom-nav title="查词"></custom-nav>
+  <!-- 顶部搜索栏与语言切换区域 -->
+  <view class="search-header">
+    <view class="search-box">
+      <view class="search-icon">🔍</view>
+      <input 
+        class="search-input text-body" 
+        value="{{word}}" 
+        placeholder="搜查布依语词汇、短句..." 
+        bindinput="onInput" 
+        bindfocus="onInput"
+        bindblur="onHideSuggestions"
+        confirm-type="search" 
+        bindconfirm="onSearch" 
+      />
+      <view class="clear-btn" wx:if="{{word}}" bindtap="onClear">✖</view>
+
+      <!-- 实时建议下拉层 -->
+      <view class="suggestions-dropdown" wx:if="{{showSuggestions}}">
+        <view class="suggestion-item" wx:for="{{suggestions}}" wx:key="id" data-item="{{item}}" catchtap="onSelectSuggestion">
+          <view class="suggestion-main">
+            <text class="suggestion-mark">[{{item.type === 'dictionary' ? '词' : item.type === 'phrase' ? '句' : '谚'}}]</text>
+            <text class="suggestion-zh text-body" style="font-weight:bold;">{{item.zhText}}</text>
+            <text class="suggestion-buyi text-sub" style="margin-left: 10rpx;">{{item.buyiText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 语言切换胶囊按钮 -->
+    <view class="lang-switch">
+      <view class="lang-tab {{activeLang === 'buyi' ? 'active' : ''}}" data-lang="buyi" bindtap="switchLang">布依语</view>
+      <view class="lang-tab {{activeLang === 'ch' ? 'active' : ''}}" data-lang="ch" bindtap="switchLang">汉 语</view>
+      <view class="lang-tab {{activeLang === 'en' ? 'active' : ''}}" data-lang="en" bindtap="switchLang">英 语</view>
+    </view>
+  </view>
+
+  <!-- 查询结果标签 -->
+  <view class="result-header">
+    <text class="text-sub">查询结果</text>
+    <text class="text-sub" wx:if="{{results.length}}">找到 {{results.length}} 条</text>
+  </view>
+
+  <!-- 结果列表区 -->
+  <view class="result-list">
+    <!-- 状态：加载中 -->
+    <view wx:if="{{loading}}" class="card status-card">
+      <text class="text-h3">查询中...</text>
+      <text class="text-sub">正在检索布依语资源库</text>
+    </view>
+
+    <!-- 状态：错误 -->
+    <view wx:elif="{{errorText}}" class="card status-card error">
+      <text class="text-h3 text-danger">查询失败</text>
+      <text class="text-sub">{{errorText}}</text>
+    </view>
+
+    <!-- 结果卡片 -->
+    <block wx:elif="{{results.length}}">
+      <view wx:for="{{results}}" wx:key="index" class="card result-card" data-index="{{index}}">
+        <view class="result-top">
+          <text class="tag">{{item.typeLabel}}</text>
+          <view class="fav-icon {{item.fav ? 'active' : ''}}" data-index="{{index}}" catchtap="toggleFavorite">
+            {{item.fav ? '♥' : '♡'}}
+          </view>
+        </view>
+        
+        <!-- 主文本展示与播放按钮 -->
+        <view class="result-main-area">
+          <view class="result-main-text">
+            <text wx:if="{{activeLang === 'buyi'}}" class="text-h2 result-main">{{item.buyi}}</text>
+            <text wx:if="{{activeLang === 'ch'}}" class="text-h2 result-main">{{item.ch}}</text>
+            <text wx:if="{{activeLang === 'en'}}" class="text-h2 result-main">{{item.en}}</text>
+          </view>
+          <view class="audio-btn {{!(item.audio || item.audioUrl) ? 'disabled' : ''}}" data-index="{{index}}" catchtap="onPlayAudio">
+            <text class="audio-icon">{{playingIndex === index ? '⏸️' : '🔊'}}</text>
+          </view>
+        </view>
+
+        <!-- 辅助译文展示 -->
+        <view class="result-sub">
+          <text class="text-sub" wx:if="{{activeLang !== 'buyi'}}">布: {{item.buyi || '暂无'}}</text>
+          <text class="text-sub" wx:if="{{activeLang !== 'ch'}}">汉: {{item.ch || '暂无'}}</text>
+          <text class="text-sub" wx:if="{{activeLang !== 'en'}}">英: {{item.en || '暂无'}}</text>
+        </view>
+        
+        <!-- 音标展示 (如果有) -->
+        <text class="text-sub result-phonetic" wx:if="{{item.ipa}}">国际音标: [{{item.ipa}}]</text>
+        <text wx:if="{{item.contentType === 'song'}}" class="text-sub result-note">来源: 民歌《{{item.title}}》</text>
+      </view>
+    </block>
+
+    <!-- 状态：空数据 -->
+    <view wx:else class="card status-card empty">
+      <text class="text-h3">暂无结果</text>
+      <text class="text-sub">{{emptyText || '未找到匹配的词条或短语，换个词试试吧'}}</text>
+    </view>
+  </view>
+
+</view>

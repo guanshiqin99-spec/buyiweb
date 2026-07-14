@@ -1,0 +1,12 @@
+*
+!backend/
+!admin-web/
+
+backend/node_modules/
+backend/dist/
+backend/uploads/
+backend/*.sqlite
+backend/*.log
+backend/*.err.log
+backend/.env
+admin-web/node_modules/

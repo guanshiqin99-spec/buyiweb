@@ -1,0 +1,618 @@
+/* ===============================
+   登录页 · 布依青瓷 · 水墨风格
+   =============================== */
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+  min-height: 100vh;
+  /* 宣纸底色 */
+  background: linear-gradient(180deg,
+    #eef4fb 0%,
+    #f4f8fd 30%,
+    #f8fafd 60%,
+    #f0f5fb 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- 水墨背景层 ---- */
+.page-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 顶部晕染 */
+.ink-wash-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 55%;
+  background: radial-gradient(
+    ellipse 110% 80% at 50% -10%,
+    rgba(72, 130, 200, 0.11) 0%,
+    rgba(72, 130, 200, 0.04) 50%,
+    transparent 100%
+  );
+}
+
+/* 左上角花枝 · 用径向晕染模拟 */
+.ink-wash-left-branch {
+  position: absolute;
+  top: -60rpx;
+  left: -80rpx;
+  width: 500rpx;
+  height: 500rpx;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(55, 110, 190, 0.10) 0%,
+    rgba(55, 110, 190, 0.04) 40%,
+    transparent 70%
+  );
+  filter: blur(24rpx);
+  opacity: 0.9;
+}
+
+/* 右侧山水 */
+.ink-wash-right-mountain {
+  position: absolute;
+  top: 80rpx;
+  right: -100rpx;
+  width: 520rpx;
+  height: 600rpx;
+  background: radial-gradient(
+    ellipse 80% 90% at 90% 40%,
+    rgba(100, 160, 220, 0.09) 0%,
+    rgba(100, 160, 220, 0.03) 50%,
+    transparent 80%
+  );
+  filter: blur(28rpx);
+}
+
+/* 中段云气 */
+.ink-wash-mid-cloud {
+  position: absolute;
+  top: 42%;
+  left: 0;
+  width: 100%;
+  height: 200rpx;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(232, 242, 252, 0.18) 50%,
+    transparent 100%
+  );
+}
+
+/* 底部水波渐变 · 不贴纸，自然融入 */
+.ink-wash-bottom-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 380rpx;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(190, 218, 245, 0.10) 35%,
+    rgba(160, 200, 238, 0.18) 65%,
+    rgba(140, 185, 230, 0.22) 100%
+  );
+}
+
+/* ---- btn reset ---- */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+/* ---- 主容器 ---- */
+.login-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0 44rpx 60rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ---- 品牌悬浮区（无白底卡片） ---- */
+.brand {
+  width: 100%;
+  text-align: center;
+  margin-top: 120rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand-badge {
+  width: 152rpx;
+  height: 152rpx;
+  border-radius: 38rpx;
+  margin: 0 auto 28rpx;
+  /* 釉面光泽 */
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5rpx solid rgba(80, 120, 180, 0.18);
+  box-shadow:
+    0 12rpx 36rpx rgba(45, 95, 168, 0.12),
+    inset 0 2rpx 6rpx rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.brand-badge-image {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 18rpx;
+}
+
+.logo {
+  font-size: 54rpx;
+  font-weight: 800;
+  letter-spacing: 6rpx;
+  color: #173663;
+  display: block;
+  /* 微妙文字阴影增强立体感 */
+  text-shadow: 0 2rpx 12rpx rgba(23, 54, 99, 0.10);
+}
+
+.logo-divider {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 18rpx;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, rgba(80, 120, 180, 0.28), transparent);
+  max-width: 100rpx;
+}
+
+.logo-sub {
+  color: #6580a0;
+  font-size: 24rpx;
+  letter-spacing: 2rpx;
+  white-space: nowrap;
+}
+
+/* ---- 文化 Slogan ---- */
+.cultural-slogan {
+  margin-top: 48rpx;
+  color: #8099ba;
+  font-size: 24rpx;
+  letter-spacing: 5rpx;
+  text-align: center;
+  position: relative;
+  padding: 0 40rpx;
+}
+
+.cultural-slogan::before,
+.cultural-slogan::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 50rpx;
+  height: 1rpx;
+  background: rgba(128, 153, 186, 0.30);
+}
+
+.cultural-slogan::before { right: calc(100% - 30rpx); }
+.cultural-slogan::after  { left: calc(100% - 30rpx); }
+
+/* ---- 弹性占位 ---- */
+.spacer {
+  flex: 1;
+  min-height: 64rpx;
+  max-height: 180rpx;
+}
+
+/* ---- 登录卡片（玻璃釉面） ---- */
+.login-card {
+  width: 100%;
+  border-radius: 40rpx;
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5rpx solid rgba(100, 150, 210, 0.18);
+  box-shadow:
+    0 20rpx 60rpx rgba(45, 95, 168, 0.08),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+.login-card-inner {
+  padding: 48rpx 40rpx 44rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 头像昵称输入区域 */
+.profile-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 40rpx;
+}
+
+.avatar-choose-btn {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0 auto 30rpx;
+  background: #f0f2f5;
+  border: 4rpx solid rgba(80, 120, 180, 0.2);
+  box-shadow: 0 8rpx 20rpx rgba(45, 95, 168, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar-choose-btn::after {
+  display: none;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+.avatar-edit-mask {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40rpx;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-edit-text {
+  color: white;
+  font-size: 20rpx;
+}
+
+.nickname-input-box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 90rpx;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20rpx;
+  padding: 0 30rpx;
+  border: 1.5rpx solid rgba(80, 120, 180, 0.14);
+  box-shadow: inset 0 2rpx 6rpx rgba(0,0,0,0.02);
+}
+
+.nickname-label {
+  font-size: 28rpx;
+  color: #4a6fa8;
+  width: 100rpx;
+  flex-shrink: 0;
+}
+
+.nickname-input {
+  flex: 1;
+  height: 100%;
+  font-size: 28rpx;
+  color: #173663;
+}
+
+/* 功能说明小图标行 */
+.feature-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 60rpx;
+  margin-bottom: 44rpx;
+  width: 100%;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.feature-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.70);
+  border: 1.5rpx solid rgba(80, 120, 180, 0.14);
+  box-shadow: 0 4rpx 12rpx rgba(45, 95, 168, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  color: #4a6fa8;
+}
+
+.feature-label {
+  font-size: 20rpx;
+  color: #7a95b8;
+  letter-spacing: 1rpx;
+}
+
+/* ---- 釉面主按钮 ---- */
+.glazed-btn {
+  background: linear-gradient(135deg,
+    #2D5FA8 0%,
+    #3F76C7 45%,
+    #6F9DDA 100%);
+  color: #ffffff;
+  border: 1.5rpx solid rgba(255, 255, 255, 0.36);
+  box-shadow:
+    0 14rpx 40rpx rgba(45, 95, 168, 0.28),
+    inset 0 2rpx 6rpx rgba(255, 255, 255, 0.25);
+}
+
+.main-btn {
+  height: 96rpx;
+  line-height: 96rpx;
+  border-radius: 48rpx;
+  font-weight: 600;
+  font-size: 32rpx;
+  width: 100%;
+  letter-spacing: 2rpx;
+}
+
+/* ---- 游客模式 ---- */
+.guest-mode {
+  margin-top: 36rpx;
+}
+
+.guest-link {
+  color: #8099ba;
+  font-size: 26rpx;
+  padding: 12rpx 40rpx;
+  letter-spacing: 1rpx;
+}
+
+/* ---- 底部说明 ---- */
+.bottom-note {
+  margin-top: 36rpx;
+  text-align: center;
+  color: #96aec8;
+  font-size: 20rpx;
+  line-height: 30rpx;
+  letter-spacing: 0.5rpx;
+}
+
+/* ---- 资料填写弹窗 ---- */
+.profile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.profile-modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.profile-modal-content {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(248, 250, 253, 0.96) 0%, var(--color-bg) 100%);
+  border-radius: 40rpx 40rpx 0 0;
+  padding: 40rpx 40rpx 80rpx;
+  box-shadow: 0 -10rpx 40rpx rgba(0,0,0,0.1);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.profile-modal-header {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #173663;
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.profile-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 30rpx;
+  margin-top: 50rpx;
+}
+
+.profile-cancel-btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  background: #eef4fb;
+  color: #6580a0;
+  font-weight: 500;
+}
+
+.profile-confirm-btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+}
+
+/* ---- 淡入上浮动画 ---- */
+.fade-in-up {
+  animation: fadeUp 700ms cubic-bezier(.18, .89, .32, 1.08) both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===============================
+   字号适配
+   =============================== */
+.small .logo  { font-size: 46rpx; }
+.large .logo  { font-size: 58rpx; }
+
+/* ===============================
+   深色模式
+   =============================== */
+.page.dark.login-page {
+  background: linear-gradient(180deg,
+    #071522 0%,
+    #0a1d35 40%,
+    #0e2444 80%,
+    #071522 100%);
+}
+
+.page.dark .ink-wash-left-branch {
+  background: radial-gradient(circle at 30% 30%,
+    rgba(55, 110, 190, 0.16) 0%,
+    rgba(55, 110, 190, 0.06) 40%,
+    transparent 70%);
+}
+
+.page.dark .ink-wash-right-mountain {
+  background: radial-gradient(ellipse 80% 90% at 90% 40%,
+    rgba(80, 140, 210, 0.14) 0%,
+    rgba(80, 140, 210, 0.05) 50%,
+    transparent 80%);
+}
+
+.page.dark .ink-wash-bottom-wave {
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(30, 65, 120, 0.16) 35%,
+    rgba(20, 50, 100, 0.28) 65%,
+    rgba(15, 40, 88, 0.36) 100%);
+}
+
+.page.dark .brand-badge {
+  background: rgba(15, 36, 66, 0.72);
+  border-color: rgba(88, 130, 195, 0.28);
+  box-shadow:
+    0 12rpx 36rpx rgba(0, 0, 0, 0.36),
+    inset 0 2rpx 6rpx rgba(255, 255, 255, 0.06);
+}
+
+.page.dark .logo          { color: #deeeff; text-shadow: 0 2rpx 12rpx rgba(0,0,0,0.3); }
+.page.dark .logo-sub      { color: #7a95b8; }
+.page.dark .divider-line  { background: linear-gradient(90deg, transparent, rgba(88, 130, 195, 0.3), transparent); }
+.page.dark .cultural-slogan { color: #5a7499; }
+.page.dark .cultural-slogan::before,
+.page.dark .cultural-slogan::after { background: rgba(90, 116, 153, 0.28); }
+
+.page.dark .login-card {
+  background: rgba(12, 28, 55, 0.62);
+  border-color: rgba(88, 130, 195, 0.22);
+  box-shadow:
+    0 20rpx 60rpx rgba(0, 0, 0, 0.32),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.06);
+}
+
+.page.dark .feature-icon {
+  background: rgba(15, 36, 66, 0.8);
+  border-color: rgba(88, 130, 195, 0.22);
+  color: #6580a0;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+}
+
+.page.dark .feature-label { color: #5a7499; }
+.page.dark .guest-link { color: #5a7499; }
+.page.dark .bottom-note { color: #40587a; }
+
+/* 深色模式下的头像昵称弹窗适配 */
+.page.dark .profile-modal-content {
+  background: linear-gradient(180deg, #122846 0%, #0a1d35 100%);
+  box-shadow: 0 -10rpx 40rpx rgba(0,0,0,0.5);
+}
+
+.page.dark .profile-modal-header {
+  color: #e0eaf5;
+}
+
+.page.dark .nickname-input-box {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(88, 130, 195, 0.22);
+  box-shadow: inset 0 2rpx 6rpx rgba(0,0,0,0.2);
+}
+
+.page.dark .nickname-label {
+  color: #7a95b8;
+}
+
+.page.dark .nickname-input {
+  color: #e0eaf5;
+}
+
+.page.dark .avatar-choose-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(88, 130, 195, 0.22);
+}
+
+.page.dark .profile-cancel-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #7a95b8;
+}
+
+.page.dark .feature-icon {
+  background: rgba(15, 36, 70, 0.72);
+  border-color: rgba(88, 130, 195, 0.22);
+  color: #6a8fc0;
+}
+
+.page.dark .feature-label { color: #5a7499; }
+
+.page.dark .glazed-btn {
+  background: linear-gradient(135deg,
+    #1f4878 0%,
+    #2e5e9e 45%,
+    #4678bb 100%);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 14rpx 40rpx rgba(0, 0, 0, 0.4),
+    inset 0 2rpx 6rpx rgba(255, 255, 255, 0.10);
+}
+
+.page.dark .guest-link  { color: #5a7499; }
+.page.dark .bottom-note { color: #4a6480; }

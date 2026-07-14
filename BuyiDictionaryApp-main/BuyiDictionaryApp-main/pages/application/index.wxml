@@ -1,0 +1,35 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
+  <custom-nav title="应用"></custom-nav>
+  <!-- 标题区 -->
+  <view class="header-section">
+    <text class="text-h1">学习导航中心</text>
+    <text class="text-sub">探索布依语的多维学习路径</text>
+  </view>
+
+  <!-- 核心主卡 (高亮) -->
+  <navigator class="card card-primary" url="/pages/query/index">
+    <text class="text-h2">核心词典查询</text>
+    <text class="text-sub">支持布汉互译、拼音与国际音标</text>
+  </navigator>
+
+  <!-- 次卡双列布局 -->
+  <view class="grid-2-cols">
+    <navigator class="card card-secondary" url="/pages/phrases/index">
+      <text class="text-h3">日常对话</text>
+      <text class="text-sub">实用的问候与\n生活用语交际</text>
+    </navigator>
+    <navigator class="card card-secondary" url="/pages/proverbs/index">
+      <text class="text-h3">民族谚语</text>
+      <text class="text-sub">汇集民间智慧\n领略传统哲学</text>
+    </navigator>
+  </view>
+
+  <!-- 次卡单列横向 -->
+  <navigator class="card card-secondary row-card" url="/pages/song/index" open-type="switchTab">
+    <view>
+      <text class="text-h3">布依民歌鉴赏</text>
+      <text class="text-sub">音源与译注，沉浸式感受原生态艺术</text>
+    </view>
+  </navigator>
+
+</view>

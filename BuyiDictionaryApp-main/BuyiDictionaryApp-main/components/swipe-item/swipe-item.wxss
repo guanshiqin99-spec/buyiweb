@@ -1,0 +1,42 @@
+.swipe-root {
+  position: relative;
+  overflow: visible; /* 允许阴影显示出来，不被裁剪 */
+}
+
+.swipe-container {
+  position: relative;
+  transition: transform 180ms cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 2; /* 确保在删除按钮上面 */
+  background-color: var(--color-card-bg); 
+  border-radius: var(--radius-card, 24rpx);
+  box-shadow: var(--shadow-light); /* 为卡片添加阴影 */
+  border: 1px solid var(--color-card-border); /* 为卡片添加边框 */
+}
+
+.swipe-content {
+  width: 100%;
+}
+
+.delete-area {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--color-error);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-card, 24rpx);
+  z-index: 1; /* 藏在 container 下方 */
+}
+
+.delete-icon {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+.delete-text {
+  font-size: 28rpx;
+  font-weight: 500;
+}

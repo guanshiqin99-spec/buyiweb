@@ -1,0 +1,31 @@
+import { ConfigService } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DataSourceOptions } from 'typeorm';
+import { Admin } from '../entities/admin.entity';
+import { AgentCache } from '../entities/agent-cache.entity';
+import { AuthSession } from '../entities/auth-session.entity';
+import { Badge } from '../entities/badge.entity';
+import { ContentCultureLink } from '../entities/content-culture-link.entity';
+import { CultureExhibit } from '../entities/culture-exhibit.entity';
+import { Favorite } from '../entities/favorite.entity';
+import { MediaAsset } from '../entities/media-asset.entity';
+import { Phrase } from '../entities/phrase.entity';
+import { UserSetting } from '../entities/user-setting.entity';
+import { User } from '../entities/user.entity';
+import { WechatAccount } from '../entities/wechat-account.entity';
+import { BaselineSchema1710000000000 } from '../migrations/1710000000000-baseline-schema';
+export declare const entities: (typeof CultureExhibit | typeof Admin | typeof AgentCache | typeof AuthSession | typeof User | typeof WechatAccount | typeof UserSetting | typeof MediaAsset | typeof Phrase | typeof Favorite | typeof Badge | typeof ContentCultureLink)[];
+export declare const migrations: (typeof BaselineSchema1710000000000)[];
+export declare function buildTypeOrmOptions(config: {
+    db: {
+        type: string;
+        host: string;
+        port: number;
+        username: string;
+        password: string;
+        database: string;
+        synchronize: boolean;
+        logging: boolean;
+    };
+}): DataSourceOptions;
+export declare function typeOrmConfigFactory(configService: ConfigService): TypeOrmModuleOptions;

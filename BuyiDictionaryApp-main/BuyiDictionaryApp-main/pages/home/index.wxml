@@ -1,0 +1,105 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
+  <custom-nav title="布依语词典"></custom-nav>
+  <!-- 首页专属青花渲染渐变背景 -->
+  <view class="home-hero-bg"></view>
+
+  <!-- Hero 主视觉区 -->
+  <view class="hero-section">
+    <text class="text-h1 hero-title">布依语词典</text>
+    <view class="hero-subtitle">
+      <view class="line"></view>
+      <text>传承布依文化 · 连接语言之美</text>
+      <view class="line"></view>
+    </view>
+  </view>
+
+  <!-- 搜索框区域 -->
+  <view class="search-section" style="position: relative; z-index: 100;">
+    <view class="search-box">
+      <icon type="search" size="20" color="#1664D9" class="search-icon" />
+      <input
+        class="search-input text-body"
+        placeholder="搜索布依语词汇、短句..."
+        placeholder-class="search-placeholder"
+        value="{{keyword}}"
+        bindinput="onInput"
+        bindfocus="onInput"
+        bindblur="onHideSuggestions"
+        confirm-type="search"
+        bindconfirm="onSearch"
+      />
+      <view class="clear-btn" wx:if="{{keyword}}" bindtap="onClear">✖</view>
+      
+      <!-- 实时建议下拉层 -->
+      <view class="suggestions-dropdown" wx:if="{{showSuggestions}}">
+        <view class="suggestion-item" wx:for="{{suggestions}}" wx:key="id" data-item="{{item}}" catchtap="onSelectSuggestion">
+          <view class="suggestion-main">
+            <text class="suggestion-mark">[{{item.type === 'dictionary' ? '词' : item.type === 'phrase' ? '句' : '谚'}}]</text>
+            <text class="suggestion-zh text-body" style="font-weight:bold;">{{item.zhText}}</text>
+            <text class="suggestion-buyi text-sub" style="margin-left: 10rpx;">{{item.buyiText}}</text>
+          </view>
+        </view>
+        <view class="suggest-empty text-sub" wx:if="{{suggestions.length === 0}}">没有匹配的建议</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 4 宫格 -->
+  <view class="menu-card" style="margin-top: 20rpx;">
+    <view class="menu-grid">
+      <navigator class="menu-item" url="/pages/query/index">
+        <view class="menu-icon-wrap"><text class="menu-icon">词</text></view>
+        <text class="menu-text">词典查询</text>
+        <text class="menu-desc text-sub">查询释义</text>
+      </navigator>
+      <navigator class="menu-item" url="/pages/phrases/index">
+        <view class="menu-icon-wrap"><text class="menu-icon">句</text></view>
+        <text class="menu-text">常用语</text>
+        <text class="menu-desc text-sub">日常用语</text>
+      </navigator>
+      <navigator class="menu-item" url="/pages/proverbs/index">
+        <view class="menu-icon-wrap"><text class="menu-icon">谚</text></view>
+        <text class="menu-text">谚语</text>
+        <text class="menu-desc text-sub">智慧谚语</text>
+      </navigator>
+      <navigator class="menu-item" url="/pages/song/index" open-type="switchTab">
+        <view class="menu-icon-wrap"><text class="menu-icon">歌</text></view>
+        <text class="menu-text">民歌欣赏</text>
+        <text class="menu-desc text-sub">布依歌谣</text>
+      </navigator>
+    </view>
+  </view>
+
+  <!-- 精选专题 Banner -->
+  <view class="banner-section" wx:if="{{bannerItems.length}}">
+    <view class="section-header">
+      <view class="section-title-wrap">
+        <text class="section-icon">☁️</text>
+        <text class="text-h2 section-title">精选专题</text>
+      </view>
+    </view>
+    <view class="banner-wrapper" style="position: relative;">
+      <swiper class="banner-swiper" autoplay="true" interval="4000" circular="true" bindchange="onBannerChange">
+        <block wx:for="{{bannerItems}}" wx:key="id">
+          <swiper-item>
+            <view class="banner-card" hover-class="banner-hover" data-index="{{index}}" bindtap="handleBannerTap">
+              <image wx:if="{{item.image}}" src="{{item.image}}" class="banner-bg" mode="aspectFill" />
+              <view class="banner-content">
+                <text class="text-h3 banner-title">{{item.title || '布依迎客歌'}}</text>
+                <text class="banner-subtitle">布依文化采集</text>
+                <text class="text-body banner-desc">{{item.subtitle || item.zhText || '欢迎远方的客人，感受布依的热情与美好'}}</text>
+                <view class="banner-btn">立即查看 〉</view>
+              </view>
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+      
+      <!-- 自定义青花指示器 -->
+      <view class="custom-indicator">
+        <view class="indicator-dot {{currentBanner === index ? 'active' : ''}}" wx:for="{{bannerItems}}" wx:key="id"></view>
+      </view>
+    </view>
+  </view>
+
+</view>

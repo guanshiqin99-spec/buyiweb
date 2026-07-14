@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F5F2EF">
+    <title>个性化设置 - 布依族词典</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../liquid-glass.css">
+    <style>
+.settings-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.setting-group { padding: 8px 0; }
+.setting-group h3 { font-size: 13px; font-weight: 600; color: var(--c-text-50); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 12px 16px; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--c-divider); }
+.setting-row:last-child { border-bottom: none; }
+.setting-row .label { font-size: 15px; color: var(--c-text); font-weight: 500; }
+.setting-row .desc { font-size: 12px; color: var(--c-text-50); margin: 2px 0 0 0; }
+.setting-row .control { flex-shrink: 0; }
+.toggle { position: relative; width: 44px; height: 26px; border-radius: 999px; background: var(--c-divider); border: none; cursor: pointer; transition: background 200ms ease; }
+.toggle.on { background: var(--c-brand); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 999px; background: #fff; transition: transform 200ms ease; }
+.toggle.on::after { transform: translateX(18px); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--c-brand-06); }
+.seg button { padding: 6px 14px; border: none; border-radius: 999px; background: transparent; font: 500 13px var(--font-sans); color: var(--c-text-60); cursor: pointer; transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease; }
+.seg button.active { background: var(--c-white); color: var(--c-brand); box-shadow: 0 1px 3px var(--c-shadow-soft); }
+    </style>
+</head>
+<body style="font-family: 'DM Sans', ui-sans-serif, sans-serif; margin: 0;">
+    <a class="skip-link" href="#main">跳到主内容</a>
+    <div class="page-bg"><img src="../assets/bg-settings.png" alt="" loading="lazy"/></div>
+    <div class="page-overlay cool"></div>
+    <div class="particles" data-pattern="weaving" data-count="8" aria-hidden="true"></div>
+    <div class="nav-scrim" aria-hidden="true"></div>
+    <nav class="nav-immersive" id="mainNav">
+        <div class="nav-inner">
+            <a href="home.html" class="nav-brand"><svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span>布依族词典</span></a>
+            <div class="nav-rail">
+                <a href="home.html" class="nav-link">首页</a>
+                <a href="vocabulary.html" class="nav-link">词典</a>
+                <a href="phrases.html" class="nav-link">学习</a>
+                <a href="songs.html" class="nav-link">民歌</a>
+                <a href="culture.html" class="nav-link">文化</a>
+                <a href="favorites.html" class="nav-link">收藏</a>
+                <a href="profile.html" class="nav-link active">我的</a>
+            </div>
+            <button class="nav-burger" aria-label="打开菜单" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        </div>
+        <div class="nav-drawer" id="navDrawer">
+            <a href="home.html">首页</a>
+            <a href="vocabulary.html">词典</a>
+            <a href="phrases.html">学习</a>
+            <a href="songs.html">民歌</a>
+            <a href="culture.html">文化</a>
+            <a href="favorites.html">收藏</a>
+            <a href="profile.html">我的</a>
+        </div>
+    </nav>
+    <main id="main" style="padding-top: 64px; padding-bottom: 120px; position: relative; z-index: 3;">
+        <section class="page-hero-dark"><div class="reveal reveal-1" style="padding: 32px 24px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2;">
+            <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px 0;">应用设置</p>
+            <h1 class="title-breathe" style="font-size: clamp(32px, 5vw, 48px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: #fff; margin: 0; text-align: center;">个性化设置</h1>
+            <p style="font-size: 15px; color: rgba(255,255,255,0.78); max-width: 480px; margin: 12px 0 0 0; text-align: center; line-height: 1.55;">定制你的学习体验</p>
+        </div></section>
+        <section class="reveal reveal-2" style="padding: 0 24px 32px;">
+            <div class="settings-list">
+                <div class="setting-group liquid-glass glow-card card-interactive stagger-enter">
+                    <div class="glow-effect"></div>
+                    <h3>通用</h3>
+                    <div class="setting-row">
+                        <span class="label">深色模式</span>
+                        <div class="control"><button class="toggle" aria-pressed="false" aria-label="深色模式"></button></div>
+                    </div>
+                    <div class="setting-row font-size">
+                        <span class="label">字号</span>
+                        <div class="control">
+                            <div class="seg">
+                                <button aria-pressed="false">小</button>
+                                <button class="active" aria-pressed="true">中</button>
+                                <button aria-pressed="false">大</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-row lang">
+                        <span class="label">语言</span>
+                        <div class="control">
+                            <div class="seg">
+                                <button class="active" aria-pressed="true">简</button>
+                                <button aria-pressed="false">繁</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-group liquid-glass glow-card card-interactive stagger-enter">
+                    <div class="glow-effect"></div>
+                    <h3>通知</h3>
+                    <div class="setting-row">
+                        <span class="label">每日提醒</span>
+                        <div class="control"><button class="toggle on" aria-pressed="true" aria-label="每日提醒"></button></div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="label">学习目标</span>
+                        <div class="control"><button class="toggle on" aria-pressed="true" aria-label="学习目标"></button></div>
+                    </div>
+                </div>
+                <div class="setting-group liquid-glass glow-card card-interactive stagger-enter">
+                    <div class="glow-effect"></div>
+                    <h3>关于</h3>
+                    <div class="setting-row">
+                        <span class="label">版本号</span>
+                        <div class="control"><span style="font-size: 14px; color: var(--c-text-50);">v1.0.0</span></div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="label">反馈</span>
+                        <div class="control"><a href="javascript:void(0)" class="feedback-link" style="font-size: 14px; color: var(--c-brand); text-decoration: none;">提交反馈</a></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <div data-player-bar></div>
+    <script src="../app.js"></script>
+    <script>
+      // toggle 开关占位
+      document.querySelectorAll('.toggle').forEach(function(t){
+        t.addEventListener('click', function(){
+          var on = t.classList.toggle('on');
+          t.setAttribute('aria-pressed', on ? 'true' : 'false');
+          console.log('[toggle]', t.closest('li')?.querySelector('.label')?.textContent || '', on ? 'on' : 'off');
+        });
+      });
+      // 字号 seg 占位
+      document.querySelectorAll('.font-size .seg button').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.font-size .seg button').forEach(function(b){ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+          btn.classList.add('active');
+          btn.setAttribute('aria-pressed','true');
+          console.log('[font-size]', btn.textContent.trim());
+        });
+      });
+      // 语言 seg 占位
+      document.querySelectorAll('.lang .seg button').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.lang .seg button').forEach(function(b){ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+          btn.classList.add('active');
+          btn.setAttribute('aria-pressed','true');
+          console.log('[lang]', btn.textContent.trim());
+        });
+      });
+      // 反馈占位
+      var fb = document.querySelector('.feedback-link');
+      if (fb) fb.addEventListener('click', function(){ console.log('[feedback]'); });
+    </script>
+</body>
+</html>

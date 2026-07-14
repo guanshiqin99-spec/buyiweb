@@ -1,0 +1,72 @@
+/* 谚语页青花瓷风格样式 */
+
+.header-section {
+  margin-bottom: 48rpx;
+}
+
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.list-item-card {
+  padding: 32rpx;
+  margin-bottom: 0;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.fav-icon {
+  font-size: 40rpx;
+  color: var(--color-text-secondary);
+  padding: 10rpx;
+}
+.fav-icon.active {
+  color: var(--color-primary);
+}
+
+.primary-text {
+  display: block;
+  margin-bottom: 24rpx;
+  color: var(--color-primary-dark);
+}
+
+.translation-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  background: var(--color-bg);
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+}
+
+/* 状态卡片 */
+.status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  text-align: center;
+}
+.status-card.empty {
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+}
+.status-card .text-h3 {
+  margin-bottom: 16rpx;
+}
+.status-card.error {
+  border-color: var(--color-error);
+  background: var(--color-danger-bg);
+}
+.text-danger {
+  color: var(--color-error);
+}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F5F2EF">
+    <title>日常表达 - 布依族词典</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../liquid-glass.css">
+    <style>
+        .item-list { display: flex; flex-direction: column; gap: 16px; max-width: 720px; margin: 0 auto; }
+        .item-card { display: flex; align-items: flex-start; gap: 16px; padding: 24px; }
+        .item-card .item-num { font-size: 24px; font-weight: 700; color: var(--c-brand-light); font-family: var(--font-mono); flex-shrink: 0; min-width: 32px; }
+        .item-card .item-body { flex: 1; min-width: 0; }
+        .item-card .bouyei { font-size: 20px; font-weight: 700; color: var(--c-text); margin: 0 0 6px 0; line-height: 1.2; }
+        .item-card .chinese { font-size: 15px; color: var(--c-text-70); margin: 0 0 8px 0; line-height: 1.5; }
+        .item-card .note { font-size: 13px; color: var(--c-text-50); margin: 0; font-style: italic; }
+        .item-card .actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .icon-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: none; border-radius: 999px; cursor: pointer; transition: transform 150ms ease, background 150ms ease; }
+        .icon-btn.play { background: var(--c-brand); color: var(--c-white); }
+        .icon-btn.fav { background: var(--c-brand-06); color: var(--c-text-60); }
+        .icon-btn:hover { transform: scale(1.08); }
+        @media (max-width: 640px) { .item-card { flex-direction: column; } }
+    </style>
+</head>
+<body style="font-family: 'DM Sans', ui-sans-serif, sans-serif; margin: 0;">
+    <a class="skip-link" href="#main">跳到主内容</a>
+    <div class="page-bg"><img src="../assets/bouyei-textile.jpg" alt="" loading="lazy"/></div>
+    <div class="page-overlay warm"></div>
+    <div class="particles" data-pattern="weaving" data-count="10" aria-hidden="true"></div>
+    <div class="nav-scrim" aria-hidden="true"></div>
+    <nav class="nav-immersive" id="mainNav">
+        <div class="nav-inner">
+            <a href="home.html" class="nav-brand"><svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span>布依族词典</span></a>
+            <div class="nav-rail">
+                <a href="home.html" class="nav-link">首页</a>
+                <a href="vocabulary.html" class="nav-link">词典</a>
+                <a href="phrases.html" class="nav-link active">学习</a>
+                <a href="songs.html" class="nav-link">民歌</a>
+                <a href="culture.html" class="nav-link">文化</a>
+                <a href="favorites.html" class="nav-link">收藏</a>
+                <a href="profile.html" class="nav-link">我的</a>
+            </div>
+            <button class="nav-burger" aria-label="打开菜单" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        </div>
+        <div class="nav-drawer" id="navDrawer"><a href="home.html">首页</a><a href="vocabulary.html">词典</a><a href="phrases.html" class="active">学习</a><a href="songs.html">民歌</a><a href="culture.html">文化</a><a href="favorites.html">收藏</a><a href="profile.html">我的</a></div>
+    </nav>
+    <main id="main" style="padding-top: 64px; padding-bottom: 120px; position: relative; z-index: 3;">
+        <section class="page-hero-dark"><div class="reveal reveal-1" style="padding: 32px 24px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2;">
+            <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px 0;">常用短语</p>
+            <h1 class="title-breathe" style="font-size: clamp(32px, 5vw, 48px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: #fff; margin: 0; text-align: center;">日常表达</h1>
+            <p style="font-size: 15px; color: rgba(255,255,255,0.78); max-width: 480px; margin: 12px 0 0 0; text-align: center; line-height: 1.55;">掌握地道布依语日常交流</p>
+        </div></section>
+        <section class="reveal reveal-2" style="padding: 0 24px;">
+            <div class="item-list stagger-enter">
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">01</span>
+                    <div class="item-body">
+                        <p class="bouyei">ndeangl maanx</p>
+                        <p class="chinese">你好</p>
+                        <p class="note">[ndɛaːŋl maːn] · Hello</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">02</span>
+                    <div class="item-body">
+                        <p class="bouyei">gaaus xaux</p>
+                        <p class="chinese">谢谢</p>
+                        <p class="note">[kaːu ʃaːu] · Thank you</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">03</span>
+                    <div class="item-body">
+                        <p class="bouyei">xuangz raanz</p>
+                        <p class="chinese">再见，回家</p>
+                        <p class="note">[ʃwaːŋ raːn] · Goodbye, go home</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">04</span>
+                    <div class="item-body">
+                        <p class="bouyei">naaiz ranl</p>
+                        <p class="chinese">请问</p>
+                        <p class="note">[naːi ran] · Excuse me</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">05</span>
+                    <div class="item-body">
+                        <p class="bouyei">mbongx ndaangl</p>
+                        <p class="chinese">喝水</p>
+                        <p class="note">[mboŋ naːŋl] · Drink water</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">06</span>
+                    <div class="item-body">
+                        <p class="bouyei">mal ranl</p>
+                        <p class="chinese">来吃饭</p>
+                        <p class="note">[maː ran] · Come eat</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">07</span>
+                    <div class="item-body">
+                        <p class="bouyei">saangl gox</p>
+                        <p class="chinese">上山</p>
+                        <p class="note">[saːŋl kɔ] · Go up the mountain</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+                <div class="liquid-glass glow-card card-interactive item-card">
+                    <div class="glow-effect"></div>
+                    <span class="item-num">08</span>
+                    <div class="item-body">
+                        <p class="bouyei">naz byaaih</p>
+                        <p class="chinese">田里（在田中）</p>
+                        <p class="note">[naː pjai] · In the field</p>
+                    </div>
+                    <div class="actions">
+                        <button class="icon-btn play" aria-label="播放"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+                        <button class="icon-btn fav" aria-label="收藏"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <div data-player-bar></div>
+    <script src="../app.js"></script>
+    <script>
+      document.querySelectorAll('.icon-btn.play').forEach(function(b){
+        b.addEventListener('click', function(){ console.log('[play]', this.closest('.item-card')?.querySelector('.bouyei')?.textContent || ''); });
+      });
+      document.querySelectorAll('.icon-btn.fav').forEach(function(b){
+        b.addEventListener('click', function(){ console.log('[fav-toggle]', this.closest('.item-card')?.querySelector('.bouyei')?.textContent || ''); });
+      });
+    </script>
+</body>
+</html>

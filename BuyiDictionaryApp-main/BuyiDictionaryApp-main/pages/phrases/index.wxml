@@ -1,0 +1,44 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
+  <custom-nav title="常用语"></custom-nav>
+  <!-- 标题区 -->
+  <view class="header-section">
+    <text class="text-h1">常用语</text>
+    <text class="text-sub">高频实用的日常交流短句</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="card status-card">
+    <text class="text-h3">正在加载常用语</text>
+    <text class="text-sub">请稍候...</text>
+  </view>
+
+  <view wx:elif="{{errorText}}" class="card status-card error">
+    <text class="text-h3 text-danger">加载失败</text>
+    <text class="text-sub">{{errorText}}</text>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{items.length}}" class="list-container">
+      <view wx:for="{{items}}" wx:key="id" class="card list-item-card">
+        <view class="card-header">
+          <text class="tag">短句</text>
+          <view class="fav-icon {{item.fav ? 'active' : ''}}" data-index="{{index}}" bindtap="toggleFavorite">
+            {{item.fav ? '♥' : '♡'}}
+          </view>
+        </view>
+        
+        <text class="text-h2 primary-text">{{item.buyi}}</text>
+        
+        <view class="translation-box">
+          <text class="text-sub">中: {{item.ch}}</text>
+          <text class="text-sub" wx:if="{{item.en}}">英: {{item.en}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="card status-card empty">
+      <text class="text-h3">暂无常用语内容</text>
+      <text class="text-sub">后台暂未添加日常短句数据</text>
+    </view>
+  </block>
+
+</view>

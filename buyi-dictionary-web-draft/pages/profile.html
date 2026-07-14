@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F5F2EF">
+    <title>我的账户 - 布依族词典</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../liquid-glass.css">
+    <style>
+.profile-wrap { max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.avatar-card { display: flex; flex-direction: column; align-items: center; padding: 40px 32px; text-align: center; }
+.avatar-ring { position: relative; width: 88px; height: 88px; margin-bottom: 20px; }
+.avatar-ring .avatar { width: 100%; height: 100%; border-radius: 999px; background: linear-gradient(135deg, var(--c-brand-08), var(--c-accent-10)); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+.avatar-ring::after { content: ''; position: absolute; inset: -5px; border-radius: 999px; border: 2px dashed var(--c-brand-25); }
+.avatar-card .name { font-size: 22px; font-weight: 600; color: var(--c-text); margin: 0 0 6px 0; }
+.avatar-card .desc { font-size: 14px; color: var(--c-text-60); margin: 0 0 20px 0; }
+.login-btn { padding: 12px 32px; background: var(--c-brand); color: var(--c-white); border: none; border-radius: 999px; font: 600 14px var(--font-sans); cursor: pointer; transition: background 200ms ease, transform 200ms ease; }
+.login-btn:hover { background: var(--c-brand-dark); transform: translateY(-2px); }
+.menu-list { padding: 8px 0; }
+.menu-item { display: flex; align-items: center; padding: 16px 24px; text-decoration: none; color: inherit; cursor: pointer; transition: background 200ms ease; border-bottom: 1px solid var(--c-divider); }
+.menu-item:last-child { border-bottom: none; }
+.menu-item:hover { background: var(--c-brand-06); }
+.menu-item .mi { font-size: 20px; margin-right: 16px; }
+.menu-item .mt { flex: 1; font-size: 15px; font-weight: 500; color: var(--c-text); }
+.menu-item .arrow { color: var(--c-text-35); transition: transform 200ms ease; }
+.menu-item:hover .arrow { transform: translateX(4px); color: var(--c-brand); }
+.app-info { text-align: center; padding: 24px; }
+.app-info .logo { font-size: 32px; margin-bottom: 8px; }
+.app-info .name { font-size: 16px; font-weight: 600; color: var(--c-text); margin: 0 0 4px 0; }
+.app-info .ver { font-size: 12px; color: var(--c-text-50); margin: 0 0 8px 0; font-family: var(--font-mono); }
+.app-info .copy { font-size: 12px; color: var(--c-text-35); margin: 0; }
+    </style>
+</head>
+<body style="font-family: 'DM Sans', ui-sans-serif, sans-serif; margin: 0;">
+    <a class="skip-link" href="#main">跳到主内容</a>
+    <div class="page-bg"><img src="../assets/bg-profile.png" alt="" loading="lazy"/></div>
+    <div class="page-overlay cool"></div>
+    <div class="particles" data-pattern="weaving" data-count="8" aria-hidden="true"></div>
+    <div class="nav-scrim" aria-hidden="true"></div>
+    <nav class="nav-immersive" id="mainNav">
+        <div class="nav-inner">
+            <a href="home.html" class="nav-brand"><svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span>布依族词典</span></a>
+            <div class="nav-rail">
+                <a href="home.html" class="nav-link">首页</a>
+                <a href="vocabulary.html" class="nav-link">词典</a>
+                <a href="phrases.html" class="nav-link">学习</a>
+                <a href="songs.html" class="nav-link">民歌</a>
+                <a href="culture.html" class="nav-link">文化</a>
+                <a href="favorites.html" class="nav-link">收藏</a>
+                <a href="profile.html" class="nav-link active">我的</a>
+            </div>
+            <button class="nav-burger" aria-label="打开菜单" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        </div>
+        <div class="nav-drawer" id="navDrawer">
+            <a href="home.html">首页</a>
+            <a href="vocabulary.html">词典</a>
+            <a href="phrases.html">学习</a>
+            <a href="songs.html">民歌</a>
+            <a href="culture.html">文化</a>
+            <a href="favorites.html">收藏</a>
+            <a href="profile.html" class="active">我的</a>
+        </div>
+    </nav>
+    <main id="main" style="padding-top: 64px; padding-bottom: 120px; position: relative; z-index: 3;">
+        <section class="page-hero-dark"><div class="reveal reveal-1" style="padding: 32px 24px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2;">
+            <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px 0;">个人中心</p>
+            <h1 class="title-breathe" style="font-size: clamp(32px, 5vw, 48px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: #fff; margin: 0; text-align: center;">我的账户</h1>
+            <p style="font-size: 15px; color: rgba(255,255,255,0.78); max-width: 480px; margin: 12px 0 0 0; text-align: center; line-height: 1.55;">管理学习进度与收藏</p>
+        </div></section>
+        <div class="profile-wrap">
+            <div class="liquid-glass glow-card avatar-card card-interactive reveal reveal-2">
+                <div class="avatar-ring">
+                    <div class="avatar">布</div>
+                </div>
+                <h2 class="name">布依学习者</h2>
+                <p class="desc">探索布依语的每一天</p>
+                <button class="login-btn">登录 / 注册</button>
+            </div>
+            <div class="liquid-glass glow-card menu-list card-interactive reveal reveal-3">
+                <a href="favorites.html" class="menu-item stagger-enter">
+                    <span class="mi">❤️</span>
+                    <span class="mt">我的收藏</span>
+                    <span class="arrow">›</span>
+                </a>
+                <a href="record.html" class="menu-item stagger-enter">
+                    <span class="mi">📊</span>
+                    <span class="mt">学习记录</span>
+                    <span class="arrow">›</span>
+                </a>
+                <a href="settings.html" class="menu-item stagger-enter">
+                    <span class="mi">⚙️</span>
+                    <span class="mt">设置</span>
+                    <span class="arrow">›</span>
+                </a>
+            </div>
+            <div class="liquid-glass glow-card app-info card-interactive reveal reveal-4">
+                <div class="logo">🎵</div>
+                <p class="name">布依族词典</p>
+                <p class="ver">v1.0.0</p>
+                <p class="copy">© 2026 布依族词典</p>
+            </div>
+        </div>
+    </main>
+    <div data-player-bar></div>
+    <script src="../app.js"></script>
+    <script>
+      var lb = document.querySelector('.login-btn');
+      if (lb) lb.addEventListener('click', function(){ console.log('[login]'); });
+    </script>
+</body>
+</html>

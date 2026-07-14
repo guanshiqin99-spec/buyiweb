@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F5F2EF">
+    <title>文化 - 布依族词典</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../liquid-glass.css">
+</head>
+<body style="font-family: 'DM Sans', ui-sans-serif, sans-serif; margin: 0;">
+
+    <a class="skip-link" href="#main">跳到主内容</a>
+    <div class="page-bg"><img src="../assets/bouyei-craft.jpg" alt="" loading="lazy"/></div>
+    <div class="page-overlay warm"></div>
+    <div class="particles" data-pattern="batik" data-count="10" aria-hidden="true"></div>
+    <div class="nav-scrim" aria-hidden="true"></div>
+
+    <!-- 沉浸式导航栏 -->
+    <nav class="nav-immersive" id="mainNav">
+        <div class="nav-inner">
+            <a href="home.html" class="nav-brand">
+                <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span>布依族词典</span>
+            </a>
+            <div class="nav-rail">
+                <a href="home.html" class="nav-link">首页</a>
+                <a href="vocabulary.html" class="nav-link">词典</a>
+                <a href="phrases.html" class="nav-link">学习</a>
+                <a href="songs.html" class="nav-link">民歌</a>
+                <a href="culture.html" class="nav-link active">文化</a>
+                <a href="favorites.html" class="nav-link">收藏</a>
+                <a href="profile.html" class="nav-link">我的</a>
+            </div>
+            <button class="nav-burger" aria-label="打开菜单" aria-expanded="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="nav-drawer" id="navDrawer">
+            <a href="home.html">首页</a>
+            <a href="vocabulary.html">词典</a>
+            <a href="phrases.html">学习</a>
+            <a href="songs.html">民歌</a>
+            <a href="culture.html">文化</a>
+            <a href="favorites.html">收藏</a>
+            <a href="profile.html">我的</a>
+        </div>
+    </nav>
+
+    <main id="main" style="padding-top: 64px; padding-bottom: 120px;">
+        <div class="page-hero-dark">
+            <!-- Hero - "文化长廊" / 副标题 + 统计卡片 -->
+            <section class="reveal reveal-1" style="padding: 48px 24px 64px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent); margin: 0 0 20px 0;">布依文化</p>
+                <h1 class="title-breathe" style="font-size: clamp(36px, 5vw, 56px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: #fff; margin: 0;">文化长廊</h1>
+                <p style="font-size: 16px; font-weight: 400; line-height: 1.55; color: rgba(255,255,255,0.82); max-width: 480px; margin: 16px 0 0 0;">探索布依族的语言、工艺与节庆</p>
+
+                <!-- 统计卡片: 646+词汇 / 109+短语 / 3民歌 -->
+                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; max-width: 720px; width: 100%; margin-top: 48px;">
+                    <div class="liquid-glass glow-card" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                        <div class="glow-effect"></div>
+                        <p style="font-size: 36px; font-weight: 700; color: var(--c-text); margin: 0; letter-spacing: -0.02em;">646<span style="font-size: 20px; color: var(--c-brand);">+</span></p>
+                        <p style="font-size: 13px; color: var(--c-text-60); margin: 4px 0 0 0;">收录词汇</p>
+                    </div>
+                    <div class="liquid-glass glow-card" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                        <div class="glow-effect"></div>
+                        <p style="font-size: 36px; font-weight: 700; color: var(--c-text); margin: 0; letter-spacing: -0.02em;">109<span style="font-size: 20px; color: var(--c-brand);">+</span></p>
+                        <p style="font-size: 13px; color: var(--c-text-60); margin: 4px 0 0 0;">常用短语</p>
+                    </div>
+                    <div class="liquid-glass glow-card" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                        <div class="glow-effect"></div>
+                        <p style="font-size: 36px; font-weight: 700; color: var(--c-text); margin: 0; letter-spacing: -0.02em;">3</p>
+                        <p style="font-size: 13px; color: var(--c-text-60); margin: 4px 0 0 0;">传统民歌</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 语言概况 - 3张 .liquid-glass 卡片: 分布/声调/文字系统 -->
+        <section class="reveal reveal-2" style="padding: 0 24px 64px; display: flex; justify-content: center;">
+            <div style="max-width: 980px; width: 100%;">
+                <h2 style="font-size: clamp(28px, 4vw, 36px); font-weight: 600; letter-spacing: -0.02em; color: var(--c-text); margin: 0 0 12px 0; text-align: center;">语言概况</h2>
+                <p style="font-size: 15px; color: var(--c-text-60); max-width: 480px; margin: 0 auto 40px; text-align: center;">布依语的核心特征与文化坐标</p>
+
+                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+                    <!-- 卡片 1: 分布 -->
+                    <div class="liquid-glass glow-card" style="padding: 32px; display: flex; flex-direction: column;">
+                        <div class="glow-effect"></div>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--c-brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 20px;" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <h3 style="font-size: 20px; font-weight: 600; color: var(--c-text); line-height: 1.2; margin: 0 0 8px 0;">地理分布</h3>
+                        <p style="font-size: 14px; font-weight: 400; color: var(--c-text-70); line-height: 1.6; margin: 0;">主要分布于贵州、云南、四川等地，使用人口约 28 万，属壮侗语系侗水语支。</p>
+                    </div>
+
+                    <!-- 卡片 2: 声调 -->
+                    <div class="liquid-glass glow-card" style="padding: 32px; display: flex; flex-direction: column;">
+                        <div class="glow-effect"></div>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--c-brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 20px;" aria-hidden="true"><path d="M2 12h20"/><path d="M5 12V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4"/><path d="M5 12v4a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-4"/></svg>
+                        <h3 style="font-size: 20px; font-weight: 600; color: var(--c-text); line-height: 1.2; margin: 0 0 8px 0;">声调系统</h3>
+                        <p style="font-size: 14px; font-weight: 400; color: var(--c-text-70); line-height: 1.6; margin: 0;">拥有 6 个舒声调与 2 个促声调，声调区分词义，是布依语最显著的语音特征。</p>
+                    </div>
+
+                    <!-- 卡片 3: 文字 -->
+                    <div class="liquid-glass glow-card" style="padding: 32px; display: flex; flex-direction: column;">
+                        <div class="glow-effect"></div>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--c-brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 20px;" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        <h3 style="font-size: 20px; font-weight: 600; color: var(--c-text); line-height: 1.2; margin: 0 0 8px 0;">文字系统</h3>
+                        <p style="font-size: 14px; font-weight: 400; color: var(--c-text-70); line-height: 1.6; margin: 0;">1956 年创制拉丁字母文字，后经多次修订。本词典采用拉丁字母转写方案。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 左图右文: 织锦工艺 -->
+        <section class="reveal reveal-3" style="padding: 0 24px 64px; display: flex; align-items: center; justify-content: center;">
+            <div style="display: flex; flex-direction: row; align-items: stretch; gap: 32px; max-width: 980px; width: 100%;">
+                <!-- 左图 -->
+                <div style="flex: 1; min-height: 380px; border-radius: 1.2rem; overflow: hidden;">
+                    <img class="img-reveal" src="../assets/bouyei-craft.jpg" alt="布依织锦工艺" width="800" height="600" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+
+                <!-- 右文 -->
+                <div class="liquid-glass glow-card" style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px;">
+                    <div class="glow-effect"></div>
+                    <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent); margin: 0 0 8px 0;">词汇分布</p>
+                    <h3 style="font-size: 24px; font-weight: 600; color: var(--c-text); margin: 0 0 24px 0;">按语义类别统计</h3>
+
+                    <!-- 水平条形图: 6 类 -->
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <!-- 自然 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--c-text-70); margin-bottom: 6px;">
+                                <span>自然</span><span>218</span>
+                            </div>
+                            <div style="height: 8px; border-radius: 999px; background: var(--c-divider); overflow: hidden;">
+                                <div style="width: 34%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-dark), var(--c-brand));"></div>
+                            </div>
+                        </div>
+                        <!-- 生活 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--c-text-70); margin-bottom: 6px;">
+                                <span>生活</span><span>156</span>
+                            </div>
+                            <div style="height: 8px; border-radius: 999px; background: var(--c-divider); overflow: hidden;">
+                                <div style="width: 24%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand), var(--c-brand-light));"></div>
+                            </div>
+                        </div>
+                        <!-- 动作 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--c-text-70); margin-bottom: 6px;">
+                                <span>动作</span><span>112</span>
+                            </div>
+                            <div style="height: 8px; border-radius: 999px; background: var(--c-divider); overflow: hidden;">
+                                <div style="width: 17%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-light), var(--c-accent));"></div>
+                            </div>
+                        </div>
+                        <!-- 社会 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--c-text-70); margin-bottom: 6px;">
+                                <span>社会</span><span>89</span>
+                            </div>
+                            <div style="height: 8px; border-radius: 999px; background: var(--c-divider); overflow: hidden;">
+                                <div style="width: 14%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--c-accent), var(--c-accent-300));"></div>
+                            </div>
+                        </div>
+                        <!-- 身体 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--c-text-70); margin-bottom: 6px;">
+                                <span>身体</span><span>43</span>
+                            </div>
+                            <div style="height: 8px; border-radius: 999px; background: var(--c-divider); overflow: hidden;">
+                                <div style="width: 7%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-dark), var(--c-accent-300));"></div>
+                            </div>
+                        </div>
+                        <!-- 其他 -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--c-text-70); margin-bottom: 6px;">
+                                <span>其他</span><span>28</span>
+                            </div>
+                            <div style="height: 8px; border-radius: 999px; background: var(--c-divider); overflow: hidden;">
+                                <div style="width: 4%; height: 100%; border-radius: 999px; background: var(--c-brand-dark);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部播放器（由 app.js 注入） -->
+    <div data-player-bar></div>
+
+    <script src="../app.js"></script>
+</body>
+</html>

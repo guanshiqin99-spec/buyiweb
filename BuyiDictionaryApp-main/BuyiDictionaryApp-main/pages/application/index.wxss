@@ -1,0 +1,47 @@
+/* 功能中心青花瓷风格样式 */
+
+.header-section {
+  margin-bottom: 48rpx;
+}
+.header-section .text-h1 {
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+/* 双列网格 */
+.grid-2-cols {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+.grid-2-cols .card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 240rpx; /* 统一卡片高度 */
+}
+.grid-2-cols .text-h3 {
+  margin-bottom: 16rpx;
+  display: block;
+}
+.grid-2-cols .text-sub {
+  white-space: pre-wrap; /* 允许换行符生效 */
+}
+
+/* 独立主卡与横向次卡内的边距调整 */
+.card-primary {
+  padding: 48rpx 32rpx;
+}
+.card-primary .text-h2 {
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.row-card {
+  display: flex;
+  align-items: center;
+}
+.row-card .text-h3 {
+  margin-bottom: 12rpx;
+  display: block;
+}

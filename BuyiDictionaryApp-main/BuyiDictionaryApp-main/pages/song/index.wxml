@@ -1,0 +1,92 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page song-page">
+  <!-- 文化理背景及留白 -->
+  <view class="song-bg-texture"></view>
+  
+  <custom-nav title="" transparent="{{true}}"></custom-nav>
+
+  <!-- 顶部标题区修调 -->
+  <view class="header-section">
+    <view class="title-row">
+      <text class="text-h1 song-main-title">天籁布依</text>
+      <text class="title-cloud">☁</text>
+    </view>
+    <text class="text-sub song-sub-title">聆听山野间的古老歌谣</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="card status-card">
+    <text class="text-h3">正在加载民歌</text>
+    <text class="text-sub">请稍候，文化档案正从云端拉取…</text>
+  </view>
+
+  <view wx:elif="{{errorText}}" class="card status-card error">
+    <text class="text-h3 text-danger">山水悠远，连接失败</text>
+    <text class="text-sub">{{errorText}}</text>
+  </view>
+
+  <block wx:else>
+    <!-- 山水唱片封面风格 Banner -->
+    <view wx:if="{{songs.length}}" class="hero-record-card" data-index="0" bindtap="playSong">
+      <!-- 底部图片 -->
+      <image class="hero-bg-img" src="{{songs[0].image || '/assets/images/banner1.jpg'}}" mode="aspectFill" />
+      <!-- 半透明釉面蒙层 -->
+      <view class="hero-glass-overlay">
+        <view class="hero-info">
+          <text class="hero-title">{{songs[0].title}}</text>
+          <view class="hero-tags">
+            <text class="hero-tag-icon">❀</text>
+            <text class="hero-tag-text">布依文化采集</text>
+          </view>
+          <text class="hero-sub">传承布依文化 · 聆听山野回响</text>
+        </view>
+        <view class="jade-play-btn">
+          <text class="jade-play-icon">▶</text>
+        </view>
+      </view>
+      <!-- 指示点 -->
+      <view class="hero-dots">
+        <view class="dot active"></view>
+        <view class="dot"></view>
+        <view class="dot"></view>
+        <view class="dot"></view>
+      </view>
+    </view>
+
+    <!-- 唱片式列表系统 -->
+    <view class="list-header">
+      <view class="section-title-wrap">
+        <text class="section-icon">❀</text>
+        <text class="section-title">精选民歌</text>
+      </view>
+      <text class="section-more">更多 ></text>
+    </view>
+
+    <view wx:if="{{songs.length}}" class="song-record-list">
+      <view wx:for="{{songs}}" wx:key="id" class="record-card" data-index="{{index}}" bindtap="playSong">
+        <view class="record-cover-wrap">
+          <image src="{{item.image || '/assets/images/banner1.jpg'}}" class="record-cover" mode="aspectFill" />
+        </view>
+        <view class="record-info">
+          <view class="record-title-row">
+            <text class="record-title">{{item.title}}</text>
+            <text class="record-tag">{{index === 0 ? '迎宾歌' : (index % 2 !== 0 ? '山歌' : '劳动歌')}}</text>
+          </view>
+          <text class="record-artist">{{item.artist || item.ch || '布依青年合唱团  黔西南'}}</text>
+          <view class="record-meta">
+            <text class="play-count">▶ {{12 - index > 0 ? 12 - index : 2}}.{{index % 9}}万</text>
+            <text class="duration">03:{{42 - index * 5 > 9 ? 42 - index * 5 : '15'}}</text>
+          </view>
+        </view>
+        <!-- 青花印章感收藏按钮 -->
+        <view class="seal-fav-btn {{item.fav ? 'active' : ''}}" data-index="{{index}}" catchtap="toggleFavorite">
+          <text class="seal-fav-icon">🪷</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="card status-card">
+      <text class="text-h3">暂无民歌内容</text>
+      <text class="text-sub">后台发布后，这里会自动展示最新民歌。</text>
+    </view>
+  </block>
+
+</view>

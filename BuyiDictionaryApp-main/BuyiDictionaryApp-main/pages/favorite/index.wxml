@@ -1,0 +1,81 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
+  <custom-nav title="收藏"></custom-nav>
+  <!-- 顶部标题区 -->
+  <view class="header-section">
+    <text class="text-h1">学习库</text>
+    <text class="text-sub">统一管理你的收藏与同步内容</text>
+  </view>
+
+  <!-- 顶部分段切换器 (Segmented Control) -->
+  <view class="segment-control">
+    <view class="seg-item {{activeTab === 'words' ? 'active' : ''}}" data-tab="words" bindtap="switchTab">
+      <text>文本词汇 ({{favWords.length}})</text>
+    </view>
+    <view class="seg-item {{activeTab === 'songs' ? 'active' : ''}}" data-tab="songs" bindtap="switchTab">
+      <text>民歌收藏 ({{favSongs.length}})</text>
+    </view>
+  </view>
+
+  <!-- 状态处理：未登录 -->
+  <view wx:if="{{!isLogin}}" class="card status-card">
+    <text class="text-h3">登录后查看同步收藏</text>
+    <text class="text-sub">云端保存，多设备同步学习进度</text>
+    <button class="btn btn-primary login-btn" bindtap="toLogin">前往登录</button>
+  </view>
+
+  <!-- 状态处理：加载中 -->
+  <view wx:elif="{{loading}}" class="card status-card">
+    <text class="text-h3">正在加载收藏</text>
+    <text class="text-sub">请稍候，正在同步你的学习数据...</text>
+  </view>
+
+  <!-- 文本收藏列表 -->
+  <block wx:elif="{{activeTab === 'words'}}">
+    <view class="fav-list" wx:if="{{favWords.length}}">
+      <block wx:for="{{favWords}}" wx:key="id">
+        <swipe-item class="swipe-item-comp" index="{{index}}" type="word" bindopen="onItemOpen" binddelete="onItemDelete">
+          <view slot="content" class="card result-card" data-item="{{item}}" data-type="word" bindtap="openDetail">
+            <view class="result-top">
+              <text class="tag">{{item.typeLabel || '文本'}}</text>
+              <view class="fav-icon active">♥</view>
+            </view>
+            
+            <text class="text-h2 result-main">{{item.buyi || item.zh || item.en}}</text>
+            
+            <view class="result-sub">
+              <text class="text-sub" wx:if="{{item.zh}}">中: {{item.zh}}</text>
+              <text class="text-sub" wx:if="{{item.en}}">英: {{item.en}}</text>
+            </view>
+          </view>
+        </swipe-item>
+      </block>
+    </view>
+    <view wx:else class="card status-card empty">
+      <text class="text-h3">暂无文本收藏</text>
+      <text class="text-sub">去词典或常用语页面探索一下吧</text>
+    </view>
+  </block>
+
+  <!-- 民歌收藏列表 -->
+  <block wx:else>
+    <view class="fav-list" wx:if="{{favSongs.length}}">
+      <block wx:for="{{favSongs}}" wx:key="id">
+        <swipe-item class="swipe-item-comp" index="{{index}}" type="song" bindopen="onItemOpen" binddelete="onItemDelete">
+          <view slot="content" class="card song-card" data-item="{{item}}" data-type="song" bindtap="openDetail">
+            <image src="{{item.image || '/assets/images/banner1.jpg'}}" class="song-cover" mode="aspectFill" />
+            <view class="song-info">
+              <text class="text-h3 song-title">{{item.title || '未命名民歌'}}</text>
+              <text class="text-sub song-sub">{{item.artist || item.ch || '布依语原生态演唱'}}</text>
+            </view>
+            <view class="fav-icon active">♥</view>
+          </view>
+        </swipe-item>
+      </block>
+    </view>
+    <view wx:else class="card status-card empty">
+      <text class="text-h3">暂无民歌收藏</text>
+      <text class="text-sub">去民歌鉴赏发现天籁之音</text>
+    </view>
+  </block>
+
+</view>

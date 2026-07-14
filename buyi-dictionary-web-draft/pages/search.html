@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F5F2EF">
+    <title>查找布依语 - 布依族词典</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../liquid-glass.css">
+    <style>
+.search-box { display: flex; align-items: center; height: 56px; padding: 0 8px 0 24px; border-radius: 999px; max-width: 640px; margin: 0 auto; gap: 12px; }
+.search-box input { flex: 1; border: none; background: transparent; color: var(--c-text); font: 400 16px var(--font-sans); outline: none; }
+.search-box .go { height: 40px; padding: 0 24px; border: none; border-radius: 999px; background: var(--c-brand); color: var(--c-white); font: 600 14px var(--font-sans); cursor: pointer; }
+.lang-pills { display: inline-flex; gap: 8px; padding: 4px; border-radius: 999px; }
+.lang-pills button { padding: 6px 16px; border: none; border-radius: 999px; background: transparent; color: var(--c-text-60); font: 500 13px var(--font-sans); cursor: pointer; transition: background 150ms ease, color 150ms ease; }
+.lang-pills button.active { background: var(--c-brand); color: var(--c-white); }
+.result-list { max-width: 640px; margin: 0 auto; }
+.result-item { padding: 20px 24px; border-bottom: 1px solid var(--c-divider); position: relative; }
+.result-item:last-child { border-bottom: none; }
+.result-item .type-tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font: 600 11px var(--font-sans); margin-bottom: 8px; }
+.result-item .type-tag.word { background: var(--c-brand); color: var(--c-white); }
+.result-item .type-tag.phrase { background: var(--c-accent); color: var(--c-white); }
+.result-item .type-tag.proverb { background: var(--c-brand-light); color: var(--c-white); }
+.result-item h3 { font-size: 20px; font-weight: 600; color: var(--c-text); margin: 0 0 4px 0; }
+.result-item .phonetic { font-size: 13px; color: var(--c-brand-light); font-family: var(--font-mono); margin: 0 0 6px 0; }
+.result-item .meaning { font-size: 14px; color: var(--c-text-70); margin: 0; }
+.result-item .example { font-size: 13px; color: var(--c-text-50); margin: 8px 0 0 0; font-style: italic; }
+    </style>
+</head>
+<body style="font-family: 'DM Sans', ui-sans-serif, sans-serif; margin: 0;">
+    <a class="skip-link" href="#main">跳到主内容</a>
+    <div class="page-bg"><img src="../assets/bg-search.png" alt="" loading="lazy"/></div>
+    <div class="page-overlay cool"></div>
+    <div class="particles" data-pattern="batik" data-count="10" aria-hidden="true"></div>
+    <div class="nav-scrim" aria-hidden="true"></div>
+    <nav class="nav-immersive" id="mainNav">
+        <div class="nav-inner">
+            <a href="home.html" class="nav-brand"><svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span>布依族词典</span></a>
+            <div class="nav-rail">
+                <a href="home.html" class="nav-link">首页</a>
+                <a href="vocabulary.html" class="nav-link active">词典</a>
+                <a href="phrases.html" class="nav-link">学习</a>
+                <a href="songs.html" class="nav-link">民歌</a>
+                <a href="culture.html" class="nav-link">文化</a>
+                <a href="favorites.html" class="nav-link">收藏</a>
+                <a href="profile.html" class="nav-link">我的</a>
+            </div>
+            <button class="nav-burger" aria-label="打开菜单" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        </div>
+        <div class="nav-drawer" id="navDrawer">
+            <a href="home.html">首页</a>
+            <a href="vocabulary.html">词典</a>
+            <a href="phrases.html">学习</a>
+            <a href="songs.html">民歌</a>
+            <a href="culture.html">文化</a>
+            <a href="favorites.html">收藏</a>
+            <a href="profile.html">我的</a>
+        </div>
+    </nav>
+    <main id="main" style="padding-top: 64px; padding-bottom: 120px; position: relative; z-index: 3;">
+        <section class="page-hero-dark"><div class="reveal reveal-1" style="padding: 32px 24px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2;">
+            <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-accent); margin: 0 0 12px 0;">搜索结果</p>
+            <h1 class="title-breathe" style="font-size: clamp(32px, 5vw, 48px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: #fff; margin: 0; text-align: center;">查找布依语</h1>
+            <p style="font-size: 15px; color: rgba(255,255,255,0.78); max-width: 480px; margin: 12px 0 0 0; text-align: center; line-height: 1.55;">在词汇、短语、谚语中检索</p>
+        </div></section>
+        <section class="reveal reveal-2" style="padding: 0 24px 32px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+            <form class="liquid-glass search-box glow-card" action="search.html" method="get">
+                <div class="glow-effect"></div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--c-brand-light);" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="search" value="水" name="q" autocomplete="off" spellcheck="false" aria-label="搜索布依语词汇" placeholder="搜索布依语词汇、短语、谚语…"/>
+                <button type="submit" class="go">搜索</button>
+            </form>
+            <div style="display: flex; align-items: center; justify-content: space-between; max-width: 640px; width: 100%; flex-wrap: wrap; gap: 12px;">
+                <div class="liquid-glass lang-pills glow-card">
+                    <div class="glow-effect"></div>
+                    <button class="active" aria-pressed="true">布依语</button>
+                    <button aria-pressed="false">汉语</button>
+                    <button aria-pressed="false">英语</button>
+                </div>
+                <p style="font-size: 13px; color: var(--c-text-50); margin: 0;">6 个结果</p>
+            </div>
+        </section>
+        <section class="reveal reveal-3" style="padding: 0 24px 32px; display: flex; justify-content: center;">
+            <div class="liquid-glass glow-card result-list" style="padding: 8px 0;">
+                <div class="glow-effect"></div>
+                <article class="result-item card-interactive stagger-enter">
+                    <span class="type-tag word">词条</span>
+                    <h3>ndaangl</h3>
+                    <p class="phonetic">/naːŋl/</p>
+                    <p class="meaning">水 · water</p>
+                </article>
+                <article class="result-item card-interactive stagger-enter">
+                    <span class="type-tag phrase">短语</span>
+                    <h3>ndaangl byaaih</h3>
+                    <p class="phonetic">/naːŋl pjaːi/</p>
+                    <p class="meaning">水花 · splash</p>
+                </article>
+                <article class="result-item card-interactive stagger-enter">
+                    <span class="type-tag word">词条</span>
+                    <h3>naz</h3>
+                    <p class="phonetic">/na²/</p>
+                    <p class="meaning">田 · field, paddy</p>
+                </article>
+                <article class="result-item card-interactive stagger-enter">
+                    <span class="type-tag phrase">短语</span>
+                    <h3>gox mbaanx</h3>
+                    <p class="phonetic">/ko mbaːn/</p>
+                    <p class="meaning">山村 · mountain village</p>
+                </article>
+                <article class="result-item card-interactive stagger-enter">
+                    <span class="type-tag word">词条</span>
+                    <h3>mal</h3>
+                    <p class="phonetic">/maːl/</p>
+                    <p class="meaning">马 · horse</p>
+                </article>
+                <article class="result-item card-interactive stagger-enter">
+                    <span class="type-tag proverb">谚语</span>
+                    <h3>gox</h3>
+                    <p class="phonetic">/ko/</p>
+                    <p class="meaning">山 · mountain</p>
+                    <p class="example">山高水长，布依人家</p>
+                </article>
+            </div>
+        </section>
+    </main>
+    <div data-player-bar></div>
+    <script src="../app.js"></script>
+    <script>
+      // 语言切换占位
+      document.querySelectorAll('.lang-pills button').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.lang-pills button').forEach(function(b){ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+          btn.classList.add('active');
+          btn.setAttribute('aria-pressed','true');
+          console.log('[lang]', btn.textContent.trim());
+        });
+      });
+      // 搜索结果项占位
+      document.querySelectorAll('.result-item').forEach(function(r){
+        r.addEventListener('click', function(){ console.log('[result]', r.querySelector('h3')?.textContent || ''); });
+      });
+    </script>
+</body>
+</html>

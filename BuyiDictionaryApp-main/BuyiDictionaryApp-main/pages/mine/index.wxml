@@ -1,0 +1,115 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page mine-page">
+  <!-- 文化感背景层 -->
+  <view class="mine-bg-texture"></view>
+  <view class="mine-bg-watermark"></view>
+  
+  <custom-nav title="我的" transparent="{{true}}"></custom-nav>
+  
+  <!-- 用户信息卡 (瓷釉渐变用户卡) -->
+  <view class="user-card-premium" bindtap="onAvatarTap">
+    <view class="user-card-texture"></view>
+    <view class="user-card-content">
+      <view class="avatar-wrapper">
+        <view class="avatar-ring"></view>
+        <image src="{{isLogin && userInfo.avatarUrl ? userInfo.avatarUrl : '/images/avatar.png'}}" class="avatar user-avatar-image" binderror="onAvatarError" />
+      </view>
+      <view class="user-info">
+        <text class="user-name user-nickname-text">{{isLogin ? (userInfo.nickname || userInfo.nickName) : '点击登录'}}</text>
+
+        <view class="user-desc" wx:if="{{isLogin}}">
+          <image class="desc-icon" src="/assets/icons/shield-check-white.svg" mode="aspectFit" />
+          <text>数据云端同步中，保障学习记录安全</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 瓷片统计卡 -->
+  <view class="porcelain-stat-card card">
+    <view class="stat-item" bindtap="toFavAndRecord">
+      <view class="stat-icon-wrap">
+        <image class="stat-icon" src="/assets/icons/star.svg" mode="aspectFit" />
+      </view>
+      <view class="stat-data">
+        <text class="stat-num">{{isLogin ? stats.favoriteCount : '0'}}</text>
+        <text class="stat-title">累计收藏</text>
+      </view>
+    </view>
+    
+    <view class="stat-divider-cloud"></view>
+    
+    <view class="stat-item" bindtap="toRecord">
+      <view class="stat-icon-wrap">
+        <image class="stat-icon" src="/assets/icons/clock.svg" mode="aspectFit" />
+      </view>
+      <view class="stat-data">
+        <text class="stat-num">{{isLogin ? stats.learningRecordCount : '0'}}</text>
+        <text class="stat-title">学习记录</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 学习成长模块 (高级感) -->
+  <view class="growth-card card">
+    <view class="card-header">
+      <image class="header-icon" src="/assets/icons/trend-up.svg" mode="aspectFit" />
+      <text class="header-title">学习成长</text>
+    </view>
+    <view class="growth-content">
+      <view class="growth-item" bindtap="toRecord">
+        <image class="growth-icon" src="/assets/icons/flame.svg" mode="aspectFit" />
+        <view class="growth-info">
+          <text class="growth-label">连续学习</text>
+          <view class="growth-value"><text class="growth-num">{{isLogin ? stats.streak : '0'}}</text><text class="growth-unit">天</text></view>
+          <text class="growth-desc">继续保持，收获更多</text>
+        </view>
+      </view>
+      <view class="growth-item" bindtap="toRecord">
+        <image class="growth-icon" src="/assets/icons/check-circle.svg" mode="aspectFit" />
+        <view class="growth-info">
+          <text class="growth-label">已学习词汇</text>
+          <view class="growth-value"><text class="growth-num">{{isLogin ? stats.learningRecordCount : '0'}}</text><text class="growth-unit">个</text></view>
+          <text class="growth-desc">探索布依语言之美</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 文化感功能菜单 -->
+  <view class="culture-menu-card card">
+    <view class="menu-item" bindtap="toRecord">
+      <view class="menu-icon-wrap"><image class="menu-icon" src="/assets/icons/clock.svg" mode="aspectFit" /></view>
+      <view class="menu-content">
+        <text class="menu-text text-body">学习记录</text>
+        <text class="menu-sub text-sub">查看学习历史与进度</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-divider-fade"></view>
+    <view class="menu-item" bindtap="toSettings">
+      <view class="menu-icon-wrap"><image class="menu-icon" src="/assets/icons/settings.svg" mode="aspectFit" /></view>
+      <view class="menu-content">
+        <text class="menu-text text-body">设置中心</text>
+        <text class="menu-sub text-sub">个性化设置与偏好管理</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-divider-fade"></view>
+    <view class="menu-item" bindtap="showAbout">
+      <view class="menu-icon-wrap"><image class="menu-icon" src="/assets/icons/info.svg" mode="aspectFit" /></view>
+      <view class="menu-content">
+        <text class="menu-text text-body">关于布依语词典</text>
+        <text class="menu-sub text-sub">了解我们与版本信息</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <!-- 底部布依文化签句 -->
+  <view class="culture-footer">
+    <text class="quote-mark">“</text>
+    <text class="quote-text">语言是文化的根，词典是传承的桥。</text>
+    <text class="quote-seal">印</text>
+  </view>
+
+</view>

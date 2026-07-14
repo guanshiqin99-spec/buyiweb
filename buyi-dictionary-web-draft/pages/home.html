@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F5F2EF">
+    <title>布依族词典</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../liquid-glass.css">
+    <style>
+        /* ===== Cinematic Hero ===== */
+        .hero {
+            position: relative;
+            min-height: calc(100svh - 48px);
+            display: flex;
+            align-items: flex-end;
+            padding: 0 24px 80px;
+            overflow: hidden;
+        }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+        .hero-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            animation: heroImgReveal 1.4s cubic-bezier(0.32,0.72,0,1) both;
+        }
+        .hero-scrim {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background:
+                linear-gradient(105deg, 
+                    rgba(27,58,92,0.94) 0%, 
+                    rgba(27,58,92,0.80) 28%, 
+                    rgba(27,58,92,0.34) 58%, 
+                    rgba(27,58,92,0.06) 100%),
+                linear-gradient(to top, 
+                    rgba(27,58,92,0.90) 0%, 
+                    transparent 55%);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 720px;
+            width: 100%;
+        }
+        .hero-eyebrow {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--c-accent);
+            margin: 0 0 28px 0;
+            opacity: 0;
+            animation: heroFadeUp 0.8s cubic-bezier(0.32,0.72,0,1) 0.3s forwards;
+        }
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: clamp(64px, 12vw, 152px);
+            font-weight: 600;
+            line-height: 0.86;
+            letter-spacing: -0.04em;
+            color: #fff;
+            margin: 0;
+            text-shadow: 0 4px 40px rgba(0,0,0,0.4);
+            opacity: 0;
+            animation: heroFadeUp 0.9s cubic-bezier(0.32,0.72,0,1) 0.5s forwards;
+        }
+        .hero-title span { display: block; }
+        .hero-title .accent {
+            font-weight: 700;
+            color: var(--c-accent);
+            letter-spacing: -0.02em;
+        }
+        .hero-sub {
+            font-size: clamp(15px, 1.5vw, 19px);
+            font-weight: 400;
+            line-height: 1.55;
+            color: rgba(255,255,255,0.82);
+            max-width: 420px;
+            margin: 24px 0 0 0;
+            opacity: 0;
+            animation: heroFadeUp 0.8s cubic-bezier(0.32,0.72,0,1) 0.7s forwards;
+        }
+        .hero-search {
+            margin-top: 36px;
+            opacity: 0;
+            animation: heroFadeUp 0.8s cubic-bezier(0.32,0.72,0,1) 0.9s forwards;
+        }
+        .hero-stat {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.6);
+            margin: 24px 0 0 0;
+            opacity: 0;
+            animation: heroFadeUp 0.8s cubic-bezier(0.32,0.72,0,1) 1.1s forwards;
+        }
+        @keyframes heroImgReveal {
+            from { opacity: 0; transform: scale(1.08); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes heroFadeUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .hero-bg img, .hero-eyebrow, .hero-title, .hero-sub, .hero-search, .hero-stat { 
+                animation: none !important; opacity: 1 !important; transform: none !important; 
+            }
+        }
+        @media (max-width: 640px) {
+            .hero { padding: 0 20px 64px; }
+            .hero-title { font-size: clamp(52px, 15vw, 88px); }
+        }
+    </style>
+</head>
+<body style="font-family: 'DM Sans', ui-sans-serif, sans-serif; margin: 0;">
+
+    <a class="skip-link" href="#main">跳到主内容</a>
+
+    <!-- 沉浸式导航栏 -->
+    <nav class="nav-immersive" id="mainNav">
+        <div class="nav-inner">
+            <a href="home.html" class="nav-brand">
+                <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span>布依族词典</span>
+            </a>
+            <div class="nav-rail">
+                <a href="home.html" class="nav-link active">首页</a>
+                <a href="vocabulary.html" class="nav-link">词典</a>
+                <a href="phrases.html" class="nav-link">学习</a>
+                <a href="songs.html" class="nav-link">民歌</a>
+                <a href="culture.html" class="nav-link">文化</a>
+                <a href="favorites.html" class="nav-link">收藏</a>
+                <a href="profile.html" class="nav-link">我的</a>
+            </div>
+            <button class="nav-burger" aria-label="打开菜单" aria-expanded="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="nav-drawer" id="navDrawer">
+            <a href="home.html" class="active">首页</a>
+            <a href="vocabulary.html">词典</a>
+            <a href="phrases.html">学习</a>
+            <a href="songs.html">民歌</a>
+            <a href="culture.html">文化</a>
+            <a href="favorites.html">收藏</a>
+            <a href="profile.html">我的</a>
+        </div>
+    </nav>
+
+    <main id="main">
+        <!-- Cinematic Hero -->
+        <section class="hero glow-hero">
+            <div class="hero-bg">
+                <img src="../assets/bouyei-nature.jpg" alt="布依族梯田风光" width="1920" height="1080" loading="eager"/>
+            </div>
+            <div class="hero-scrim"></div>
+            <div class="glow-effect"></div>
+            <div class="hero-content">
+                <p class="hero-eyebrow">少数民族语言数字化保护</p>
+                <h1 class="hero-title title-breathe">
+                    <span>布依族</span>
+                    <span class="accent">词典</span>
+                </h1>
+                <p class="hero-sub">传承布依文化，连接语言之美</p>
+                <div class="hero-search">
+                    <button class="liquid-glass search-trigger" type="button" aria-label="开启词典搜索" data-search-trigger>
+                        <span class="search-trigger-icon" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                        </span>
+                        <span class="search-trigger-label">开启词典搜索</span>
+                        <kbd class="search-trigger-kbd">按 /</kbd>
+                    </button>
+                </div>
+                <div data-search-modal></div>
+                <p class="hero-stat">646+ 词汇收录</p>
+            </div>
+        </section>
+
+        <!-- 功能卡片区域 -->
+        <section style="padding: 96px 24px;">
+            <div style="max-width: 980px; margin: 0 auto;">
+                <h2 class="reveal" style="font-size: clamp(28px, 4vw, 40px); font-weight: 600; letter-spacing: -0.02em; color: var(--c-text); margin: 0 0 12px 0; text-align: center;">探索布依语</h2>
+                <p class="reveal reveal-1" style="font-size: 16px; color: var(--c-text-60); max-width: 480px; margin: 0 auto 48px; text-align: center;">词典、短语、谚语、民歌 —— 全方位体验布依族语言文化</p>
+                <div class="stagger-enter" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px;">
+                    <a href="vocabulary.html" class="liquid-glass glow-card card-interactive reveal reveal-2" style="display: flex; flex-direction: column; padding: 32px; text-decoration: none; color: inherit; cursor: pointer;">
+                        <span style="font-size: 28px; margin-bottom: 20px;">📖</span>
+                        <h3 style="font-size: 20px; font-weight: 600; color: var(--c-text); margin: 0 0 8px 0;">词典查询</h3>
+                        <p style="font-size: 14px; color: var(--c-text-60); line-height: 1.55; margin: 0;">浏览完整词汇库，搜索布依语词条</p>
+                        <div class="glow-effect"></div>
+                    </a>
+                    <a href="phrases.html" class="liquid-glass glow-card card-interactive reveal reveal-3" style="display: flex; flex-direction: column; padding: 32px; text-decoration: none; color: inherit; cursor: pointer;">
+                        <span style="font-size: 28px; margin-bottom: 20px;">💬</span>
+                        <h3 style="font-size: 20px; font-weight: 600; color: var(--c-text); margin: 0 0 8px 0;">常用短语</h3>
+                        <p style="font-size: 14px; color: var(--c-text-60); line-height: 1.55; margin: 0;">日常交流高频表达，掌握地道布依语</p>
+                        <div class="glow-effect"></div>
+                    </a>
+                    <a href="proverbs.html" class="liquid-glass glow-card card-interactive reveal reveal-4" style="display: flex; flex-direction: column; padding: 32px; text-decoration: none; color: inherit; cursor: pointer;">
+                        <span style="font-size: 28px; margin-bottom: 20px;">💡</span>
+                        <h3 style="font-size: 20px; font-weight: 600; color: var(--c-text); margin: 0 0 8px 0;">智慧谚语</h3>
+                        <p style="font-size: 14px; color: var(--c-text-60); line-height: 1.55; margin: 0;">布依族世代相传的智慧结晶</p>
+                        <div class="glow-effect"></div>
+                    </a>
+                    <a href="songs.html" class="liquid-glass glow-card glow-accent card-interactive reveal reveal-5" style="display: flex; flex-direction: column; padding: 32px; text-decoration: none; color: inherit; cursor: pointer;">
+                        <span style="font-size: 28px; margin-bottom: 20px;">🎵</span>
+                        <h3 style="font-size: 20px; font-weight: 600; color: var(--c-text); margin: 0 0 8px 0;">传统民歌</h3>
+                        <p style="font-size: 14px; color: var(--c-text-60); line-height: 1.55; margin: 0;">聆听布依族天籁之音</p>
+                        <div class="glow-effect"></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 统计数据 -->
+        <section style="padding: 0 24px 96px;">
+            <div style="max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+                <div class="liquid-glass glow-card reveal reveal-2" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                    <p style="font-size: 36px; font-weight: 700; color: var(--c-text); margin: 0;">646<span style="font-size: 20px; color: var(--c-brand);">+</span></p>
+                    <p style="font-size: 13px; color: var(--c-text-60); margin: 4px 0 0 0;">收录词汇</p>
+                    <div class="glow-effect"></div>
+                </div>
+                <div class="liquid-glass glow-card reveal reveal-3" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                    <p style="font-size: 36px; font-weight: 700; color: var(--c-text); margin: 0;">109<span style="font-size: 20px; color: var(--c-brand);">+</span></p>
+                    <p style="font-size: 13px; color: var(--c-text-60); margin: 4px 0 0 0;">常用短语</p>
+                    <div class="glow-effect"></div>
+                </div>
+                <div class="liquid-glass glow-card reveal reveal-4" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                    <p style="font-size: 36px; font-weight: 700; color: var(--c-text); margin: 0;">39</p>
+                    <p style="font-size: 13px; color: var(--c-text-60); margin: 4px 0 0 0;">智慧谚语</p>
+                    <div class="glow-effect"></div>
+                </div>
+                <div class="liquid-glass glow-card glow-accent reveal reveal-5" style="padding: 24px; display: flex; flex-direction: column; align-items: center;">
+                    <p style="font-size: 36px; font-weight: 700; color: var(--c-text); margin: 0;">3</p>
+                    <p style="font-size: 13px; color: var(--c-text-60); margin: 4px 0 0 0;">传统民歌</p>
+                    <div class="glow-effect"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部播放器（由 app.js 注入） -->
+    <div data-player-bar></div>
+
+    <script src="../app.js"></script>
+</body>
+</html>
+

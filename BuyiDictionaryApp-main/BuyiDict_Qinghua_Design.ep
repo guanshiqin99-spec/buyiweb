@@ -1,0 +1,939 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="http://www.evolus.vn/Namespace/Pencil" xmlns:p="http://www.evolus.vn/Namespace/Pencil" id="QinghuaDictApp" version="3.1.0">
+  <Properties>
+    <Property name="title">布依语词典微信小程序 - 青花瓷釉彩设计</Property>
+    <Property name="description">现代、清爽、学习型、有文化感的移动端小程序设计</Property>
+    <Property name="author">AI UI/UX Pro Max</Property>
+    <Property name="width">390</Property>
+    <Property name="height">844</Property>
+  </Properties>
+
+  <!-- 颜色与主题板 -->
+  <Pages>
+    <!-- 0. 组件区与规范板 -->
+    <Page id="Page_Components" name="组件区与规范板">
+      <Properties>
+        <Property name="width">1200</Property>
+        <Property name="height">1000</Property>
+      </Properties>
+      <Elements>
+        <!-- 色彩规范卡片 -->
+        <Element id="ColorPalette" type="Native.Rectangle">
+          <Property name="box">100,50,300,400</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="strokeColor">#123B6B</Property>
+          <Property name="strokeWidth">1</Property>
+          <Property name="strokeStyle">solid</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="ColorText" type="Native.Text">
+          <Property name="box">120,70,260,30</Property>
+          <Property name="textContent">色彩规范 (青花瓷色系)</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="fontFamily">Arial, sans-serif</Property>
+          <Property name="textSize">20</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <!-- 主蓝：#1664D9 -->
+        <Element id="Color1" type="Native.Rectangle">
+          <Property name="box">120,120,60,60</Property>
+          <Property name="fillColor">#1664D9</Property>
+          <Property name="radius">8</Property>
+        </Element>
+        <Element id="Color1T" type="Native.Text">
+          <Property name="box">190,140,150,20</Property>
+          <Property name="textContent">主蓝: #1664D9</Property>
+          <Property name="textColor">#173B6C</Property>
+        </Element>
+        <!-- 亮蓝：#5AA9FF -->
+        <Element id="Color2" type="Native.Rectangle">
+          <Property name="box">120,200,60,60</Property>
+          <Property name="fillColor">#5AA9FF</Property>
+          <Property name="radius">8</Property>
+        </Element>
+        <Element id="Color2T" type="Native.Text">
+          <Property name="box">190,220,150,20</Property>
+          <Property name="textContent">亮蓝 (釉彩光泽): #5AA9FF</Property>
+          <Property name="textColor">#173B6C</Property>
+        </Element>
+        <!-- 深蓝：#123B6B -->
+        <Element id="Color3" type="Native.Rectangle">
+          <Property name="box">120,280,60,60</Property>
+          <Property name="fillColor">#123B6B</Property>
+          <Property name="radius">8</Property>
+        </Element>
+        <Element id="Color3T" type="Native.Text">
+          <Property name="box">190,300,150,20</Property>
+          <Property name="textContent">深蓝 (青花勾线): #123B6B</Property>
+          <Property name="textColor">#173B6C</Property>
+        </Element>
+        <!-- 背景色 -->
+        <Element id="Color4" type="Native.Rectangle">
+          <Property name="box">120,360,60,60</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="strokeColor">#E0E8F5</Property>
+          <Property name="strokeWidth">1</Property>
+          <Property name="radius">8</Property>
+        </Element>
+        <Element id="Color4T" type="Native.Text">
+          <Property name="box">190,380,150,20</Property>
+          <Property name="textContent">背景瓷白: #F4F8FF</Property>
+          <Property name="textColor">#173B6C</Property>
+        </Element>
+
+        <!-- 按钮组件 -->
+        <Element id="Btn_Primary" type="Native.Rectangle">
+          <Property name="box">500,100,200,50</Property>
+          <Property name="fillColor">#1664D9</Property>
+          <Property name="radius">999</Property>
+        </Element>
+        <Element id="Btn_Primary_Text" type="Native.Text">
+          <Property name="box">500,115,200,20</Property>
+          <Property name="textContent">主按钮 (蓝底白字)</Property>
+          <Property name="textColor">#FFFFFF</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+
+        <Element id="Btn_Secondary" type="Native.Rectangle">
+          <Property name="box">500,180,200,50</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="strokeColor">#1664D9</Property>
+          <Property name="strokeWidth">1</Property>
+          <Property name="radius">999</Property>
+        </Element>
+        <Element id="Btn_Secondary_Text" type="Native.Text">
+          <Property name="box">500,195,200,20</Property>
+          <Property name="textContent">次按钮 / 幽灵按钮</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+      </Elements>
+    </Page>
+
+    <!-- 1. 首页 -->
+    <Page id="Page_Home" name="首页">
+      <Properties>
+        <Property name="width">390</Property>
+        <Property name="height">844</Property>
+      </Properties>
+      <Elements>
+        <!-- 页面背景 (青花瓷釉白底色) -->
+        <Element id="Home_Bg" type="Native.Rectangle">
+          <Property name="box">0,0,390,844</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+        </Element>
+        <!-- Hero 主视觉渐变底 (表现青花渲染效果) -->
+        <Element id="Home_HeroBg" type="Native.Rectangle">
+          <Property name="box">0,0,390,260</Property>
+          <Property name="fillColor">#5AA9FF</Property>
+          <Property name="strokeWidth">0</Property>
+          <!-- 伪渐变效果以蓝色色块替代 -->
+          <Property name="opacity">0.8</Property>
+        </Element>
+        <!-- 页面主标题 -->
+        <Element id="Home_Title" type="Native.Text">
+          <Property name="box">24,60,342,40</Property>
+          <Property name="textContent">布依语辞典</Property>
+          <Property name="textColor">#FFFFFF</Property>
+          <Property name="textSize">34</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <!-- 搜索框 -->
+        <Element id="Home_SearchBar" type="Native.Rectangle">
+          <Property name="box">24,120,342,52</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="opacity">0.92</Property>
+          <Property name="radius">999</Property>
+          <Property name="strokeWidth">0</Property>
+          <Property name="dropShadow">true</Property>
+        </Element>
+        <Element id="Home_SearchText" type="Native.Text">
+          <Property name="box">54,136,200,20</Property>
+          <Property name="textContent">搜查布依语词汇、短句...</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">15</Property>
+        </Element>
+        
+        <!-- 快捷入口 4 宫格背景卡 -->
+        <Element id="Home_MenuCard" type="Native.Rectangle">
+          <Property name="box">20,220,350,120</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="opacity">0.95</Property>
+          <Property name="radius">24</Property>
+          <Property name="strokeColor">#1664D9</Property>
+          <Property name="strokeWidth">0.5</Property> <!-- 青花极细描边 -->
+          <Property name="dropShadow">true</Property>
+        </Element>
+        
+        <!-- 快捷入口1：词典查询 -->
+        <Element id="Home_Menu1_Icon" type="Native.Rectangle">
+          <Property name="box">40,240,48,48</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Home_Menu1_Text" type="Native.Text">
+          <Property name="box">35,296,58,20</Property>
+          <Property name="textContent">词典查询</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">12</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+        <!-- 快捷入口2：常用语 -->
+        <Element id="Home_Menu2_Icon" type="Native.Rectangle">
+          <Property name="box">120,240,48,48</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Home_Menu2_Text" type="Native.Text">
+          <Property name="box">115,296,58,20</Property>
+          <Property name="textContent">常用语</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">12</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+        <!-- 快捷入口3：谚语 -->
+        <Element id="Home_Menu3_Icon" type="Native.Rectangle">
+          <Property name="box">200,240,48,48</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Home_Menu3_Text" type="Native.Text">
+          <Property name="box">195,296,58,20</Property>
+          <Property name="textContent">谚语</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">12</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+        <!-- 快捷入口4：民歌欣赏 -->
+        <Element id="Home_Menu4_Icon" type="Native.Rectangle">
+          <Property name="box">280,240,48,48</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Home_Menu4_Text" type="Native.Text">
+          <Property name="box">275,296,58,20</Property>
+          <Property name="textContent">民歌欣赏</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">12</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+
+        <!-- 精选专题 Banner -->
+        <Element id="Home_Banner_Title" type="Native.Text">
+          <Property name="box">24,370,100,30</Property>
+          <Property name="textContent">精选专题</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">20</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="Home_Banner_Card" type="Native.Rectangle">
+          <Property name="box">20,410,350,140</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+          <Property name="strokeColor">#5AA9FF</Property>
+          <Property name="strokeWidth">1</Property> <!-- 亮蓝釉彩包边 -->
+        </Element>
+        <Element id="Home_Banner_Card_Title" type="Native.Text">
+          <Property name="box">40,430,200,30</Property>
+          <Property name="textContent">每日一句布依语</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">18</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="Home_Banner_Card_Desc" type="Native.Text">
+          <Property name="box">40,470,310,40</Property>
+          <Property name="textContent">"你好" -> "Xiongq yul" (音译)\n每天积累，感受布依族文化之美。</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">15</Property>
+        </Element>
+
+        <!-- 底部 TabBar -->
+        <Element id="TabBar_Bg" type="Native.Rectangle">
+          <Property name="box">0,760,390,84</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="strokeColor">#E0E8F5</Property>
+          <Property name="strokeWidth">1</Property>
+        </Element>
+        <Element id="TabBar_T1" type="Native.Text">
+          <Property name="box">35,780,40,20</Property>
+          <Property name="textContent">首页</Property>
+          <Property name="textColor">#1664D9</Property> <!-- 选中态 -->
+          <Property name="textSize">12</Property>
+        </Element>
+        <Element id="TabBar_T2" type="Native.Text">
+          <Property name="box">120,780,50,20</Property>
+          <Property name="textContent">功能中心</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">12</Property>
+        </Element>
+        <Element id="TabBar_T3" type="Native.Text">
+          <Property name="box">220,780,40,20</Property>
+          <Property name="textContent">收藏</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">12</Property>
+        </Element>
+        <Element id="TabBar_T4" type="Native.Text">
+          <Property name="box">310,780,40,20</Property>
+          <Property name="textContent">我的</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">12</Property>
+        </Element>
+      </Elements>
+    </Page>
+
+    <!-- 2. 功能中心 -->
+    <Page id="Page_FeatureCenter" name="功能中心">
+      <Properties>
+        <Property name="width">390</Property>
+        <Property name="height">844</Property>
+      </Properties>
+      <Elements>
+        <Element id="FC_Bg" type="Native.Rectangle">
+          <Property name="box">0,0,390,844</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+        </Element>
+        
+        <Element id="FC_TopTitle" type="Native.Text">
+          <Property name="box">24,60,342,40</Property>
+          <Property name="textContent">学习导航中心</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">34</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        
+        <Element id="FC_SubTitle" type="Native.Text">
+          <Property name="box">24,105,342,20</Property>
+          <Property name="textContent">探索布依语的多维学习路径</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">15</Property>
+        </Element>
+
+        <!-- 主卡 1 (高亮) -->
+        <Element id="FC_Card1" type="Native.Rectangle">
+          <Property name="box">20,150,350,110</Property>
+          <Property name="fillColor">#1664D9</Property> <!-- 青花主蓝 -->
+          <Property name="radius">24</Property>
+          <Property name="dropShadow">true</Property>
+        </Element>
+        <Element id="FC_Card1_T" type="Native.Text">
+          <Property name="box">40,170,200,30</Property>
+          <Property name="textContent">核心词典查询</Property>
+          <Property name="textColor">#FFFFFF</Property>
+          <Property name="textSize">20</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="FC_Card1_D" type="Native.Text">
+          <Property name="box">40,210,250,20</Property>
+          <Property name="textContent">支持布汉互译、拼音与国际音标</Property>
+          <Property name="textColor">#E0E8F5</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <!-- 卡片 2 -->
+        <Element id="FC_Card2" type="Native.Rectangle">
+          <Property name="box">20,280,165,140</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+          <Property name="strokeColor">#E0E8F5</Property>
+          <Property name="strokeWidth">1</Property>
+        </Element>
+        <Element id="FC_Card2_T" type="Native.Text">
+          <Property name="box">35,310,120,30</Property>
+          <Property name="textContent">日常对话</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">18</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="FC_Card2_D" type="Native.Text">
+          <Property name="box">35,350,140,40</Property>
+          <Property name="textContent">实用的问候与\n生活用语交际</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <!-- 卡片 3 -->
+        <Element id="FC_Card3" type="Native.Rectangle">
+          <Property name="box">205,280,165,140</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+          <Property name="strokeColor">#E0E8F5</Property>
+          <Property name="strokeWidth">1</Property>
+        </Element>
+        <Element id="FC_Card3_T" type="Native.Text">
+          <Property name="box">220,310,120,30</Property>
+          <Property name="textContent">民族谚语</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">18</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="FC_Card3_D" type="Native.Text">
+          <Property name="box">220,350,140,40</Property>
+          <Property name="textContent">汇集民间智慧\n领略传统哲学</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <!-- 卡片 4 -->
+        <Element id="FC_Card4" type="Native.Rectangle">
+          <Property name="box">20,440,350,110</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+          <Property name="strokeColor">#5AA9FF</Property>
+          <Property name="strokeWidth">1</Property>
+        </Element>
+        <Element id="FC_Card4_T" type="Native.Text">
+          <Property name="box">40,460,200,30</Property>
+          <Property name="textContent">布依民歌鉴赏</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">20</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="FC_Card4_D" type="Native.Text">
+          <Property name="box">40,500,250,20</Property>
+          <Property name="textContent">音源与译注，沉浸式感受原生态艺术</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+      </Elements>
+    </Page>
+
+    <!-- 3. 查询页 -->
+    <Page id="Page_Search" name="查询页">
+      <Properties>
+        <Property name="width">390</Property>
+        <Property name="height">844</Property>
+      </Properties>
+      <Elements>
+        <Element id="Search_Bg" type="Native.Rectangle">
+          <Property name="box">0,0,390,844</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+        </Element>
+        
+        <!-- 顶部搜索栏 & 语言切换 -->
+        <Element id="Search_TopBg" type="Native.Rectangle">
+          <Property name="box">0,0,390,140</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+        </Element>
+        
+        <Element id="Search_Input" type="Native.Rectangle">
+          <Property name="box">20,60,250,44</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="radius">999</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Search_InputText" type="Native.Text">
+          <Property name="box">40,72,150,20</Property>
+          <Property name="textContent">花朵</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+
+        <Element id="Search_LangSwitch" type="Native.Rectangle">
+          <Property name="box">280,60,90,44</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="strokeColor">#1664D9</Property>
+          <Property name="strokeWidth">1</Property>
+          <Property name="radius">999</Property>
+        </Element>
+        <Element id="Search_LangText" type="Native.Text">
+          <Property name="box">295,72,60,20</Property>
+          <Property name="textContent">汉 ⇆ 布</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textSize">14</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+
+        <!-- 结果列表标签 -->
+        <Element id="Search_ResultTitle" type="Native.Text">
+          <Property name="box">24,160,100,20</Property>
+          <Property name="textContent">查询结果</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <!-- 搜索结果卡片 1 -->
+        <Element id="Search_ResCard1" type="Native.Rectangle">
+          <Property name="box">20,190,350,100</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">20</Property>
+          <Property name="strokeColor">#E0E8F5</Property>
+          <Property name="strokeWidth">1</Property>
+        </Element>
+        <!-- 词性标签 -->
+        <Element id="Search_ResTag" type="Native.Rectangle">
+          <Property name="box">35,205,40,20</Property>
+          <Property name="fillColor">#EAF2FF</Property>
+          <Property name="radius">4</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Search_ResTagT" type="Native.Text">
+          <Property name="box">40,207,30,16</Property>
+          <Property name="textContent">名词</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textSize">12</Property>
+        </Element>
+        <!-- 主文本 -->
+        <Element id="Search_ResMain" type="Native.Text">
+          <Property name="box">85,200,200,30</Property>
+          <Property name="textContent">bix (花朵)</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">20</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <!-- 辅助音标 -->
+        <Element id="Search_ResSub" type="Native.Text">
+          <Property name="box">35,245,200,20</Property>
+          <Property name="textContent">国际音标: [bi31]</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+        <!-- 收藏按钮(空心) -->
+        <Element id="Search_ResFav" type="Native.Text">
+          <Property name="box">330,205,30,30</Property>
+          <Property name="textContent">♡</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textSize">24</Property>
+        </Element>
+
+      </Elements>
+    </Page>
+
+    <!-- 4. 民歌页 -->
+    <Page id="Page_Song" name="民歌页">
+      <Properties>
+        <Property name="width">390</Property>
+        <Property name="height">844</Property>
+      </Properties>
+      <Elements>
+        <Element id="Song_Bg" type="Native.Rectangle">
+          <Property name="box">0,0,390,844</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+        </Element>
+
+        <Element id="Song_TopTitle" type="Native.Text">
+          <Property name="box">24,60,342,40</Property>
+          <Property name="textContent">天籁布依</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">34</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="Song_SubTitle" type="Native.Text">
+          <Property name="box">24,105,342,20</Property>
+          <Property name="textContent">聆听山野间的古老歌谣</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">15</Property>
+        </Element>
+
+        <!-- 推荐内容卡 (带大封面氛围) -->
+        <Element id="Song_HeroCard" type="Native.Rectangle">
+          <Property name="box">20,150,350,220</Property>
+          <Property name="fillColor">#123B6B</Property> <!-- 深青花底色营造沉浸感 -->
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Song_HeroOverlay" type="Native.Rectangle">
+          <Property name="box">20,270,350,100</Property>
+          <Property name="fillColor">#000000</Property>
+          <Property name="opacity">0.3</Property>
+          <Property name="radius">24</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Song_HeroT" type="Native.Text">
+          <Property name="box">40,290,200,30</Property>
+          <Property name="textContent">好花红</Property>
+          <Property name="textColor">#FFFFFF</Property>
+          <Property name="textSize">24</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="Song_HeroD" type="Native.Text">
+          <Property name="box">40,330,200,20</Property>
+          <Property name="textContent">经典布依族民歌代表作</Property>
+          <Property name="textColor">#E0E8F5</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+        <Element id="Song_PlayBtn" type="Native.Rectangle">
+          <Property name="box">300,300,48,48</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Song_PlayIcon" type="Native.Text">
+          <Property name="box">316,314,20,20</Property>
+          <Property name="textContent">▶</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textSize">18</Property>
+        </Element>
+
+        <Element id="Song_ListTitle" type="Native.Text">
+          <Property name="box">24,400,100,20</Property>
+          <Property name="textContent">民歌鉴赏</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">20</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+
+        <!-- 列表卡片 -->
+        <Element id="Song_ListCard1" type="Native.Rectangle">
+          <Property name="box">20,440,350,90</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">18</Property>
+          <Property name="strokeColor">#E0E8F5</Property>
+          <Property name="strokeWidth">1</Property>
+        </Element>
+        <Element id="Song_C1Img" type="Native.Rectangle">
+          <Property name="box">35,455,60,60</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="radius">8</Property>
+        </Element>
+        <Element id="Song_C1T" type="Native.Text">
+          <Property name="box">110,460,150,25</Property>
+          <Property name="textContent">迎客歌</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">17</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="Song_C1D" type="Native.Text">
+          <Property name="box">110,490,150,20</Property>
+          <Property name="textContent">原生态演唱版</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+        <Element id="Song_C1Fav" type="Native.Text">
+          <Property name="box">330,470,30,30</Property>
+          <Property name="textContent">♡</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">20</Property>
+        </Element>
+      </Elements>
+    </Page>
+
+    <!-- 5. 收藏页 -->
+    <Page id="Page_Collection" name="我的收藏">
+      <Properties>
+        <Property name="width">390</Property>
+        <Property name="height">844</Property>
+      </Properties>
+      <Elements>
+        <Element id="Fav_Bg" type="Native.Rectangle">
+          <Property name="box">0,0,390,844</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+        </Element>
+
+        <Element id="Fav_TopTitle" type="Native.Text">
+          <Property name="box">24,60,342,40</Property>
+          <Property name="textContent">学习库</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">34</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+
+        <!-- 顶部分段器 (Segmented Control) -->
+        <Element id="Fav_SegBg" type="Native.Rectangle">
+          <Property name="box">20,120,350,44</Property>
+          <Property name="fillColor">#E0E8F5</Property>
+          <Property name="radius">8</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Fav_SegActive" type="Native.Rectangle">
+          <Property name="box">24,124,170,36</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">6</Property>
+          <Property name="strokeWidth">0</Property>
+          <Property name="dropShadow">true</Property>
+        </Element>
+        <Element id="Fav_SegT1" type="Native.Text">
+          <Property name="box">70,132,100,20</Property>
+          <Property name="textContent">文本词汇 (12)</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textSize">15</Property>
+        </Element>
+        <Element id="Fav_SegT2" type="Native.Text">
+          <Property name="box">240,132,100,20</Property>
+          <Property name="textContent">民歌收藏 (3)</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">15</Property>
+        </Element>
+
+        <!-- 收藏卡片列表 -->
+        <Element id="Fav_Card1" type="Native.Rectangle">
+          <Property name="box">20,190,350,90</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">18</Property>
+        </Element>
+        <Element id="Fav_C1Title" type="Native.Text">
+          <Property name="box">40,210,150,25</Property>
+          <Property name="textContent">bix (花朵)</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">18</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="Fav_C1Tag" type="Native.Rectangle">
+          <Property name="box">40,245,40,20</Property>
+          <Property name="fillColor">#EAF2FF</Property>
+          <Property name="radius">4</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Fav_C1TagT" type="Native.Text">
+          <Property name="box">45,247,30,16</Property>
+          <Property name="textContent">名词</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textSize">12</Property>
+        </Element>
+        <!-- 已收藏状态的爱心 (实心) -->
+        <Element id="Fav_C1Icon" type="Native.Text">
+          <Property name="box">330,220,30,30</Property>
+          <Property name="textContent">♥</Property>
+          <Property name="textColor">#1664D9</Property>
+          <Property name="textSize">24</Property>
+        </Element>
+        
+        <!-- 空态卡演示 (被隐藏或放在下方参考) -->
+        <Element id="Fav_EmptyCard" type="Native.Rectangle">
+          <Property name="box">20,310,350,200</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+          <Property name="strokeColor">#E0E8F5</Property>
+          <Property name="strokeStyle">dashed</Property>
+        </Element>
+        <Element id="Fav_EmptyT" type="Native.Text">
+          <Property name="box">120,380,150,30</Property>
+          <Property name="textContent">暂无民歌收藏</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">18</Property>
+          <Property name="fontWeight">bold</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+        <Element id="Fav_EmptyD" type="Native.Text">
+          <Property name="box">80,420,230,20</Property>
+          <Property name="textContent">去探索页面发现天籁之音吧</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+      </Elements>
+    </Page>
+
+    <!-- 6. 我的页 -->
+    <Page id="Page_Profile" name="我的">
+      <Properties>
+        <Property name="width">390</Property>
+        <Property name="height">844</Property>
+      </Properties>
+      <Elements>
+        <Element id="Pro_Bg" type="Native.Rectangle">
+          <Property name="box">0,0,390,844</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+        </Element>
+
+        <!-- 用户信息卡 (青花渐变大卡) -->
+        <Element id="Pro_UserCard" type="Native.Rectangle">
+          <Property name="box">20,60,350,160</Property>
+          <Property name="fillColor">#1664D9</Property>
+          <Property name="radius">32</Property>
+        </Element>
+        <Element id="Pro_Avatar" type="Native.Rectangle">
+          <Property name="box">40,100,72,72</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">36</Property>
+        </Element>
+        <Element id="Pro_UserName" type="Native.Text">
+          <Property name="box">130,110,150,30</Property>
+          <Property name="textContent">微信用户</Property>
+          <Property name="textColor">#FFFFFF</Property>
+          <Property name="textSize">22</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+        <Element id="Pro_UserStatus" type="Native.Text">
+          <Property name="box">130,145,150,20</Property>
+          <Property name="textContent">云端数据已同步</Property>
+          <Property name="textColor">#E0E8F5</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <!-- 数据摘要 -->
+        <Element id="Pro_StatCard" type="Native.Rectangle">
+          <Property name="box">20,240,350,90</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Pro_Stat1N" type="Native.Text">
+          <Property name="box">60,255,50,30</Property>
+          <Property name="textContent">12</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">24</Property>
+          <Property name="fontWeight">bold</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+        <Element id="Pro_Stat1T" type="Native.Text">
+          <Property name="box">50,290,70,20</Property>
+          <Property name="textContent">累计收藏</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">13</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+        <Element id="Pro_Stat2N" type="Native.Text">
+          <Property name="box">250,255,50,30</Property>
+          <Property name="textContent">45</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">24</Property>
+          <Property name="fontWeight">bold</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+        <Element id="Pro_Stat2T" type="Native.Text">
+          <Property name="box">240,290,70,20</Property>
+          <Property name="textContent">查询次数</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">13</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+
+        <!-- 功能入口卡 -->
+        <Element id="Pro_MenuCard" type="Native.Rectangle">
+          <Property name="box">20,350,350,180</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">24</Property>
+        </Element>
+        <Element id="Pro_Menu1" type="Native.Text">
+          <Property name="box">40,380,200,25</Property>
+          <Property name="textContent">学习记录</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+        <Element id="Pro_Line1" type="Native.Rectangle">
+          <Property name="box">40,420,310,1</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Pro_Menu2" type="Native.Text">
+          <Property name="box">40,440,200,25</Property>
+          <Property name="textContent">设置中心</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+        <Element id="Pro_Line2" type="Native.Rectangle">
+          <Property name="box">40,480,310,1</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Pro_Menu3" type="Native.Text">
+          <Property name="box">40,500,200,25</Property>
+          <Property name="textContent">关于布依辞典</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+
+      </Elements>
+    </Page>
+
+    <!-- 7. 设置页 -->
+    <Page id="Page_Settings" name="设置">
+      <Properties>
+        <Property name="width">390</Property>
+        <Property name="height">844</Property>
+      </Properties>
+      <Elements>
+        <Element id="Set_Bg" type="Native.Rectangle">
+          <Property name="box">0,0,390,844</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+        </Element>
+
+        <Element id="Set_TopTitle" type="Native.Text">
+          <Property name="box">24,60,342,40</Property>
+          <Property name="textContent">设置中心</Property>
+          <Property name="textColor">#123B6B</Property>
+          <Property name="textSize">30</Property>
+          <Property name="fontWeight">bold</Property>
+        </Element>
+
+        <Element id="Set_G1Title" type="Native.Text">
+          <Property name="box">30,120,200,20</Property>
+          <Property name="textContent">外观与显示</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <Element id="Set_Card1" type="Native.Rectangle">
+          <Property name="box">20,150,350,110</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">20</Property>
+        </Element>
+        <Element id="Set_M1" type="Native.Text">
+          <Property name="box">40,170,150,25</Property>
+          <Property name="textContent">深色模式</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+        <Element id="Set_M1Sub" type="Native.Text">
+          <Property name="box">300,172,50,20</Property>
+          <Property name="textContent">跟随系统</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+        <Element id="Set_Line1" type="Native.Rectangle">
+          <Property name="box">40,205,310,1</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Set_M2" type="Native.Text">
+          <Property name="box">40,220,150,25</Property>
+          <Property name="textContent">字号大小</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+        <Element id="Set_M2Sub" type="Native.Text">
+          <Property name="box">320,222,30,20</Property>
+          <Property name="textContent">中</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <Element id="Set_G2Title" type="Native.Text">
+          <Property name="box">30,290,200,20</Property>
+          <Property name="textContent">数据与系统</Property>
+          <Property name="textColor">#6B88A9</Property>
+          <Property name="textSize">14</Property>
+        </Element>
+
+        <Element id="Set_Card2" type="Native.Rectangle">
+          <Property name="box">20,320,350,110</Property>
+          <Property name="fillColor">#FFFFFF</Property>
+          <Property name="radius">20</Property>
+        </Element>
+        <Element id="Set_M3" type="Native.Text">
+          <Property name="box">40,340,150,25</Property>
+          <Property name="textContent">清理缓存</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+        <Element id="Set_Line2" type="Native.Rectangle">
+          <Property name="box">40,375,310,1</Property>
+          <Property name="fillColor">#F4F8FF</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Set_M4" type="Native.Text">
+          <Property name="box">40,390,150,25</Property>
+          <Property name="textContent">开发者环境</Property>
+          <Property name="textColor">#173B6C</Property>
+          <Property name="textSize">16</Property>
+        </Element>
+
+        <!-- 退出登录 (危险操作浅红底) -->
+        <Element id="Set_LogoutBtn" type="Native.Rectangle">
+          <Property name="box">20,500,350,56</Property>
+          <Property name="fillColor">#FFF0F0</Property>
+          <Property name="radius">16</Property>
+          <Property name="strokeWidth">0</Property>
+        </Element>
+        <Element id="Set_LogoutT" type="Native.Text">
+          <Property name="box">160,518,100,20</Property>
+          <Property name="textContent">退出登录</Property>
+          <Property name="textColor">#D9534F</Property>
+          <Property name="textSize">16</Property>
+          <Property name="fontWeight">bold</Property>
+          <Property name="textAlign">center</Property>
+        </Element>
+
+      </Elements>
+    </Page>
+
+  </Pages>
+</Document>

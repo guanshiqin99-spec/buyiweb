@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "词汇",
+  "usingComponents": {
+    "word-card": "/components/word-card/word-card"
+  }
+}

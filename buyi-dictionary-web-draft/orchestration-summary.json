@@ -1,0 +1,36 @@
+{
+  "designSource": {
+    "operatingMode": "library-bound",
+    "libraryIdentity": {
+      "name": "苹果",
+      "id": "dl_builtin_apple",
+      "version": null,
+      "scope": "built-in-global",
+      "path": "c:\\Users\\taoyanshabi\\.trae-cn/design_libraries/dl_builtin_apple",
+      "versionSource": "selected-context"
+    }
+  },
+  "project": {
+    "name": "buyi-dictionary-web-draft",
+    "displayName": "布依语词典-LiquidGlass布依融合",
+    "deviceType": "desktop",
+    "pagePlan": [
+      { "id": "page-home", "title": "首页", "file": "pages/home.html" },
+      { "id": "page-search", "title": "搜索结果", "file": "pages/search.html" },
+      { "id": "page-songs", "title": "民歌鉴赏", "file": "pages/songs.html" },
+      { "id": "page-culture", "title": "文化数据", "file": "pages/culture.html" }
+    ],
+    "tokenSource": "colors_and_type-draft.css"
+  },
+  "styleContinuityAnchors": {
+    "colorSystem": "v2 浅色明亮: 布依靛蓝 #1B3A5C(主文字)/#3A6B8C(品牌)/#6BA3BE(浅靛蓝) + 织锦橙 #D4883A(交互高亮) + 暖白底 #F5F2EF + 银白辅底 #E8E4E1. 全站统一浅色, 替代 v1 深色 #0D1117.",
+    "liquidGlassSystem": "v2 真实玻璃: 面板 rgba(232,228,225,0.25)+blur(20px)+saturate(140%)+1px solid rgba(255,255,255,0.5)+135deg 折射高光. 导航/播放条 rgba(255,255,255,0.55)+blur(24px)+saturate(160%). hover translateY(-4px)+rgba(27,58,92,0.08) 柔阴影. @supports 降级 rgba(255,255,255,0.78).",
+    "shapeSystem": "半径 1.2rem, 按钮 pill.",
+    "typographySystem": "DM Sans. hero 80px/600/-0.04em, body 14-16px/400.",
+    "surfaceAndDepth": "v2: hover 轻柔上浮 -4px + 浅色柔阴影, 去塑料感.",
+    "interactionTone": "cubic-bezier(0.32,0.72,0,1), 150/250/350ms. Equalizer for playing.",
+    "voice": "简洁冷静, 短标题. NO emoji.",
+    "variableSystem": "--apple-* 用于 @theme inline 映射; --c-* 用于元素 style (c-text/c-brand/c-accent/c-glass/c-glass-nav/c-bg-warm/c-overlay/c-white-*/c-shadow-soft/c-divider 等). 4 页 :root 完全一致.",
+    "backgroundLayers": "环境背景层(暖白渐变+文化图 overlay) → Glass 面板层 → 内容层. 首页 bouyei-nature.jpg, 搜索页纯氛围光, 民歌页 music-ambient.jpg, 文化页 bouyei-craft.jpg. 覆盖层 rgba(245,242,239,0.5)."
+  }
+}

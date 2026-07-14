@@ -1,0 +1,152 @@
+/* 布依族词典 - Vue 版补充样式
+ * 基础令牌见 variables.css，液体玻璃光学材质见 liquid-glass.css
+ * 本文件仅保留 liquid-glass.css 未覆盖的 Vue 特有样式 */
+
+/* Google Fonts 已移至 index.html 以非阻塞方式加载（preconnect + link） */
+
+/* ===== 基础排版 ===== */
+html { min-height: 100%; }
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== 全局 focus-visible 焦点环 ===== */
+:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* ===== Skip Link ===== */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 100;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--c-brand);
+  color: var(--c-brand-foreground);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 150ms ease;
+}
+.skip-link:focus-visible { top: 8px; }
+
+/* ===== 通用入场动画工具类 ===== */
+
+/* 基础淡入上滑 */
+.anim-fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: animFadeUp var(--duration-base, 250ms) var(--ease-out-quint) forwards;
+}
+
+@keyframes animFadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 延迟变体 - 用于 stagger 效果 */
+.anim-fade-up--delay-1 { animation-delay: 80ms; }
+.anim-fade-up--delay-2 { animation-delay: 160ms; }
+.anim-fade-up--delay-3 { animation-delay: 240ms; }
+.anim-fade-up--delay-4 { animation-delay: 320ms; }
+.anim-fade-up--delay-5 { animation-delay: 400ms; }
+
+/* Hero 标题入场：带缩放和模糊 */
+.anim-hero-title {
+  opacity: 0;
+  transform: translateY(28px) scale(0.98);
+  filter: blur(6px);
+  animation: animHeroTitleIn 620ms var(--ease-out-expo) forwards;
+}
+
+@keyframes animHeroTitleIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Hero 副标题入场 */
+.anim-hero-subtitle {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: animHeroSubIn 520ms var(--ease-out-quint) 180ms forwards;
+}
+
+@keyframes animHeroSubIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 卡片入场：轻微缩放 + 淡入 */
+.anim-card-in {
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+  animation: animCardIn 420ms var(--ease-out-quart) forwards;
+}
+
+@keyframes animCardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== 滚动 Reveal 工具类 ===== */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.motion-ready .reveal {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.motion-ready .reveal.is-visible {
+  animation: revealIn 560ms var(--ease-out-quint) both;
+}
+
+@keyframes revealIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 系统级减弱动效兜底：状态保持可见，避免循环与滚动行为造成不适。 */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .anim-fade-up,
+  .anim-hero-title,
+  .anim-hero-subtitle,
+  .anim-card-in,
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

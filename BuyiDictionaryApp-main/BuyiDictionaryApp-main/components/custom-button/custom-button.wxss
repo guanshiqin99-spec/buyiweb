@@ -1,0 +1,20 @@
+.custom-btn {
+  padding: 12px 20px;
+  border-radius: var(--radius-capsule);
+  font-size: 16px;
+  text-align: center;
+  border: none;
+  margin: 10rpx 0;
+}
+.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+.danger {
+  background-color: var(--color-error);
+  color: white;
+}
+.secondary {
+  background-color: rgba(22, 100, 217, 0.08); /* 浅蓝底 */
+  color: var(--color-primary);
+}

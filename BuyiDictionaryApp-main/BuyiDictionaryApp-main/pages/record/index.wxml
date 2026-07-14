@@ -1,0 +1,87 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
+  <custom-nav title="学习记录"></custom-nav>
+  <!-- 标题区 -->
+  <view class="header-section">
+    <text class="text-h1">学习记录</text>
+    <view class="text-sub clear-text" bindtap="clearRecords">清空全部</view>
+  </view>
+
+  <view wx:if="{{!isLogin}}" class="card status-card">
+    <text class="text-h3">登录后查看同步记录</text>
+    <text class="text-sub">词条浏览、发音播放都会同步保存</text>
+    <button class="btn btn-primary login-btn" bindtap="toLogin">前往登录</button>
+  </view>
+
+  <block wx:elif="{{isLogin}}">
+    <!-- 数据统计大卡 -->
+    <view class="stat-grid">
+      <view class="card stat-card">
+        <text class="text-sub">今日学习</text>
+        <text class="text-h2 primary-text">{{stats.today}}</text>
+      </view>
+      <view class="card stat-card">
+        <text class="text-sub">连续天数</text>
+        <text class="text-h2 primary-text">{{stats.streak}}</text>
+      </view>
+      <view class="card stat-card">
+        <text class="text-sub">累计记录</text>
+        <text class="text-h2 primary-text">{{stats.total}}</text>
+      </view>
+    </view>
+
+    <!-- 进度条 -->
+    <view class="card progress-card">
+      <view class="progress-header">
+        <text class="text-body">今日进度</text>
+        <text class="text-body primary-text">{{stats.progress}}%</text>
+      </view>
+      <view class="progress-track">
+        <view class="progress-bar" style="width: {{stats.progress}}%;"></view>
+      </view>
+    </view>
+
+    <!-- 最近学习横滑列表 -->
+    <view class="recent-section">
+      <text class="text-h3 section-title">最近学习</text>
+      <scroll-view scroll-x="true" class="recent-scroll" enable-flex="true">
+        <view class="recent-cards">
+          <view wx:for="{{recent}}" wx:key="recordId" class="card recent-card" data-item="{{item}}" bindtap="openDetail">
+            <text class="text-h3 primary-text recent-main">{{item.buyi || item.title}}</text>
+            <text class="text-sub recent-sub">{{item.zh || item.en || item.actionLabel}}</text>
+            <text class="text-sub recent-time">{{item.displayTime}}</text>
+          </view>
+          <view wx:if="{{!recent.length}}" class="card recent-card empty-recent">
+            <text class="text-sub">暂无学习记录</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 完整历史列表 -->
+    <view class="history-section">
+      <text class="text-h3 section-title">历史轨迹</text>
+      
+      <view wx:if="{{loading}}" class="card status-card">
+        <text class="text-h3">正在加载学习记录...</text>
+      </view>
+      
+      <block wx:elif="{{records.length}}">
+        <view class="history-list">
+          <view wx:for="{{records}}" wx:key="recordId" class="card history-card" data-item="{{item}}" bindtap="openDetail">
+            <view class="history-info">
+              <text class="text-h3 primary-text">{{item.buyi || item.title}}</text>
+              <text class="text-sub">{{item.zh || item.en || item.actionLabel}}</text>
+            </view>
+            <text class="text-sub history-time">{{item.displayTime}}</text>
+          </view>
+        </view>
+      </block>
+      
+      <view wx:else class="card status-card empty">
+        <text class="text-h3">暂无历史轨迹</text>
+        <text class="text-sub">快去查询词典开始学习吧</text>
+      </view>
+    </view>
+  </block>
+
+</view>

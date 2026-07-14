@@ -1,0 +1,693 @@
+{
+  "data": [
+    {
+      "id": "page-home",
+      "title": "首页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/home.html",
+        "interactions": [
+          {
+            "domId": "nav-search",
+            "targetPageId": "page-search",
+            "hideEdge": true,
+            "transitionLabel": "搜索"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-search",
+      "title": "搜索结果",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 620,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/search.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-songs",
+      "title": "民歌鉴赏",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 1240,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/songs.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          },
+          {
+            "domId": "hero-play",
+            "targetPageId": "page-player",
+            "hideEdge": true,
+            "transitionLabel": "播放"
+          },
+          {
+            "domId": "featured-play",
+            "targetPageId": "page-player",
+            "hideEdge": true,
+            "transitionLabel": "立即播放"
+          },
+          {
+            "domId": "list-play",
+            "targetPageId": "page-player",
+            "hideEdge": true,
+            "transitionLabel": "播放歌曲"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-culture",
+      "title": "文化数据",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 1860,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/culture.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-phrases",
+      "title": "常用语",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 2480,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/phrases.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-search",
+            "targetPageId": "page-search",
+            "hideEdge": true,
+            "transitionLabel": "词典"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-proverbs",
+      "title": "谚语",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 3100,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/proverbs.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-search",
+            "targetPageId": "page-search",
+            "hideEdge": true,
+            "transitionLabel": "词典"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-vocabulary",
+      "title": "词汇发音",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 3720,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/vocabulary.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-search",
+            "targetPageId": "page-search",
+            "hideEdge": true,
+            "transitionLabel": "词典"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-player",
+      "title": "播放器详情",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 4340,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/player.html",
+        "interactions": [
+          {
+            "domId": "back-btn",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "返回民歌"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-favorites",
+      "title": "收藏",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 4960,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/favorites.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-search",
+            "targetPageId": "page-search",
+            "hideEdge": true,
+            "transitionLabel": "词典"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-record",
+      "title": "学习记录",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 5580,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/record.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-search",
+            "targetPageId": "page-search",
+            "hideEdge": true,
+            "transitionLabel": "词典"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "nav-profile",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-settings",
+      "title": "设置",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 6200,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/settings.html",
+        "interactions": [
+          {
+            "domId": "back-btn",
+            "targetPageId": "page-profile",
+            "hideEdge": true,
+            "transitionLabel": "返回我的"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-profile",
+      "title": "我的",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 6820,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/profile.html",
+        "interactions": [
+          {
+            "domId": "nav-home",
+            "targetPageId": "page-home",
+            "hideEdge": true,
+            "transitionLabel": "首页"
+          },
+          {
+            "domId": "nav-search",
+            "targetPageId": "page-search",
+            "hideEdge": true,
+            "transitionLabel": "词典"
+          },
+          {
+            "domId": "nav-songs",
+            "targetPageId": "page-songs",
+            "hideEdge": true,
+            "transitionLabel": "民歌鉴赏"
+          },
+          {
+            "domId": "nav-culture",
+            "targetPageId": "page-culture",
+            "hideEdge": true,
+            "transitionLabel": "文化数据"
+          },
+          {
+            "domId": "nav-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "收藏"
+          },
+          {
+            "domId": "menu-record",
+            "targetPageId": "page-record",
+            "hideEdge": true,
+            "transitionLabel": "学习记录"
+          },
+          {
+            "domId": "menu-favorites",
+            "targetPageId": "page-favorites",
+            "hideEdge": true,
+            "transitionLabel": "我的收藏"
+          },
+          {
+            "domId": "menu-settings",
+            "targetPageId": "page-settings",
+            "hideEdge": true,
+            "transitionLabel": "设置"
+          }
+        ]
+      }
+    },
+    {
+      "id": "image-001",
+      "title": "苹果风Hero背景",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 0,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/hero-minimal.jpg"
+      }
+    },
+    {
+      "id": "image-002",
+      "title": "布依族自然风光",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 620,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/bouyei-nature.jpg"
+      }
+    },
+    {
+      "id": "image-003",
+      "title": "布依族蜡染工艺",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 1240,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/bouyei-craft.jpg"
+      }
+    },
+    {
+      "id": "image-004",
+      "title": "民歌氛围背景",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 1860,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/music-ambient.jpg"
+      }
+    },
+    {
+      "id": "image-005",
+      "title": "布依族梯田景观",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 2480,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/bouyei-landscape.jpg"
+      }
+    },
+    {
+      "id": "image-006",
+      "title": "布依族纺织",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 3100,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/bouyei-textile.jpg"
+      }
+    },
+    {
+      "id": "image-007",
+      "title": "民歌背景图",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 3720,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/folk-song-bg.jpg"
+      }
+    },
+    {
+      "id": "image-008",
+      "title": "首页Hero背景",
+      "type": "image",
+      "version": 1,
+      "createdAt": 1752016800000,
+      "canvasData": {
+        "x": 4340,
+        "y": 887
+      },
+      "devMetadata": {
+        "imageSrc": "assets/hero-bg.jpg"
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "布依语词典-LiquidGlass布依融合",
+    "designLibrary": {
+      "name": "苹果",
+      "id": "dl_builtin_apple",
+      "version": null,
+      "scope": "built-in-global",
+      "path": "c:\\Users\\taoyanshabi\\.trae-cn/design_libraries/dl_builtin_apple",
+      "versionSource": "selected-context"
+    }
+  }
+}

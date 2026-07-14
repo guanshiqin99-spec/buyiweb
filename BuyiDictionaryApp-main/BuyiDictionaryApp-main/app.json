@@ -1,0 +1,72 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/app/index",
+    "pages/favorite/index",
+    "pages/song/index",
+    "pages/player-detail/index",
+    "pages/mine/index",
+    "pages/application/index",
+    "pages/login/login",
+    "pages/phrases/index",
+    "pages/proverbs/index",
+    "pages/query/index",
+    "pages/record/index",
+    "pages/vocabulary/index",
+    "pages/setting/index"
+  ],
+  "darkmode": true,
+  "themeLocation": "theme.json",
+  "window": {
+    "navigationBarBackgroundColor": "@navBgColor",
+    "navigationBarTextStyle": "@navTextStyle",
+    "navigationBarTitleText": "布依语词典",
+    "backgroundColor": "@pageBgColor",
+    "backgroundTextStyle": "@backgroundTextStyle",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#1e2c60",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "/assets/icons/home.png",
+        "selectedIconPath": "/assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/app/index",
+        "text": "应用",
+        "iconPath": "/assets/icons/app.png",
+        "selectedIconPath": "/assets/icons/app-active.png"
+      },
+      {
+        "pagePath": "pages/favorite/index",
+        "text": "收藏",
+        "iconPath": "/assets/icons/favorite.png",
+        "selectedIconPath": "/assets/icons/favorite-active.png"
+      },
+      {
+        "pagePath": "pages/song/index",
+        "text": "民歌",
+        "iconPath": "/assets/icons/song.png",
+        "selectedIconPath": "/assets/icons/song-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "/assets/icons/mine.png",
+        "selectedIconPath": "/assets/icons/mine-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "cloud": true,
+  "usingComponents": {
+    "custom-nav": "/components/custom-nav/custom-nav"
+  }
+}

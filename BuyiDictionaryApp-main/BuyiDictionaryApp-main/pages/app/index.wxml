@@ -1,0 +1,76 @@
+<view class="page {{currentTheme}} {{fontSizeClass}}">
+  <custom-nav title="应用"></custom-nav>
+  <!-- 自定义导航栏预留（模拟透明背景） -->
+  
+  <view class="page-bg">
+    <!-- 将水墨渐变背景与云水纹结合 -->
+    <view class="home-hero-bg"></view>
+    <view class="bg-cloud"></view>
+  </view>
+
+  <view class="app-scroll">
+    <view class="hero">
+      <text class="hero-kicker">LEARNING HUB</text>
+      <text class="hero-title">功能中心</text>
+      <text class="hero-desc">按学习场景进入内容，减少跳转，保持专注。</text>
+    </view>
+
+    <view class="feature-grid">
+      <view class="feature-card primary" bindtap="goToQuery">
+        <view class="feature-top">
+          <view class="feature-icon">词</view>
+          <text class="feature-arrow">→</text>
+        </view>
+        <text class="feature-title">词典查询</text>
+        <text class="feature-desc">支持布依语、中文、英文搜索，快速查看词条与释义。</text>
+      </view>
+
+      <view class="feature-card" bindtap="goToPhrases">
+        <view class="feature-top">
+          <view class="feature-icon">句</view>
+          <text class="feature-arrow">→</text>
+        </view>
+        <text class="feature-title">常用语</text>
+        <text class="feature-desc">把高频场景表达集中起来，适合口语入门和记忆。</text>
+      </view>
+
+      <view class="feature-card" bindtap="goToProverbs">
+        <view class="feature-top">
+          <view class="feature-icon">谚</view>
+          <text class="feature-arrow">→</text>
+        </view>
+        <text class="feature-title">谚语</text>
+        <text class="feature-desc">从短句里理解布依语文化与表达节奏。</text>
+      </view>
+
+      <view class="feature-card accent" bindtap="goToVocabulary">
+        <view class="feature-top">
+          <view class="feature-icon">音</view>
+          <text class="feature-arrow">→</text>
+        </view>
+        <text class="feature-title">词汇发音</text>
+        <text class="feature-desc">聚焦带音频的词汇，适合做跟读训练和纠音。</text>
+      </view>
+    </view>
+
+    <view class="guide-panel">
+      <text class="guide-title">建议的学习顺序</text>
+      <view class="guide-list">
+        <view class="guide-item">
+          <text class="guide-index">01</text>
+          <text class="guide-text">先查词典，理解词义和基本对照。</text>
+        </view>
+        <view class="guide-item">
+          <text class="guide-index">02</text>
+          <text class="guide-text">再看常用语，把词放进真实表达中。</text>
+        </view>
+        <view class="guide-item">
+          <text class="guide-index">03</text>
+          <text class="guide-text">最后听发音和民歌，建立语音记忆。</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="bottom-safe"></view>
+  </view>
+</view>

@@ -1,0 +1,268 @@
+/* 布依族词典 - 设计令牌系统 */
+:root {
+  /* 品牌色彩 */
+  --brand-300: #6BA3BE;
+  --brand-500: #3A6B8C;
+  --brand-700: #1B3A5C;
+  --accent-300: #D4883A;
+
+  /* 背景色：净化暖白，去掉灰黄陈旧感 */
+  --background: #F7F5F2;
+  --foreground: #1B3A5C;
+  --card: rgba(232, 228, 225, 0.25);
+  --card-foreground: #1B3A5C;
+
+  /* 主色调 */
+  --primary: #3A6B8C;
+  --primary-foreground: #FFFFFF;
+  --secondary: rgba(27, 58, 92, 0.08);
+  --secondary-foreground: #1B3A5C;
+
+  /* 辅助色 */
+  --muted: rgba(247, 245, 242, 0.6);
+  --muted-foreground: #45617C;
+  --accent: #D4883A;
+  --accent-foreground: #FFFFFF;
+
+  /* 边框和输入 */
+  --border: rgba(27, 58, 92, 0.08);
+  --input: rgba(27, 58, 92, 0.12);
+  --ring: #3A6B8C;
+
+  /* 字体 */
+  --font-sans: 'DM Sans', ui-sans-serif, sans-serif, system-ui;
+  --font-serif: 'Noto Serif SC', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 1.2rem;
+  --spacing: 0.24rem;
+
+  /* 动效节奏：反馈 / 状态切换 / 叙事入场 */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 500ms;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 文字颜色 */
+  --c-text: #1B3A5C;
+  --c-text-85: #294967;
+  --c-text-70: #365573;
+  --c-text-60: #3E5C77;
+  --c-text-50: #45617C;
+  --c-text-35: #4B6680;
+  --c-text-10: rgba(27,58,92,0.1);
+
+  /* 品牌色变体 */
+  --c-brand: #3A6B8C;
+  --c-brand-light: #6BA3BE;
+  --c-brand-dark: #1B3A5C;
+  --c-brand-foreground: #FFFFFF;
+  --c-brand-25: rgba(58,107,140,0.25);
+  --c-brand-40: rgba(58,107,140,0.4);
+  --c-brand-60: rgba(58,107,140,0.6);
+  --c-brand-08: rgba(58,107,140,0.08);
+  --c-brand-06: rgba(58,107,140,0.06);
+
+  /* 强调色 */
+  --c-accent: #D4883A;
+  --c-accent-text: #99531A;
+  --c-accent-20: rgba(212,136,58,0.2);
+  --c-accent-40: rgba(212,136,58,0.4);
+  --c-accent-10: rgba(212,136,58,0.1);
+  --c-accent-04: rgba(212,136,58,0.04);
+
+  /* 局部指针光影：只给核心操作使用，避免泛化为全站炫光 */
+  --pointer-glow-size-sm: 56px;
+  --pointer-glow-size-md: 68px;
+  --pointer-glow-size-lg: 80px;
+  --pointer-glow-brand-rgb: 58, 107, 140;
+  --pointer-glow-accent-rgb: 212, 136, 58;
+
+  /* 功能色 */
+  --c-success: #1C7736;
+  --c-success-08: rgba(28, 119, 54, 0.08);
+  --c-danger: #B54040;
+  --c-danger-08: rgba(181, 64, 64, 0.08);
+
+  /* 焦点色：全站统一，引用强调色以保证与品牌蓝元素的对比 */
+  --c-focus: var(--c-accent);
+
+  /* 背景渐变：银灰改为干净浅冷灰，呼应品牌青色，去掉黄暗感 */
+  --c-bg-warm: #F7F5F2;
+  --c-bg-silver: #ECEFF2;
+  --c-overlay: rgba(247,245,242,0.12);
+
+  /* 白色变体 */
+  --c-white: #ffffff;
+  --c-white-78: rgba(255,255,255,0.78);
+  --c-white-65: rgba(255,255,255,0.65);
+  --c-white-60: rgba(255,255,255,0.6);
+  --c-white-55: rgba(255,255,255,0.55);
+  --c-white-50: rgba(255,255,255,0.5);
+  --c-white-35: rgba(255,255,255,0.35);
+  --c-white-15: rgba(255,255,255,0.15);
+  --c-white-10: rgba(255,255,255,0.10);
+
+  /* 玻璃效果 */
+  --c-glass: rgba(255,255,255,0.45);
+  --c-glass-nav: rgba(255,255,255,0.72);
+
+  /* 分隔线和阴影 */
+  --c-divider: rgba(27,58,92,0.08);
+  --c-shadow-soft: rgba(27,58,92,0.08);
+  --c-shadow-12: rgba(27,58,92,0.12);
+  --c-shadow-40: rgba(0,0,0,0.4);
+
+  /* 深色蒙层 */
+  --c-overlay-deep-1: rgba(27,58,92,0.88);
+  --c-overlay-deep-2: rgba(58,107,140,0.75);
+
+  /* 模态遮罩：保持暗色中性，避免浅色/深色切换时过蓝 */
+  --c-modal-overlay: rgba(27, 58, 92, 0.32);
+  --c-modal-overlay-fallback: rgba(27, 58, 92, 0.72);
+
+  /* ===== 统一渐变（青花瓷靛蓝主轴） ===== */
+  --grad-brand: linear-gradient(135deg, #1B3A5C 0%, #3A6B8C 50%, #6BA3BE 100%);
+  --grad-brand-vertical: linear-gradient(180deg, #1B3A5C 0%, #3A6B8C 100%);
+  --grad-accent: linear-gradient(135deg, #D4883A 0%, #E0A85A 100%);
+  --grad-hero-scrim: linear-gradient(105deg, rgba(27,58,92,0.94) 0%, rgba(27,58,92,0.80) 28%, rgba(27,58,92,0.34) 58%, rgba(27,58,92,0.06) 100%);
+  --grad-hero-bottom: linear-gradient(to top, rgba(27,58,92,0.90) 0%, transparent 55%);
+
+  /* ===== 卡片阴影层级（替代硬编码 rgba(27,58,92,...)） ===== */
+  --shadow-xs: 0 1px 2px rgba(27,58,92,0.05);
+  --shadow-sm: 0 2px 8px rgba(27,58,92,0.06);
+  --shadow-md: 0 8px 24px rgba(27,58,92,0.10);
+  --shadow-lg: 0 20px 48px rgba(27,58,92,0.14);
+  --shadow-xl: 0 40px 80px rgba(27,58,92,0.18);
+  --shadow-glow-brand: 0 0 24px rgba(58,107,140,0.25);
+  --shadow-glow-accent: 0 0 24px rgba(212,136,58,0.25);
+
+  /* ===== 菲涅尔边框高光 ===== */
+  --border-fresnel: 1px solid rgba(255,255,255,0.22);
+  --border-fresnel-strong: 1px solid rgba(255,255,255,0.38);
+  --inner-highlight: inset 0 1px 1px rgba(255,255,255,0.65);
+
+  /* ===== 按钮形态 ===== */
+  --btn-radius: 999px;
+  --btn-radius-card: 16px;
+  --btn-h-sm: 32px;
+  --btn-h-md: 40px;
+  --btn-h-lg: 48px;
+  --btn-pad-sm: 6px 14px;
+  --btn-pad-md: 10px 20px;
+  --btn-pad-lg: 14px 28px;
+
+  /* ===== 字体收敛：两种 + 数字等宽 =====
+   * DM Sans 正文 / Noto Serif SC 标题品牌 / JetBrains Mono 仅数字时间码 */
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Noto Serif SC', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ===== 圆角层级 ===== */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* ===== 统计数字：统一字号/字族令牌（数据用无衬线 + 等宽数字） ===== */
+  --font-stat: var(--font-sans);
+  --stat-size-sm: 32px;
+  --stat-size-lg: 48px;
+}
+
+/* ===== 深色模式：覆盖语义令牌，保持品牌色相 ===== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* 背景色 */
+  --background: #0f1419;
+  --foreground: #E8E4E1;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-foreground: #E8E4E1;
+
+  /* 主色调 */
+  --secondary: rgba(255, 255, 255, 0.06);
+  --secondary-foreground: #E8E4E1;
+
+  /* 辅助色 */
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: #9BA0A0;
+
+  /* 边框和输入 */
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.12);
+
+  /* 文字颜色：基于浅色前景 */
+  --c-text: #E8E4E1;
+  --c-text-85: #D5D3D1;
+  --c-text-70: #C1C0BE;
+  --c-text-60: #ADB0AF;
+  --c-text-50: #9BA0A0;
+  --c-text-35: #929696;
+  --c-text-10: rgba(232, 228, 225, 0.1);
+
+  /* 品牌色变体：深色底上提亮 */
+  --c-brand: #6BA3BE;
+  --c-brand-light: #8FBDD2;
+  --c-brand-dark: #3A6B8C;
+  --c-brand-foreground: #102C45;
+  --c-brand-25: rgba(107, 163, 190, 0.25);
+  --c-brand-40: rgba(107, 163, 190, 0.4);
+  --c-brand-60: rgba(107, 163, 190, 0.6);
+  --c-brand-08: rgba(107, 163, 190, 0.12);
+  --c-brand-06: rgba(107, 163, 190, 0.1);
+
+  /* 强调色：深色底上略提亮 */
+  --c-accent: #E0A85A;
+  --c-accent-text: #E0A85A;
+  --c-accent-20: rgba(224, 168, 90, 0.2);
+  --c-accent-40: rgba(224, 168, 90, 0.4);
+  --c-accent-10: rgba(224, 168, 90, 0.12);
+  --c-accent-04: rgba(224, 168, 90, 0.06);
+
+  --pointer-glow-brand-rgb: 107, 163, 190;
+  --pointer-glow-accent-rgb: 224, 168, 90;
+
+  --c-success: #65D98A;
+  --c-success-08: rgba(101, 217, 138, 0.12);
+  --c-danger: #EF8F8F;
+
+  /* 背景渐变 */
+  --c-bg-warm: #0f1419;
+  --c-bg-silver: #161c24;
+  --c-overlay: rgba(255, 255, 255, 0.06);
+
+  /* 玻璃效果：深色玻璃 */
+  --c-glass: rgba(255, 255, 255, 0.06);
+  --c-glass-nav: rgba(15, 20, 25, 0.72);
+
+  /* 分隔线和阴影 */
+  --c-divider: rgba(255, 255, 255, 0.1);
+  --c-shadow-soft: rgba(0, 0, 0, 0.3);
+  --c-shadow-12: rgba(0, 0, 0, 0.4);
+
+  /* 深色蒙层 */
+  --c-overlay-deep-1: rgba(0, 0, 0, 0.78);
+  --c-overlay-deep-2: rgba(58, 107, 140, 0.6);
+
+  /* 模态遮罩 */
+  --c-modal-overlay: rgba(0, 0, 0, 0.45);
+  --c-modal-overlay-fallback: rgba(0, 0, 0, 0.72);
+
+  /* 渐变：深色场景调整 */
+  --grad-hero-scrim: linear-gradient(105deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.78) 28%, rgba(27,58,92,0.4) 58%, rgba(27,58,92,0.1) 100%);
+  --grad-hero-bottom: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 55%);
+
+  /* 卡片阴影层级 */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 40px 80px rgba(0, 0, 0, 0.6);
+
+  /* 菲涅尔边框高光 */
+  --border-fresnel: 1px solid rgba(255, 255, 255, 0.12);
+  --border-fresnel-strong: 1px solid rgba(255, 255, 255, 0.22);
+  --inner-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}

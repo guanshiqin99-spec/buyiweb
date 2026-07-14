@@ -1,0 +1,5 @@
+<view class="custom-nav" style="padding-top: {{statusBarHeight}}px; height: 44px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 100;">
+  <view class="back-btn" wx:if="{{showBack}}" bindtap="onBack" style="position: absolute; left: 15px; padding: 10px; display: flex; align-items: center; z-index: 101;">
+    <view style="width: 12px; height: 12px; border-top: 2px solid {{textColor}}; border-left: 2px solid {{textColor}}; transform: rotate(-45deg);"></view>
+  </view>
+</view>

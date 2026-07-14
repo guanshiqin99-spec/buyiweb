@@ -1,0 +1,206 @@
+/* 查询页青花瓷风格样式 */
+
+/* 顶部搜索栏区�?*/
+.search-header {
+  background: var(--color-card-bg);
+  padding: 32rpx;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-light);
+  margin-bottom: 24rpx;
+  position: relative;
+  z-index: 100;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg);
+  height: 88rpx;
+  border-radius: var(--radius-capsule);
+  padding: 0 32rpx;
+  margin-bottom: 24rpx;
+  position: relative;
+}
+
+/* 实时建议下拉�?*/
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%; margin-top: 12rpx;
+  left: 0;
+  right: 0;
+  background: var(--color-card-bg); /* 修改为 css 变量自适应 */
+  border-radius: var(--radius-card);
+  box-shadow: 0 8rpx 30rpx rgba(22, 100, 217, 0.25);
+  max-height: 480rpx;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.page.dark .suggestions-dropdown {
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suggestion-item {
+  padding: 24rpx;
+  border-bottom: 1rpx solid rgba(22, 100, 217, 0.05);
+}
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+.suggestion-mark {
+  color: var(--color-primary);
+  font-size: 24rpx;
+  margin-right: 8rpx;
+}
+
+.search-icon {
+  color: var(--color-primary);
+  margin-right: 16rpx;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+}
+
+.clear-btn {
+  padding: 10rpx;
+  color: var(--color-text-secondary);
+}
+
+/* 语言切换胶囊按钮 */
+.lang-switch {
+  display: flex;
+  background: var(--color-bg);
+  border-radius: var(--radius-capsule);
+  padding: 6rpx;
+}
+
+.lang-tab {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: var(--color-text-secondary);
+  padding: 12rpx 0;
+  border-radius: var(--radius-capsule);
+  transition: all 0.3s;
+}
+
+.lang-tab.active {
+  background: var(--color-card-bg);
+  color: var(--color-primary);
+  box-shadow: 0 4rpx 12rpx rgba(22, 100, 217, 0.1);
+  font-weight: bold;
+}
+
+.page.dark .lang-tab.active {
+  background: linear-gradient(135deg, #1A2E4C, #243B5C);
+  color: #EDF5FF;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.3);
+}
+
+/* 结果区头�?*/
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12rpx;
+  margin-bottom: 24rpx;
+}
+
+/* 结果卡片 */
+.result-card {
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.result-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.fav-icon {
+  font-size: 40rpx;
+  color: var(--color-text-secondary);
+  padding: 10rpx;
+}
+.fav-icon.active {
+  color: var(--color-primary);
+}
+
+.result-main {
+  display: block;
+  margin-bottom: 16rpx;
+  color: var(--color-primary-dark);
+}
+
+/* 主文本展示与播放按钮布局 */
+.result-main-area {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.result-main-text {
+  flex: 1;
+}
+
+.audio-btn {
+  padding: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10rpx;
+  transition: opacity 0.3s;
+}
+
+.audio-btn.disabled {
+  opacity: 0.4;
+}
+
+.audio-icon {
+  font-size: 40rpx;
+  color: var(--color-primary);
+}
+
+.result-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+.result-phonetic, .result-note {
+  display: block;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  padding: 12rpx 20rpx;
+  border-radius: 12rpx;
+  margin-top: 12rpx;
+}
+
+/* 状态卡�?*/
+.status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  text-align: center;
+  border-style: dashed;
+}
+
+.status-card .text-h3 {
+  margin-bottom: 16rpx;
+}
+
+.status-card.error {
+  border-color: var(--color-error);
+  background: var(--color-danger-bg);
+}
+
+.text-danger {
+  color: var(--color-error);
+}

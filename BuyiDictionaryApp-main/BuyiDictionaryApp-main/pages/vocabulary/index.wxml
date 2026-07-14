@@ -1,0 +1,33 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
+  <custom-nav title="词汇"></custom-nav>
+  <!-- 标题区 -->
+  <view class="header-section">
+    <text class="text-h1">词汇发音</text>
+    <text class="text-sub">收录带有原声发音的布依语词条</text>
+  </view>
+
+  <view class="list-container">
+    <view wx:if="{{loading}}" class="card status-card">
+      <text class="text-h3">正在加载词汇</text>
+      <text class="text-sub">我们正在筛选带发音的词条内容。</text>
+    </view>
+    
+    <view wx:elif="{{errorText}}" class="card status-card error">
+      <text class="text-h3 text-danger">词汇加载失败</text>
+      <text class="text-sub">{{errorText}}</text>
+    </view>
+    
+    <block wx:else>
+      <view class="word-list">
+        <block wx:for="{{items}}" wx:key="id">
+          <word-card item="{{item}}" index="{{index}}" playing="{{playingIndex===index}}" bind:fav="onFav" bind:play="onPlay" />
+        </block>
+      </view>
+      
+      <view wx:if="{{!items.length}}" class="card status-card empty">
+        <text class="text-h3">暂无带音频的词汇</text>
+        <text class="text-sub">等后台补充词条音频后，这里会自动展示。</text>
+      </view>
+    </block>
+  </view>
+</view>

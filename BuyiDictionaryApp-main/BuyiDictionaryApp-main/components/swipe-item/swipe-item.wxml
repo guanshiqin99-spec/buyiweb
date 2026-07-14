@@ -1,0 +1,14 @@
+<view class="swipe-root" bindtouchstart="touchStart" bindtouchmove="touchMove" bindtouchend="touchEnd">
+  <!-- 置于底部的删除按钮 -->
+  <view class="delete-area" style="width:{{deleteWidth}}rpx;" bindtap="onDeleteTap">
+    <image src="{{deleteIcon}}" class="delete-icon" mode="widthFix" wx:if="{{useIcon}}"/>
+    <text class="delete-text" wx:if="{{!useIcon}}">{{deleteText}}</text>
+  </view>
+  
+  <!-- 上层滑动的内容容器 -->
+  <view class="swipe-container" style="transform: translateX({{translateX}}rpx);">
+    <view class="swipe-content">
+      <slot name="content"></slot>
+    </view>
+  </view>
+</view>

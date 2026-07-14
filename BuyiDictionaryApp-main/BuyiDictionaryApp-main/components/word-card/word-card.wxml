@@ -1,0 +1,17 @@
+<view class="word-card" hover-class="press-scale">
+  <view class="word-left">
+    <text class="word-buyi">{{item.buyi}}</text>
+    <text class="word-py">{{item.py || item.pinyin || ''}}</text>
+  </view>
+  <view class="word-middle">
+    <text class="word-ch">{{item.ch}}</text>
+    <text class="word-en">{{item.en}}</text>
+  </view>
+  <view class="word-right">
+    <view class="icon-btn fav {{item.fav ? 'active' : ''}}" bindtap="onFavTap">{{item.fav ? '★' : '☆'}}</view>
+    <view class="icon-btn play" bindtap="onPlayTap">
+      <text wx:if="{{!playing}}">▶</text>
+      <view wx:else class="loading"></view>
+    </view>
+  </view>
+</view>

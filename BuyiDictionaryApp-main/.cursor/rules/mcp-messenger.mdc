@@ -1,0 +1,14 @@
+---
+description: "小文ai小铺 MCP 对话规则"
+globs: "**/*"
+alwaysApply: true
+---
+
+# 小文ai小铺 MCP 规则
+
+1. 每轮回复完成后，最后一步调用 `check_messages` 等待用户消息，形成循环：回复 → check_messages → 收到消息 → 回复 → check_messages
+2. 需要用户做选择时调用 `ask_question`（格式: `{ "questions": [{ "question": "问题", "options": [{ "id": "a", "label": "选项" }], "allow_multiple": false }] }`），收到回答后继续调用 `check_messages`
+3. `check_messages` 可带 `reply` 参数推送摘要到插件界面：`{ "reply": "## 标题\n内容" }`
+4. 禁止调用 subagent 并发任务；`check_messages` 异常时立即重试
+
+**回合结束**：回复完毕后调用小文ai小铺 MCP 的 `check_messages`。
