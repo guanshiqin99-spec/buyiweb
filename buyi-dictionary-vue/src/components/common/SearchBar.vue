@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import IconClose from '@/components/icons/IconClose.vue'
 import IconSearch from '@/components/icons/IconSearch.vue'
+import { searchApi } from '@/utils/api'
 
 const props = defineProps({
   modelValue: {
@@ -16,6 +17,52 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'search'])
 
+const suggestions = ref([])
+const isSuggestionsLoading = ref(false)
+const isInputFocused = ref(false)
+const activeIndex = ref(-1)
+let debounceTimer = null
+let requestId = 0
+
+const hasSuggestions = computed(() => suggestions.value.length > 0)
+const showSuggestions = computed(() => isInputFocused.value && (hasSuggestions.value || isSuggestionsLoading.value))
+
+function flattenSuggestions(payload) {
+  const groups = [payload?.dictionary, payload?.phrases, payload?.proverbs]
+  return groups.flatMap((items) => Array.isArray(items) ? items : []).slice(0, 8)
+}
+
+watch(() => props.modelValue, (value) => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  activeIndex.value = -1
+
+  const keyword = String(value || '').trim()
+  const id = ++requestId
+  if (!keyword) {
+    suggestions.value = []
+    isSuggestionsLoading.value = false
+    return
+  }
+
+  debounceTimer = window.setTimeout(async () => {
+    isSuggestionsLoading.value = true
+    try {
+      const payload = await searchApi.suggest(keyword)
+      if (id !== requestId) return
+      suggestions.value = flattenSuggestions(payload)
+    } catch {
+      if (id !== requestId) return
+      suggestions.value = []
+    } finally {
+      if (id === requestId) isSuggestionsLoading.value = false
+    }
+  }, 300)
+})
+
+onUnmounted(() => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+})
+
 const handleInput = (e) => {
   emit('update:modelValue', e.target.value)
 }
@@ -28,45 +75,111 @@ const handleClear = () => {
   emit('update:modelValue', '')
 }
 
+const selectSuggestion = (item) => {
+  const keyword = item.zhText || item.buyiText || item.title || props.modelValue
+  emit('update:modelValue', keyword)
+  suggestions.value = []
+  activeIndex.value = -1
+  emit('search', keyword)
+}
+
 const handleKeydown = (e) => {
+  if (e.key === 'ArrowDown' && hasSuggestions.value) {
+    e.preventDefault()
+    activeIndex.value = (activeIndex.value + 1) % suggestions.value.length
+    return
+  }
+  if (e.key === 'ArrowUp' && hasSuggestions.value) {
+    e.preventDefault()
+    activeIndex.value = activeIndex.value <= 0 ? suggestions.value.length - 1 : activeIndex.value - 1
+    return
+  }
   if (e.key === 'Enter') {
+    if (activeIndex.value >= 0) {
+      e.preventDefault()
+      selectSuggestion(suggestions.value[activeIndex.value])
+      return
+    }
     handleSearch()
+  }
+  if (e.key === 'Escape') {
+    suggestions.value = []
+    activeIndex.value = -1
   }
 }
 </script>
 
 <template>
-  <div class="search-bar liquid-glass-content search-glow">
-    <IconSearch :size="20" color="var(--c-brand)" style="flex-shrink: 0;" />
+  <div class="search-bar-wrapper">
+    <div class="search-bar liquid-glass-content search-glow">
+      <IconSearch :size="20" color="var(--c-brand)" style="flex-shrink: 0;" />
 
-    <input
-      type="text"
-      :value="modelValue"
-      :placeholder="placeholder"
-      name="q"
-      autocomplete="off"
-      spellcheck="false"
-      aria-label="搜索布依语词汇"
-      @input="handleInput"
-      @keydown="handleKeydown"
-    />
+      <input
+        type="text"
+        :value="modelValue"
+        :placeholder="placeholder"
+        name="q"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="搜索布依语词汇"
+        aria-autocomplete="list"
+        aria-controls="dictionary-search-suggestions"
+        :aria-expanded="showSuggestions"
+        @input="handleInput"
+        @keydown="handleKeydown"
+        @focus="isInputFocused = true"
+        @blur="isInputFocused = false"
+      />
 
-    <button
-      v-if="modelValue"
-      class="clear-btn"
-      aria-label="清除"
-      @click="handleClear"
+      <button
+        v-if="modelValue"
+        class="clear-btn"
+        aria-label="清除"
+        @click="handleClear"
+      >
+        <IconClose :size="16" />
+      </button>
+
+      <button v-pointer-glow="{ tone: 'brand', size: 'md' }" class="search-btn" @click="handleSearch">
+        搜索
+      </button>
+    </div>
+
+    <div
+      v-if="showSuggestions"
+      id="dictionary-search-suggestions"
+      class="search-suggestions"
+      role="listbox"
+      aria-label="搜索建议"
     >
-      <IconClose :size="16" />
-    </button>
-
-    <button v-pointer-glow="{ tone: 'brand', size: 'md' }" class="search-btn" @click="handleSearch">
-      搜索
-    </button>
+      <p v-if="isSuggestionsLoading" class="search-suggestions__state" aria-live="polite">正在获取建议…</p>
+      <template v-else>
+        <button
+          v-for="(item, index) in suggestions"
+          :key="`${item.type || 'content'}-${item.id || index}`"
+          type="button"
+          class="search-suggestions__item"
+          :class="{ 'is-active': activeIndex === index }"
+          role="option"
+          :aria-selected="activeIndex === index"
+          @mousedown.prevent="selectSuggestion(item)"
+          @mouseenter="activeIndex = index"
+        >
+          <strong>{{ item.buyiText || item.title || item.zhText }}</strong>
+          <span>{{ item.zhText || item.description || '' }}</span>
+        </button>
+      </template>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+  z-index: 2;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -157,6 +270,46 @@ const handleKeydown = (e) => {
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
 }
+
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 3;
+  overflow: hidden;
+  border: 1px solid var(--c-divider);
+  border-radius: 16px;
+  background: var(--background);
+  box-shadow: var(--shadow-lg);
+}
+
+.search-suggestions__state {
+  margin: 0;
+  padding: 14px 20px;
+  color: var(--c-text-60);
+  font-size: .875rem;
+}
+
+.search-suggestions__item {
+  display: grid;
+  width: 100%;
+  gap: 3px;
+  padding: 12px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--c-divider);
+  background: transparent;
+  color: var(--c-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.search-suggestions__item:last-child { border-bottom: 0; }
+.search-suggestions__item:hover,
+.search-suggestions__item.is-active { background: var(--c-brand-08); }
+.search-suggestions__item strong { font-size: .9375rem; font-weight: 600; }
+.search-suggestions__item span { overflow: hidden; color: var(--c-text-60); font-size: .8125rem; text-overflow: ellipsis; white-space: nowrap; }
+.search-suggestions__item:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
 
 @media (max-width: 420px) {
   .search-bar { height: 52px; padding-left: 16px; }

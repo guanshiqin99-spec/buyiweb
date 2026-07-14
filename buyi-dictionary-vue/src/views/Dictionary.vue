@@ -53,7 +53,8 @@ function mapResults(data) {
     phonetic: item.description || '',
     example: item.culturalNote || item.description || '',
     audioUrl: item.audioUrl || '',
-    relatedExhibits: item.relatedExhibits || []
+    relatedExhibits: item.relatedExhibits || [],
+    isFavorited: Boolean(item.isFavorited)
   }))
   add(data.dictionary, 'dictionary')
   add(data.phrases, 'phrase')
@@ -72,7 +73,7 @@ const selectedItem = computed(() => filteredResults.value.find((item) => item.id
 const hasQuery = computed(() => Boolean(searchQuery.value.trim()))
 const isFavoriteSelected = computed(() => {
   if (!selectedItem.value) return false
-  return favoritesStore.isFavorite(selectedItem.value.type, selectedItem.value.rawId)
+  return selectedItem.value.isFavorited
 })
 
 // 仅保存接口成功返回的原始词条，离线时不伪造任何文化内容。
@@ -99,6 +100,7 @@ function saveCachedSearch(keyword, data) {
 }
 
 async function runSearch() {
+  clearTimeout(debounceTimer)
   router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined } })
   const sequence = ++requestSequence
   requestState.value = 'loading'
@@ -159,12 +161,20 @@ function selectItem(item) { selectedId.value = item.id }
 async function handleFavorite(item) {
   if (!authStore.isLoggedIn) return notify('登录后可以把词条加入收藏。')
   try {
-    await favoritesStore.toggleFavorite(item.type, item.rawId, {
+    const result = await favoritesStore.toggleFavorite(item.type, item.rawId, {
       buyiText: item.bouyei,
       zhText: item.chinese,
       title: item.bouyei || item.chinese,
       subtitle: item.chinese || item.english
     })
+    const isFavorited = result?.isFavorited ?? result?.favorited
+    if (typeof isFavorited === 'boolean') {
+      allResults.value = allResults.value.map((entry) => (
+        entry.type === item.type && String(entry.rawId) === String(item.rawId)
+          ? { ...entry, isFavorited }
+          : entry
+      ))
+    }
     notify('已更新收藏。')
   } catch {
     notify('收藏未完成，请稍后重试。')

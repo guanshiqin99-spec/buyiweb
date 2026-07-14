@@ -100,7 +100,7 @@ watch(query, (val) => {
     isLoading.value = true
     const id = ++reqId
     try {
-      const data = await searchApi.search({ keyword: val })
+      const data = await searchApi.suggest(val.trim())
       if (id !== reqId) return // 过期请求丢弃
       results.value = data
       rebuildFlatItems(data)
@@ -124,11 +124,14 @@ function rebuildFlatItems(data) {
     { key: 'proverbs', label: '谚语' },
     { key: 'songs', label: '民歌' }
   ]
+  let remaining = 8
   for (const g of groups) {
-    const arr = (data[g.key] || []).slice(0, 5)
+    const arr = (data[g.key] || []).slice(0, remaining)
     if (!arr.length) continue
     flat.push({ type: 'title', label: g.label })
     for (const it of arr) flat.push({ type: 'item', data: it, group: g.key })
+    remaining -= arr.length
+    if (!remaining) break
   }
   flatItems.value = flat
   activeIndex.value = -1

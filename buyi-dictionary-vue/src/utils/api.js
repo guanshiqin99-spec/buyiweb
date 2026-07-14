@@ -10,6 +10,10 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
+function hasAuthenticatedSession() {
+  return Boolean(localStorage.getItem('token'))
+}
+
 // 请求拦截器：附带 token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
@@ -46,14 +50,21 @@ export const settingsApi = {
 }
 
 export const searchApi = {
-  search(params) { return api.get('/miniapp/search', { params }) },
+  search(params) {
+    const path = hasAuthenticatedSession() ? '/miniapp/search/mine' : '/miniapp/search'
+    return api.get(path, { params })
+  },
+  suggest(keyword) { return api.get('/miniapp/search/suggest', { params: { keyword } }) },
   hot() { return api.get('/miniapp/search/hot') }
 }
 
 export const contentApi = {
   list(type, params) {
     const path = getContentApiPath(type)
-    return api.get(`/miniapp/${path}`, { params })
+    const endpoint = type === 'dictionary' && hasAuthenticatedSession()
+      ? `/miniapp/${path}/mine`
+      : `/miniapp/${path}`
+    return api.get(endpoint, { params })
   }
 }
 

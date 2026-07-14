@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mock } from 'node:test'
-import api, { homeApi } from '../src/utils/api.js'
+import api, { contentApi, homeApi, searchApi } from '../src/utils/api.js'
 import { logApiError, logRenderError, logRouteChunkError } from '../src/utils/logger.js'
 
 // 提供最小化的 localStorage 占位，请求拦截器从中读取 token
@@ -49,6 +49,41 @@ test('响应拦截器对成功响应解包为 response.data', async () => {
   api.defaults.adapter = (config) => Promise.resolve(okResponse({ hello: 'world' }, config))
   const result = await homeApi.get()
   assert.deepEqual(result, { hello: 'world' })
+})
+
+test('未登录搜索使用公开接口，建议请求使用 suggest 接口', async () => {
+  useLocalStorage()
+  const captured = []
+  api.defaults.adapter = (config) => {
+    captured.push(config)
+    return Promise.resolve(okResponse({ ok: true }, config))
+  }
+
+  await searchApi.search({ keyword: '布依' })
+  await searchApi.suggest('布依')
+
+  assert.equal(captured[0].url, '/miniapp/search')
+  assert.deepEqual(captured[0].params, { keyword: '布依' })
+  assert.equal(captured[1].url, '/miniapp/search/suggest')
+  assert.deepEqual(captured[1].params, { keyword: '布依' })
+})
+
+test('登录后搜索和词汇列表使用 mine 接口', async () => {
+  const store = useLocalStorage()
+  store.set('token', 'abc123')
+  const captured = []
+  api.defaults.adapter = (config) => {
+    captured.push(config)
+    return Promise.resolve(okResponse({ ok: true }, config))
+  }
+
+  await searchApi.search({ keyword: '布依' })
+  await contentApi.list('dictionary', { page: 1, pageSize: 20 })
+  await contentApi.list('song', { page: 1, pageSize: 20 })
+
+  assert.equal(captured[0].url, '/miniapp/search/mine')
+  assert.equal(captured[1].url, '/miniapp/dictionary/mine')
+  assert.equal(captured[2].url, '/miniapp/songs')
 })
 
 test('响应拦截器对失败响应调用 logApiError 并向外抛出', async () => {
