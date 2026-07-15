@@ -16,9 +16,9 @@ exports.MiniappLearningRecordsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const content_type_enum_1 = require("../../common/enums/content-type.enum");
 const learning_record_entity_1 = require("../../entities/learning-record.entity");
 const content_service_1 = require("../content/content.service");
+const learning_stats_1 = require("./learning-stats");
 let MiniappLearningRecordsService = class MiniappLearningRecordsService {
     constructor(learningRecordRepository, contentService) {
         this.learningRecordRepository = learningRecordRepository;
@@ -80,46 +80,7 @@ let MiniappLearningRecordsService = class MiniappLearningRecordsService {
             where: { userId },
             order: { createdAt: 'DESC' },
         });
-        const total = records.length;
-        const typeCounts = {
-            dictionary: records.filter((r) => r.contentType === content_type_enum_1.ContentType.DICTIONARY).length,
-            phrase: records.filter((r) => r.contentType === content_type_enum_1.ContentType.PHRASE).length,
-            proverb: records.filter((r) => r.contentType === content_type_enum_1.ContentType.PROVERB).length,
-            song: records.filter((r) => r.contentType === content_type_enum_1.ContentType.SONG).length,
-        };
-        const nowBeijing = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
-        const todayMidnightBeijing = new Date(nowBeijing.getFullYear(), nowBeijing.getMonth(), nowBeijing.getDate());
-        const todayStartMs = todayMidnightBeijing.getTime();
-        const today = records.filter((record) => {
-            const recordMs = new Date(record.createdAt).getTime();
-            return recordMs >= todayStartMs;
-        }).length;
-        const distinctDayMs = Array.from(new Set(records.map((record) => {
-            const d = new Date(new Date(record.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
-            return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-        }))).sort((a, b) => b - a);
-        let streak = 0;
-        let cursor = todayMidnightBeijing.getTime();
-        const oneDay = 24 * 60 * 60 * 1000;
-        for (const day of distinctDayMs) {
-            if (day === cursor) {
-                streak += 1;
-                cursor -= oneDay;
-                continue;
-            }
-            if (day === cursor - oneDay && streak === 0) {
-                streak += 1;
-                cursor = day - oneDay;
-                continue;
-            }
-            break;
-        }
-        return {
-            today,
-            total,
-            streak,
-            typeCounts,
-        };
+        return (0, learning_stats_1.calculateLearningStats)(records);
     }
 };
 exports.MiniappLearningRecordsService = MiniappLearningRecordsService;

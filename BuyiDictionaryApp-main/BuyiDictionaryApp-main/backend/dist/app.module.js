@@ -55,7 +55,7 @@ exports.AppModule = AppModule = __decorate([
                 load: [app_config_1.appConfig],
             }),
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)(process.cwd(), 'uploads'),
+                rootPath: process.env.VERCEL === '1' ? '/tmp/uploads' : (0, path_1.join)(process.cwd(), 'uploads'),
                 serveRoot: '/uploads',
             }),
             serve_static_1.ServeStaticModule.forRoot({

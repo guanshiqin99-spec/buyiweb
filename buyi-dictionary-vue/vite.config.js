@@ -1,18 +1,28 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
 export default defineConfig({
-  plugins: [vue()],
+  base: './',
+  plugins: [vue(), viteSingleFile()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        inlineDynamicImports: true
+      }
+    }
+  },
   server: {
     host: true,
     port: 5173,
-    allowedHosts: ['.loca.lt', '.ngrok-free.dev', '.ngrok.io', 'localhost'],
+    allowedHosts: ['.loca.lt', '.ngrok-free.dev', '.ngrok.io', 'localhost', '127.0.0.1'],
     proxy: {
       // 本地开发通过代理转发到本地后端，避免跨域
       '/api': {

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { nextTick } from 'vue'
 import Home from '../views/Home.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -6,7 +6,7 @@ import { collectLiquidGlass } from '@/utils/liquidGlass'
 import { logRouteChunkError } from '@/utils/logger'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   // 路由跳转后回到顶部，浏览器前进/后退保留滚动位置
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition

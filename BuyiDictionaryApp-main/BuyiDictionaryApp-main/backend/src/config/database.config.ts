@@ -80,9 +80,13 @@ export function buildTypeOrmOptions(config: {
     };
   }
 
+  // Vercel serverless 环境只有 /tmp 可写
+  const isVercel = process.env.VERCEL === '1';
+  const dbLocation = isVercel ? `/tmp/${db.database}` : db.database;
+
   return {
     type: 'sqljs',
-    location: db.database,
+    location: dbLocation,
     autoSave: true,
     driver: initSqlJs,
     entities,

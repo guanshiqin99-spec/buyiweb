@@ -7,7 +7,9 @@ import {
   notifyUserProgressUpdated
 } from './userProgress'
 
-export const apiBaseURL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+const isDev = import.meta.env.DEV
+const fallbackBase = isDev ? 'http://127.0.0.1:3000/api' : '/api'
+export const apiBaseURL = (import.meta.env.VITE_API_BASE_URL || fallbackBase).replace(/\/$/, '')
 
 const api = axios.create({
   baseURL: apiBaseURL,

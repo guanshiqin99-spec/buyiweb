@@ -41,7 +41,7 @@ const appConfig = () => ({
     media: {
         driver: process.env.MEDIA_DRIVER ?? 'local',
         publicBaseUrl: process.env.MEDIA_PUBLIC_BASE_URL ?? 'http://localhost:3000/uploads',
-        localUploadDir: process.env.MEDIA_LOCAL_UPLOAD_DIR ?? 'uploads',
+        localUploadDir: process.env.VERCEL === '1' ? '/tmp/uploads' : (process.env.MEDIA_LOCAL_UPLOAD_DIR ?? 'uploads'),
         maxFileSize: Number(process.env.MEDIA_MAX_FILE_SIZE ?? 10 * 1024 * 1024),
         cosSecretId: process.env.COS_SECRET_ID ?? '',
         cosSecretKey: process.env.COS_SECRET_KEY ?? '',

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import imgBg from '@/assets/images/bg-vocabulary.jpg'
+import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
 import { contentApi, recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'

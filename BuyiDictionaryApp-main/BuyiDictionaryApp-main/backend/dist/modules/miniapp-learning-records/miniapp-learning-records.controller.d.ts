@@ -56,29 +56,25 @@ export declare class MiniappLearningRecordsController {
         pageSize: number;
         totalPages: number;
         stats: {
+            todayCount: number;
+            totalCount: number;
+            streakDays: number;
+            typeCounts: Record<import("../../common/enums/content-type.enum").ContentType, number>;
             today: number;
             total: number;
             streak: number;
-            typeCounts: {
-                dictionary: number;
-                phrase: number;
-                proverb: number;
-                song: number;
-            };
         };
     }>;
     stats(user: {
         sub: number;
     }): Promise<{
+        todayCount: number;
+        totalCount: number;
+        streakDays: number;
+        typeCounts: Record<import("../../common/enums/content-type.enum").ContentType, number>;
         today: number;
         total: number;
         streak: number;
-        typeCounts: {
-            dictionary: number;
-            phrase: number;
-            proverb: number;
-            song: number;
-        };
     }>;
     create(user: {
         sub: number;

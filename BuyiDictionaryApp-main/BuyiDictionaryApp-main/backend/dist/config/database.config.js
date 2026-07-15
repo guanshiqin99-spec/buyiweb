@@ -66,9 +66,11 @@ function buildTypeOrmOptions(config) {
             timezone: '+08:00',
         };
     }
+    const isVercel = process.env.VERCEL === '1';
+    const dbLocation = isVercel ? `/tmp/${db.database}` : db.database;
     return {
         type: 'sqljs',
-        location: db.database,
+        location: dbLocation,
         autoSave: true,
         driver: sql_js_1.default,
         entities: exports.entities,

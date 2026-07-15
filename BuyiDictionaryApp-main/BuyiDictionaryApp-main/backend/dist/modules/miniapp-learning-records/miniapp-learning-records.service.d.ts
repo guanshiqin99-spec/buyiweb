@@ -61,15 +61,13 @@ export declare class MiniappLearningRecordsService {
         pageSize: number;
         totalPages: number;
         stats: {
+            todayCount: number;
+            totalCount: number;
+            streakDays: number;
+            typeCounts: Record<ContentType, number>;
             today: number;
             total: number;
             streak: number;
-            typeCounts: {
-                dictionary: number;
-                phrase: number;
-                proverb: number;
-                song: number;
-            };
         };
     }>;
     clear(userId: number): Promise<{
@@ -78,14 +76,12 @@ export declare class MiniappLearningRecordsService {
         message: string;
     }>;
     getStats(userId: number): Promise<{
+        todayCount: number;
+        totalCount: number;
+        streakDays: number;
+        typeCounts: Record<ContentType, number>;
         today: number;
         total: number;
         streak: number;
-        typeCounts: {
-            dictionary: number;
-            phrase: number;
-            proverb: number;
-            song: number;
-        };
     }>;
 }

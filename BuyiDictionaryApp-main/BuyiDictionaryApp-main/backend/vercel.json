@@ -1,0 +1,33 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": null,
+  "devCommand": "npm run start:dev",
+  "installCommand": "npm install",
+  "functions": {
+    "api/index.js": {
+      "runtime": "@vercel/node@3.2.0",
+      "includeFiles": "node_modules/sql.js/dist/sql-wasm.wasm"
+    }
+  },
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" }
+  ],
+  "env": {
+    "NODE_ENV": "development",
+    "VERCEL": "1",
+    "DB_TYPE": "sqljs",
+    "DB_NAME": "buyi-local.sqlite",
+    "DB_SYNCHRONIZE": "true",
+    "DB_LOGGING": "false",
+    "SEED_ON_BOOT": "true",
+    "WECHAT_MOCK_MODE": "true",
+    "MEDIA_DRIVER": "local",
+    "MEDIA_MAX_FILE_SIZE": "10485760",
+    "MEDIA_LOCAL_UPLOAD_DIR": "/tmp/uploads",
+    "MEDIA_PUBLIC_BASE_URL": "https://backend-nine-alpha-35.vercel.app/uploads",
+    "ENABLE_SWAGGER": "false",
+    "CORS_ORIGIN": "https://buyi-dictionary-vue.vercel.app",
+    "JWT_SECRET": "vercel-deploy-secret"
+  }
+}

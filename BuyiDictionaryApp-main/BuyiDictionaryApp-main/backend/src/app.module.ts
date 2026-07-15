@@ -43,12 +43,8 @@ import { UsersModule } from './modules/users/users.module';
       load: [appConfig],
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
+      rootPath: process.env.VERCEL === '1' ? '/tmp/uploads' : join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), '..', 'admin-web'),
-      serveRoot: '/admin-web',
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],

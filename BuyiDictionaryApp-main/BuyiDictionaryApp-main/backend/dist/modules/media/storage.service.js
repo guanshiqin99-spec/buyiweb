@@ -46,7 +46,7 @@ let StorageService = class StorageService {
         const uploadDir = this.configService.get('media.localUploadDir', 'uploads');
         const safeName = `${Date.now()}-${params.filename.replace(/[^\w.\-()\u4e00-\u9fa5]/g, '-')}`;
         const storageKey = safeName;
-        const absoluteDir = (0, path_1.join)(process.cwd(), uploadDir);
+        const absoluteDir = uploadDir.startsWith('/') ? uploadDir : (0, path_1.join)(process.cwd(), uploadDir);
         await (0, promises_1.mkdir)(absoluteDir, { recursive: true });
         await (0, promises_1.writeFile)((0, path_1.join)(absoluteDir, storageKey), params.buffer);
         const baseUrl = this.configService.get('media.publicBaseUrl', 'http://localhost:3000/uploads');
@@ -57,7 +57,7 @@ let StorageService = class StorageService {
     }
     async deleteFromLocal(storageKey) {
         const uploadDir = this.configService.get('media.localUploadDir', 'uploads');
-        const absolutePath = (0, path_1.join)(process.cwd(), uploadDir, storageKey);
+        const absolutePath = uploadDir.startsWith('/') ? (0, path_1.join)(uploadDir, storageKey) : (0, path_1.join)(process.cwd(), uploadDir, storageKey);
         try {
             await (0, promises_1.unlink)(absolutePath);
         }
