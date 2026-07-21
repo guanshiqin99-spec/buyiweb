@@ -376,6 +376,32 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
+.card-front::before,
+.card-front::after,
+.card-back::before,
+.card-back::after {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card .card-front,
+.card .card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card .card-front {
+  transform: rotateY(0deg);
+}
+
+.card .card-back {
+  transform: rotateY(180deg);
+}
+
+.card .card-back.liquid-glass-hero:hover {
+  transform: rotateY(180deg);
+}
+
 .card-front {
   --lg-radius: var(--radius);
   --lg-tint-a: 0.55;
@@ -385,7 +411,6 @@ onUnmounted(() => {
   --lg-radius: var(--radius);
   --lg-tint: 27, 58, 92;
   --lg-tint-a: 0.88;
-  transform: rotateY(180deg);
   color: white;
 }
 

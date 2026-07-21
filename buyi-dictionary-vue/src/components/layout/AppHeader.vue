@@ -20,9 +20,12 @@ const navRef = ref(null)
 const burgerRef = ref(null)
 const isImmersive = computed(() => route.meta.navTone === 'immersive')
 const navContrast = computed(() => route.meta.navContrast || 'on-light')
-// 动态探测：根据导航栏正下方的背景区块实时切换深/浅文字（苹果式）
-const dynamicTone = ref(null) // 'dark' | 'light' | null
-const toneConfidence = ref('low') // 'high' | 'low'
+const isClearRail = computed(() => route.meta.navRail === 'clear')
+const fallbackTone = computed(() => toneFromContrast(navContrast.value))
+
+// 整栏保护衬底状态（P0 锁定契约：保留 3 点采样 + 2/3 多数投票，仅用于不确定时的轻微保护衬底）
+const dynamicTone = ref(null)
+const toneConfidence = ref('low')
 const hasBusyBackdrop = ref(false)
 const effectiveContrast = computed(() => {
   if (dynamicTone.value === 'dark' || dynamicTone.value === 'light') {
@@ -30,7 +33,10 @@ const effectiveContrast = computed(() => {
   }
   return navContrast.value
 })
-const isClearRail = computed(() => route.meta.navRail === 'clear')
+
+// 分段 tone：每个导航片段（品牌 / 各链接 / 登录按钮 / 汉堡）独立探测其正下方背景，
+// 而非整栏统一。这样跨深浅区块边界时，左右片段可同时呈现不同字色与玻璃底色。
+const segmentTones = ref({})
 
 const navLinks = [
   { path: '/quiz', label: '答题' },
@@ -111,14 +117,13 @@ function probeAtPoint(x, y) {
   return { tone: null, busy: false }
 }
 
-// P0 locked policy: semantic markers are sampled left/center/right; 2/3 wins.
-// Mixed evidence retains the last reliable tone and enables the protective scrim.
+// 整栏 3 点投票：仅用于不确定保护衬底（P0 锁定契约）
 function detectNavTone() {
   const markers = document.querySelectorAll(TONE_SELECTOR)
-  const fallbackTone = toneFromContrast(navContrast.value)
+  const fallbackToneVal = fallbackTone.value
   hasBusyBackdrop.value = false
   if (!markers.length) {
-    acceptTone(fallbackTone)
+    acceptTone(fallbackToneVal)
     return
   }
 
@@ -129,7 +134,7 @@ function detectNavTone() {
   hasBusyBackdrop.value = probes.some((probe) => probe.busy)
   const decision = resolveNavToneDecision({
     samples,
-    fallbackTone,
+    fallbackTone: fallbackToneVal,
     lastReliableTone: dynamicTone.value
   })
 
@@ -137,11 +142,62 @@ function detectNavTone() {
   else markToneUncertain()
 }
 
+// 分段探测：取元素中心 x，探测其正下方背景 tone。
+// 跨深浅边界时，左侧链接与右侧链接可得到不同 tone，独立着色。
+function probeSegmentTone(el) {
+  if (!el || !navRef.value) return { tone: null, busy: false }
+  const y = getProbeY()
+  const rect = el.getBoundingClientRect()
+  if (!rect.width && !rect.height) return { tone: null, busy: false }
+  const x = Math.round(rect.left + rect.width / 2)
+  return probeAtPoint(x, y)
+}
+
+function detectSegmentTones() {
+  if (!navRef.value) return
+  const ft = fallbackTone.value
+  const prev = segmentTones.value
+  const next = { ...prev }
+
+  const brandEl = navRef.value.querySelector('.nav-brand')
+  const brandProbe = probeSegmentTone(brandEl)
+  if (brandProbe.tone && !brandProbe.busy) next.brand = brandProbe.tone
+  else if (!next.brand) next.brand = ft
+
+  const linkEls = [...navRef.value.querySelectorAll('.nav-rail [data-path]')]
+  for (const el of linkEls) {
+    const path = el.dataset.path
+    if (!path) continue
+    const probe = probeSegmentTone(el)
+    if (probe.tone && !probe.busy) next[path] = probe.tone
+    else if (!next[path]) next[path] = ft
+  }
+
+  const authEl = navRef.value.querySelector('.nav-auth-btn')
+  const authProbe = probeSegmentTone(authEl)
+  if (authProbe.tone && !authProbe.busy) next.auth = authProbe.tone
+  else if (!next.auth) next.auth = ft
+
+  const burgerEl = navRef.value.querySelector('.nav-burger')
+  if (burgerEl) {
+    const bp = probeSegmentTone(burgerEl)
+    if (bp.tone && !bp.busy) next.burger = bp.tone
+    else if (!next.burger) next.burger = ft
+  }
+
+  segmentTones.value = next
+}
+
+function detectAll() {
+  detectNavTone()
+  detectSegmentTones()
+}
+
 function scheduleToneDetection() {
   if (scrollRaf) return
   scrollRaf = requestAnimationFrame(() => {
     scrollRaf = null
-    detectNavTone()
+    detectAll()
   })
 }
 
@@ -165,6 +221,41 @@ function setupToneObserver() {
   scheduleToneDetection()
 }
 
+// 液态玻璃轨道：分段水平渐变着色，每段色调跟随其下方背景。
+// 跨深浅边界时玻璃底色平滑过渡，与各段文字色协同。
+const railStyle = computed(() => {
+  if (!isImmersive.value || isClearRail.value || !navRef.value) return null
+  const railEl = navRef.value.querySelector('.nav-rail')
+  if (!railEl) return null
+  const railRect = railEl.getBoundingClientRect()
+  if (!railRect.width) return null
+
+  const linkEls = [...navRef.value.querySelectorAll('.nav-rail [data-path]')]
+  const segs = []
+  for (const el of linkEls) {
+    const path = el.dataset.path
+    const tone = segmentTones.value[path]
+    if (!tone) continue
+    const r = el.getBoundingClientRect()
+    if (!r.width) continue
+    const pct = ((r.left + r.width / 2) - railRect.left) / railRect.width * 100
+    segs.push({ pct: Math.max(0, Math.min(100, pct)), tone })
+  }
+  segs.sort((a, b) => a.pct - b.pct)
+  if (!segs.length) return null
+
+  const stops = segs.map((s) => {
+    const color = s.tone === 'dark' ? 'rgba(14, 31, 48, 0.56)' : 'rgba(255, 255, 255, 0.50)'
+    return `${color} ${s.pct.toFixed(1)}%`
+  })
+  // 顶部高光带（厚度感，色调无关）+ 分段水平色调
+  return {
+    background:
+      'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 14%, transparent 60%),' +
+      'linear-gradient(90deg, ' + stops.join(', ') + ')'
+  }
+})
+
 onMounted(() => {
   scrollHandler = () => {
     isScrolled.value = window.scrollY > 100
@@ -173,6 +264,7 @@ onMounted(() => {
   resizeHandler = () => {
     isScrolled.value = window.scrollY > 100
     setupToneObserver()
+    detectAll()
   }
   window.addEventListener('scroll', scrollHandler, { passive: true })
   window.addEventListener('resize', resizeHandler, { passive: true })
@@ -196,6 +288,11 @@ watch(() => route.path, () => {
   dynamicTone.value = null
   toneConfidence.value = 'low'
   hasBusyBackdrop.value = false
+  // 分段 tone 重置为 fallback，下一帧重新探测
+  const ft = fallbackTone.value
+  const reset = { brand: ft, auth: ft, burger: ft }
+  for (const l of navLinks) reset[l.path] = ft
+  segmentTones.value = reset
   nextTick(() => {
     isScrolled.value = window.scrollY > 100
     setupToneObserver()
@@ -240,12 +337,20 @@ const handleAuthAction = () => {
     router.push('/login')
   }
 }
+
+// 各片段 tone 用于模板 :data-tone 绑定（始终有 fallback，首屏不闪烁）
+const brandTone = computed(() => segmentTones.value.brand || fallbackTone.value)
+const authTone = computed(() => segmentTones.value.auth || fallbackTone.value)
+const burgerTone = computed(() => segmentTones.value.burger || fallbackTone.value)
+function linkTone(path) {
+  return segmentTones.value[path] || fallbackTone.value
+}
 </script>
 
 <template>
-  <nav 
+  <nav
     ref="navRef"
-    class="nav-immersive" 
+    class="nav-immersive"
     :class="{
       scrolled: isScrolled,
       'nav-immersive--tone-uncertain': toneConfidence === 'low' || hasBusyBackdrop,
@@ -257,34 +362,46 @@ const handleAuthAction = () => {
     style="position: fixed; top: 0; left: 0; right: 0; z-index: 40;"
   >
     <div class="nav-inner">
-      <RouterLink to="/" class="nav-brand" @click="closeDrawer">
+      <RouterLink to="/" class="nav-brand" data-tone="brand" :data-tone-actual="brandTone" @click="closeDrawer">
         <svg class="nav-brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 2L6 8V16L12 22L18 16V8L12 2Z" stroke="currentColor" stroke-width="1.5"/>
           <path d="M8 12L10 14L15 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span class="nav-brand-text">布依族词典</span>
       </RouterLink>
-      
-      <div class="nav-rail" :class="{ 'liquid-glass': !isClearRail, 'nav-rail--clear': isClearRail }">
+
+      <div
+        class="nav-rail"
+        :class="{ 'liquid-glass': !isClearRail, 'nav-rail--clear': isClearRail }"
+        :style="railStyle"
+      >
         <RouterLink
           v-for="link in navLinks"
           :key="link.path"
           :to="link.path"
           class="nav-link"
+          :data-path="link.path"
+          :data-tone="linkTone(link.path)"
           :class="{ active: isActive(link.path) }"
           :aria-current="isActive(link.path) ? 'page' : undefined"
         >
           {{ link.label }}
         </RouterLink>
-        <button class="nav-auth-btn" type="button" @click="handleAuthAction">
+        <button
+          class="nav-auth-btn"
+          type="button"
+          :data-tone="authTone"
+          @click="handleAuthAction"
+        >
           {{ authStore.isLoggedIn ? '退出' : '登录' }}
         </button>
       </div>
-      
+
       <button
         ref="burgerRef"
         class="nav-burger"
         type="button"
+        :data-tone="burgerTone"
         :aria-label="isDrawerOpen ? '关闭菜单' : '打开菜单'"
         :aria-expanded="isDrawerOpen"
         @click="toggleDrawer"
@@ -293,7 +410,7 @@ const handleAuthAction = () => {
         <IconMenu v-else :size="20" />
       </button>
     </div>
-    
+
     <div
       class="nav-drawer-scrim"
       :class="{ open: isDrawerOpen }"
@@ -380,12 +497,6 @@ const handleAuthAction = () => {
   transition: color 300ms ease;
 }
 
-.nav-immersive:not(.scrolled) .nav-brand-icon {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.nav-immersive.nav-immersive--light .nav-brand-icon { color: var(--c-brand); }
-
 .nav-brand-text {
   font-family: 'Noto Serif SC', serif;
   font-size: 16px;
@@ -394,25 +505,19 @@ const handleAuthAction = () => {
   transition: color 300ms ease;
 }
 
-.nav-immersive:not(.scrolled) .nav-brand-text {
-  color: #ffffff;
-}
+/* 分段 tone：品牌独立着色（沉浸式页面） */
+.nav-brand[data-tone-actual="dark"] .nav-brand-text { color: rgba(255, 255, 255, 0.95); }
+.nav-brand[data-tone-actual="dark"] .nav-brand-icon { color: rgba(255, 255, 255, 0.9); }
+.nav-brand[data-tone-actual="dark"]:hover .nav-brand-text { color: rgba(255, 255, 255, 0.82); }
+.nav-brand[data-tone-actual="light"] .nav-brand-text { color: var(--c-text); }
+.nav-brand[data-tone-actual="light"] .nav-brand-icon { color: var(--c-brand); }
+.nav-brand[data-tone-actual="light"]:hover .nav-brand-text { color: var(--c-text-85); }
 
+/* 非沉浸式页：品牌走单色（--light 容器） */
 .nav-immersive.nav-immersive--light .nav-brand-text { color: var(--c-text); }
+.nav-immersive.nav-immersive--light .nav-brand-icon { color: var(--c-brand); }
 
-.nav-immersive:not(.scrolled) .nav-brand:hover .nav-brand-text {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.nav-immersive.scrolled .nav-brand-text {
-  color: var(--c-text);
-}
-
-.nav-immersive.scrolled .nav-brand-icon {
-  color: var(--c-brand);
-}
-
-/* 导航链接 */
+/* 导航链接容器 */
 .nav-rail {
   display: none;
   align-items: center;
@@ -421,6 +526,7 @@ const handleAuthAction = () => {
   --lg-spec: 0.12;
   --lg-tint-a: 0.42;
   padding: 6px 8px;
+  transition: background 300ms ease;
 }
 
 @media (min-width: 640px) {
@@ -458,39 +564,18 @@ const handleAuthAction = () => {
   outline-offset: 2px;
 }
 
-.nav-immersive:not(.scrolled) .nav-link {
-  color: var(--c-text-70);
-}
+/* 分段 tone：每个链接独立着色，跨深浅边界时左右可不同 */
+.nav-link[data-tone="dark"] { color: rgba(255, 255, 255, 0.78); }
+.nav-link[data-tone="dark"]:hover { color: #ffffff; background: rgba(255, 255, 255, 0.14); }
+.nav-link[data-tone="dark"].active { color: #ffffff; background: rgba(255, 255, 255, 0.24); font-weight: 600; }
+.nav-link[data-tone="light"] { color: var(--c-text-70); }
+.nav-link[data-tone="light"]:hover { color: var(--c-text); background: var(--c-brand-06); }
+.nav-link[data-tone="light"].active { color: var(--c-brand); background: var(--c-brand-08); font-weight: 600; }
 
+/* 非沉浸式页：链接走单色（--light 容器，覆盖分段 tone） */
 .nav-immersive.nav-immersive--light .nav-link { color: var(--c-text-70); }
 .nav-immersive.nav-immersive--light .nav-link:hover { color: var(--c-text); background: var(--c-brand-06); }
 .nav-immersive.nav-immersive--light .nav-link.active { color: var(--c-brand); background: var(--c-brand-08); font-weight: 600; }
-
-.nav-immersive:not(.scrolled) .nav-link:hover {
-  color: var(--c-text);
-  background: var(--c-brand-06);
-}
-
-.nav-immersive:not(.scrolled) .nav-link.active {
-  color: var(--c-brand);
-  background: var(--c-brand-08);
-  font-weight: 600;
-}
-
-.nav-immersive.scrolled .nav-link {
-  color: var(--c-text-70);
-}
-
-.nav-immersive.scrolled .nav-link:hover {
-  color: var(--c-text);
-  background: var(--c-brand-06);
-}
-
-.nav-immersive.scrolled .nav-link.active {
-  color: var(--c-brand);
-  background: var(--c-brand-08);
-  font-weight: 600;
-}
 
 /* 登录/退出按钮 */
 .nav-auth-btn {
@@ -501,7 +586,7 @@ const handleAuthAction = () => {
   background: transparent;
   font: 500 13px var(--font-sans);
   cursor: pointer;
-  transition: background 200ms ease, border-color 200ms ease;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
   outline: none;
 }
 
@@ -510,26 +595,15 @@ const handleAuthAction = () => {
   outline-offset: 2px;
 }
 
-.nav-immersive:not(.scrolled) .nav-auth-btn {
-  color: var(--c-brand);
-  border-color: var(--c-brand-25);
-}
+/* 分段 tone：登录按钮独立着色 */
+.nav-auth-btn[data-tone="dark"] { color: #ffffff; border-color: rgba(255, 255, 255, 0.52); }
+.nav-auth-btn[data-tone="dark"]:hover { background: rgba(255, 255, 255, 0.14); }
+.nav-auth-btn[data-tone="light"] { color: var(--c-brand); border-color: var(--c-brand-25); }
+.nav-auth-btn[data-tone="light"]:hover { background: var(--c-brand-08); }
 
+/* 非沉浸式页：登录按钮走单色 */
 .nav-immersive.nav-immersive--light .nav-auth-btn { color: var(--c-brand); border-color: var(--c-brand-25); }
 .nav-immersive.nav-immersive--light .nav-auth-btn:hover { background: var(--c-brand-08); }
-
-.nav-immersive:not(.scrolled) .nav-auth-btn:hover {
-  background: var(--c-brand-08);
-}
-
-.nav-immersive.scrolled .nav-auth-btn {
-  color: var(--c-brand);
-  border-color: var(--c-brand-25);
-}
-
-.nav-immersive.scrolled .nav-auth-btn:hover {
-  background: var(--c-brand-08);
-}
 
 /* 文化页保持深色展陈背景，导航在滚动后也必须维持高对比度。 */
 .nav-immersive.nav-immersive--culture .nav-brand-text,
@@ -568,105 +642,17 @@ const handleAuthAction = () => {
   background: rgba(255, 255, 255, .14);
 }
 
-/* 导航对比主题：深色背景使用浅色文字，浅色背景使用深色文字。 */
+/* 导轨玻璃 tint 兜底（分段渐变未注入时，按整栏 tone 着色） */
 .nav-immersive.nav-immersive--on-dark .nav-rail {
   --lg-tint: 14, 31, 48;
   --lg-tint-a: .56;
   border-color: rgba(255, 255, 255, .28);
 }
 
-.nav-immersive.nav-immersive--on-dark .nav-brand-text,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-brand-text {
-  color: var(--c-white);
-}
-
-.nav-immersive.nav-immersive--on-dark .nav-brand-icon,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-brand-icon {
-  color: rgba(255, 255, 255, .9);
-}
-
-.nav-immersive.nav-immersive--on-dark .nav-link,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-link {
-  color: var(--c-white-78);
-}
-
-.nav-immersive.nav-immersive--on-dark .nav-link:hover,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-link:hover {
-  color: var(--c-white);
-  background: rgba(255, 255, 255, .14);
-}
-
-.nav-immersive.nav-immersive--on-dark .nav-link.active,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-link.active {
-  color: var(--c-white);
-  background: rgba(255, 255, 255, .30);
-  font-weight: 600;
-}
-
-.nav-immersive.nav-immersive--on-dark .nav-auth-btn,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-auth-btn {
-  color: var(--c-white);
-  border-color: rgba(255, 255, 255, .52);
-}
-
-.nav-immersive.nav-immersive--on-dark .nav-auth-btn:hover,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-auth-btn:hover {
-  background: rgba(255, 255, 255, .14);
-}
-
-.nav-immersive.nav-immersive--on-dark .nav-burger,
-.nav-immersive.nav-immersive--on-dark.scrolled .nav-burger {
-  color: var(--c-white);
-}
-
 .nav-immersive.nav-immersive--on-light .nav-rail {
   --lg-tint: 255, 255, 255;
   --lg-tint-a: .5;
   border-color: var(--c-brand-25);
-}
-
-.nav-immersive.nav-immersive--on-light .nav-brand-text,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-brand-text {
-  color: var(--c-text);
-}
-
-.nav-immersive.nav-immersive--on-light .nav-brand-icon,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-brand-icon {
-  color: var(--c-brand);
-}
-
-.nav-immersive.nav-immersive--on-light .nav-link,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-link {
-  color: var(--c-text-70);
-}
-
-.nav-immersive.nav-immersive--on-light .nav-link:hover,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-link:hover {
-  color: var(--c-text);
-  background: var(--c-brand-06);
-}
-
-.nav-immersive.nav-immersive--on-light .nav-link.active,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-link.active {
-  color: var(--c-text);
-  background: var(--c-brand-25);
-  font-weight: 600;
-}
-
-.nav-immersive.nav-immersive--on-light .nav-auth-btn,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-auth-btn {
-  color: var(--c-brand);
-  border-color: var(--c-brand-25);
-}
-
-.nav-immersive.nav-immersive--on-light .nav-auth-btn:hover,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-auth-btn:hover {
-  background: var(--c-brand-08);
-}
-
-.nav-immersive.nav-immersive--on-light .nav-burger,
-.nav-immersive.nav-immersive--on-light.scrolled .nav-burger {
-  color: var(--c-text);
 }
 
 /* 探测结果不确定时仅增加轻微保护衬底，可靠时仍保持完全透明。 */
@@ -705,18 +691,15 @@ const handleAuthAction = () => {
   outline-offset: 2px;
 }
 
-.nav-immersive:not(.scrolled) .nav-burger {
-  color: rgba(255, 255, 255, 0.9);
-}
+/* 分段 tone：汉堡按钮独立着色 */
+.nav-burger[data-tone="dark"] { color: rgba(255, 255, 255, 0.92); }
+.nav-burger[data-tone="light"] { color: var(--c-text); }
 
+/* 非沉浸式页：汉堡带玻璃底（覆盖分段 tone） */
 .nav-immersive.nav-immersive--light .nav-burger {
   color: var(--c-text);
   background: var(--c-glass);
   border: 1px solid var(--c-brand-25);
-}
-
-.nav-immersive.scrolled .nav-burger {
-  color: var(--c-text);
 }
 
 @media (min-width: 640px) {

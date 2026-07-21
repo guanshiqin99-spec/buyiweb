@@ -93,7 +93,8 @@ function switchMode() {
 </script>
 
 <template>
-  <div class="login-page">
+  <!-- 声明导航栏下方背景 tone：与首页 hero 一致，供 AppHeader 分段探测消费 -->
+  <div class="login-page" data-nav-tone="dark">
     <div class="login-bg">
       <img :src="imgBg" alt="布依族风光" width="1920" height="1280" loading="eager" />
     </div>
@@ -204,24 +205,54 @@ function switchMode() {
 .login-card {
   width: 100%;
   max-width: 400px;
-  padding: 40px 32px;
+  padding: 44px 32px 36px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* 入场：轻量级联揭幕，与液体玻璃光泽同帧节奏 */
+  animation: loginCardReveal 0.7s var(--ease-out-quart) both;
+}
+
+@keyframes loginCardReveal {
+  from { opacity: 0; transform: translateY(18px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .login-title {
   font-family: var(--font-serif);
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 600;
+  letter-spacing: 0.08em;
   color: var(--c-text);
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
+  animation: loginFadeUp 0.7s var(--ease-out-quart) 0.08s both;
 }
 
+/* 品牌靛蓝细线：分割标题与表单，呼应布依族青花瓷纹样 */
 .login-subtitle {
+  position: relative;
   font-size: 13px;
+  letter-spacing: 0.04em;
   color: var(--c-text-60);
   margin: 0 0 32px 0;
+  animation: loginFadeUp 0.7s var(--ease-out-quart) 0.16s both;
+}
+
+.login-subtitle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 36px;
+  height: 1.5px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, var(--c-brand), transparent);
+  opacity: 0.7;
+}
+
+@keyframes loginFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .login-form {
@@ -285,16 +316,25 @@ function switchMode() {
   height: 48px;
   border: none;
   border-radius: 999px;
-  background: var(--c-brand);
+  /* 品牌靛蓝渐变，比平涂更具景深 */
+  background: linear-gradient(135deg, var(--c-brand-dark) 0%, var(--c-brand) 55%, var(--c-brand-light) 100%);
   color: var(--c-brand-foreground);
   font: 600 15px var(--font-sans);
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: filter 150ms ease;
+  transition: filter 150ms ease, transform 150ms ease, box-shadow 200ms ease;
   margin-top: 8px;
+  box-shadow: 0 6px 20px rgba(27, 58, 92, 0.28);
 }
 
 .submit-btn:hover:not(:disabled) {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(27, 58, 92, 0.36);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .submit-btn:focus-visible {

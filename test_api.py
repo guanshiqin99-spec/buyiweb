@@ -1,80 +1,67 @@
-import urllib.request
-import urllib.error
-import json
+import paramiko
+import sys
 
-BASE = "http://39.105.201.88"
+HOST = '39.105.222.204'
+USER = 'root'
+PASS = 'gsq060606.@'
 
-def test(name, path, method="GET", body=None, headers=None):
-    print(f"=== {name} ===")
-    try:
-        url = BASE + path
-        data = json.dumps(body).encode() if body else None
-        hdrs = {"Content-Type": "application/json"} if body else {}
-        if headers:
-            hdrs.update(headers)
-        req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            result = json.loads(resp.read().decode())
-            print(f"Status: {resp.status} OK")
-            return result
-    except urllib.error.HTTPError as e:
-        body_text = e.read().decode()
-        print(f"Status: {e.code}")
-        print(f"Body: {body_text[:200]}")
-        return None
-    except Exception as e:
-        print(f"ERROR: {e}")
-        return None
+def connect_ssh():
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(HOST, username=USER, password=PASS, timeout=30)
+    return ssh
 
-# 1. 前端页面
-print("=== 前端页面 ===")
-try:
-    req = urllib.request.Request(BASE + "/")
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        html = resp.read().decode()
-        print(f"Status: {resp.status}")
-        has_doctype = "doctype html" in html.lower()
-        has_app = 'id="app"' in html or "id='app'" in html
-        has_js = ".js" in html
-        print(f"Has DOCTYPE: {has_doctype}")
-        print(f"Has #app: {has_app}")
-        print(f"Has JS links: {has_js}")
-except Exception as e:
-    print(f"ERROR: {e}")
-print()
+def run_cmd(ssh, cmd, timeout=120):
+    sys.stdout.write(f"\n[CMD] {cmd}\n")
+    sys.stdout.flush()
+    stdin, stdout, stderr = ssh.exec_command(cmd, timeout=timeout)
+    out = stdout.read().decode()
+    err = stderr.read().decode()
+    rc = stdout.channel.recv_exit_status()
+    if out:
+        sys.stdout.write(out)
+        sys.stdout.flush()
+    if err:
+        sys.stdout.write(f"[STDERR] {err}\n")
+        sys.stdout.flush()
+    return rc, out, err
 
-# 2. 首页 API
-r = test("首页 API", "/api/miniapp/home")
-if r:
-    print(f"Banners: {len(r.get('banners', []))}")
-print()
-
-# 3. 注册测试用户
-print("=== 注册测试用户 ===")
-try:
-    r = test("注册", "/api/miniapp/auth/web-register", "POST",
-             {"username": "testuser", "password": "test123456"})
-except Exception as e:
-    print(f"ERROR: {e}")
-print()
-
-# 4. 登录
-r = test("登录", "/api/miniapp/auth/web-login", "POST",
-         {"username": "testuser", "password": "test123456"})
-token = None
-if r:
-    token = r.get("data", {}).get("token") or r.get("token")
-    print(f"Got token: {bool(token)}")
-print()
-
-# 5. 词典列表
-r = test("词典列表", "/api/miniapp/dictionary?page=1&pageSize=5")
-if r:
-    d = r.get("data", r)
-    if isinstance(d, dict):
-        items = d.get("list", d.get("items", []))
-        print(f"Count: {len(items)}")
-print()
-
-print("=== 总结 ===")
-print("前后端连接: OK")
+if __name__ == "__main__":
+    ssh = connect_ssh()
+    print("Connected!")
+    
+    # 禁用旧的配置
+    print("\n=== Disabling old nginx config ===")
+    run_cmd(ssh, "rm -f /etc/nginx/sites-enabled/buyi-dictionary")
+    run_cmd(ssh, "nginx -t")
+    run_cmd(ssh, "systemctl reload nginx")
+    
+    # 测试各种API
+    print("\n=== Testing API endpoints ===")
+    
+    print("\n--- Health check ---")
+    run_cmd(ssh, "curl -s http://39.105.222.204/api/health")
+    
+    print("\n--- Dictionary list ---")
+    run_cmd(ssh, "curl -s 'http://39.105.222.204/api/miniapp/dictionary?page=1&pageSize=5'")
+    
+    print("\n--- Search ---")
+    run_cmd(ssh, "curl -s 'http://39.105.222.204/api/miniapp/search?q=你好'")
+    
+    print("\n--- Songs list ---")
+    run_cmd(ssh, "curl -s 'http://39.105.222.204/api/miniapp/songs?page=1&pageSize=5'")
+    
+    print("\n--- Phrases list ---")
+    run_cmd(ssh, "curl -s 'http://39.105.222.204/api/miniapp/phrases?page=1&pageSize=5'")
+    
+    print("\n--- Proverbs list ---")
+    run_cmd(ssh, "curl -s 'http://39.105.222.204/api/miniapp/proverbs?page=1&pageSize=5'")
+    
+    print("\n--- Home page ---")
+    run_cmd(ssh, "curl -s http://39.105.222.204/api/miniapp/home")
+    
+    print("\n--- Admin login (test) ---")
+    run_cmd(ssh, "curl -s -X POST http://39.105.222.204/api/admin/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"Admin@123456\"}'")
+    
+    ssh.close()
+    print("\nDone!")

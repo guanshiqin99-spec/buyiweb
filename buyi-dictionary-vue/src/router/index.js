@@ -24,7 +24,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('../views/Login.vue'),
-      meta: { navContrast: 'on-dark' }
+      meta: { navTone: 'immersive', navContrast: 'on-dark' }
     },
     {
       path: '/about',
