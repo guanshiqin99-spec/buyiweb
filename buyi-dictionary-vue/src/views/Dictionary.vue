@@ -33,6 +33,8 @@ let requestSequence = 0
 let scrollHandler = null
 let pronunciationAudio = null
 const SEARCH_CACHE_KEY = 'buyi-dictionary-search-cache-v1'
+// 本次会话内已记录过浏览的搜索结果，避免同一词条重复写入学习记录
+const recordedSearchIds = new Set()
 
 const filters = [
   { key: 'all', label: '全部' },
@@ -114,6 +116,7 @@ async function runSearch() {
     selectedId.value = filteredResults.value[0]?.id || null
     requestState.value = allResults.value.length ? 'ready' : 'empty'
     serviceState.value = 'ready'
+    recordSearchView(filteredResults.value[0])
   } catch {
     if (sequence !== requestSequence) return
     const cachedData = readCachedSearch(searchQuery.value)
@@ -122,6 +125,7 @@ async function runSearch() {
       selectedId.value = filteredResults.value[0]?.id || null
       requestState.value = allResults.value.length ? 'ready' : 'empty'
       cacheNotice.value = '词典服务暂不可用，当前展示此前成功加载的本地缓存词条。'
+      recordSearchView(filteredResults.value[0])
     } else {
       allResults.value = []
       selectedId.value = null
@@ -156,7 +160,24 @@ function setFilter(key) {
   router.replace({ query: { ...route.query, type: key === 'all' ? undefined : key } })
 }
 
-function selectItem(item) { selectedId.value = item.id }
+function selectItem(item) {
+  selectedId.value = item.id
+  recordSearchView(item)
+}
+
+// 搜索并查看词条即记一次浏览，让“搜索词语”也进入学习足迹；同会话同词条去重。
+async function recordSearchView(item) {
+  if (!authStore.isLoggedIn || !item?.rawId) return
+  const key = `${item.type}:${item.rawId}`
+  if (recordedSearchIds.has(key)) return
+  recordedSearchIds.add(key)
+  try {
+    await recordsApi.create({ contentType: item.type, contentId: item.rawId, actionType: 'view' })
+  } catch {
+    // 写入失败不阻塞搜索流程，移除标记以便下次查看时重试
+    recordedSearchIds.delete(key)
+  }
+}
 
 async function handleFavorite(item) {
   if (!authStore.isLoggedIn) return notify('登录后可以把词条加入收藏。')

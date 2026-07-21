@@ -9,6 +9,6 @@ export class CreateLearningRecordDto {
   @Min(1)
   contentId!: number;
 
-  @IsIn(['view', 'play'])
-  actionType!: 'view' | 'play';
+  @IsIn(['view', 'play', 'review'])
+  actionType!: 'view' | 'play' | 'review';
 }

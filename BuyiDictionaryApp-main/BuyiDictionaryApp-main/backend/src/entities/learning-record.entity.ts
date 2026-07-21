@@ -21,7 +21,7 @@ export class LearningRecord {
   contentId!: number;
 
   @Column({ type: 'varchar', length: 16 })
-  actionType!: 'view' | 'play';
+  actionType!: 'view' | 'play' | 'review';
 
   @CreateDateColumn()
   createdAt!: Date;

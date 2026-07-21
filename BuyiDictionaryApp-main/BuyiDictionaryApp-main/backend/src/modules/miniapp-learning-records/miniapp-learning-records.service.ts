@@ -14,7 +14,7 @@ export class MiniappLearningRecordsService {
     private readonly contentService: ContentService,
   ) {}
 
-  async create(userId: number, payload: { contentType: ContentType; contentId: number; actionType: 'view' | 'play' }) {
+  async create(userId: number, payload: { contentType: ContentType; contentId: number; actionType: 'view' | 'play' | 'review' }) {
     return this.learningRecordRepository.save(
       this.learningRecordRepository.create({
         userId,

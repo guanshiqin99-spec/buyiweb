@@ -4,6 +4,7 @@ import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
 import { contentApi, recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
+import { USER_PROGRESS_UPDATED_EVENT } from '@/utils/userProgress'
 import IconChevronRight from '@/components/icons/IconChevronRight.vue'
 import IconHeart from '@/components/icons/IconHeart.vue'
 import IconPlay from '@/components/icons/IconPlay.vue'
@@ -24,8 +25,35 @@ const recordedVisitIds = new Set()
 const recordingVisitIds = new Set()
 // 复习记录的去重集合，按 wordId 维护，独立于浏览记录
 const recordedReviewIds = new Set()
-// 学习统计（登录态拉取）
+// 学习统计（登录态拉取，写记录后实时刷新）
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
+let statsPromise = null
+let statsQueued = false
+let isPageActive = false
+
+// 拉取学习统计；并发写记录时合并请求，末次变更后再补一次，保证顶部数字实时更新
+async function refreshLearnStats() {
+  if (!authStore.isLoggedIn || !isPageActive) return
+  if (statsPromise) {
+    statsQueued = true
+    return statsPromise
+  }
+  statsPromise = recordsApi.stats()
+    .then(res => { learnStats.value = res || learnStats.value })
+    .catch(() => {})
+    .finally(() => {
+      statsPromise = null
+      if (statsQueued && isPageActive) {
+        statsQueued = false
+        refreshLearnStats()
+      }
+    })
+  return statsPromise
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible') refreshLearnStats()
+}
 
 const currentWord = computed(() => words.value[currentIndex.value] || {
   bouyei: '', chinese: '', english: '', phonetic: ''
@@ -125,6 +153,7 @@ const nextWord = () => {
 }
 
 onMounted(async () => {
+  isPageActive = true
   isLoading.value = true
   // 并行：加载词汇 + 拉取学习统计（登录态）
   const tasks = [
@@ -140,9 +169,7 @@ onMounted(async () => {
       console.error('词汇加载失败', e)
       words.value = []
     }),
-    authStore.isLoggedIn ? recordsApi.stats().then(res => {
-      learnStats.value = res || learnStats.value
-    }).catch(() => {}) : Promise.resolve()
+    refreshLearnStats()
   ]
   await Promise.allSettled(tasks)
   isLoading.value = false
@@ -155,11 +182,20 @@ onMounted(async () => {
     }
     window.addEventListener('scroll', scrollHandler, { passive: true })
   }
+
+  // 学习记录写入（本页下一词/复习，或其他页面写入）后实时刷新顶部统计
+  window.addEventListener(USER_PROGRESS_UPDATED_EVENT, refreshLearnStats)
+  window.addEventListener('focus', refreshLearnStats)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
+  isPageActive = false
   if (msgTimer) clearTimeout(msgTimer)
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
+  window.removeEventListener(USER_PROGRESS_UPDATED_EVENT, refreshLearnStats)
+  window.removeEventListener('focus', refreshLearnStats)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 
