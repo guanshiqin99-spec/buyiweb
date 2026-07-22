@@ -7412,7 +7412,7 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateLearningRecordDto.prototype, "contentId", void 0);
 __decorate([
-    (0, class_validator_1.IsIn)(['view', 'play']),
+    (0, class_validator_1.IsIn)(['view', 'play', 'review']),
     __metadata("design:type", String)
 ], CreateLearningRecordDto.prototype, "actionType", void 0);
 
