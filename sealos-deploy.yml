@@ -1,0 +1,321 @@
+# ============================================================
+# Sealos 部署配置 - 布依语词典（方案B：前后端同域）
+# 部署目标：https://bja.sealos.run（火山云北京集群）
+# 架构：Web(Nginx) -> Backend(NestJS) -> MySQL
+# 域名：Sealos 自动分配已备案 HTTPS 子域名 *.bja.sealos.run
+# ============================================================
+#
+# 使用说明：
+#   1. 替换下方 <ACR_NAMESPACE> 为你的阿里云 ACR 命名空间
+#   2. 替换 <JWT_SECRET> 为至少 32 位的随机字符串
+#   3. 替换 <MYSQL_PASSWORD> 为强密码
+#   4. 替换 <DEEPSEEK_API_KEY> 为你的 DeepSeek API Key
+#   5. 在 Sealos 控制台 "应用管理" -> "YAML 部署" 中粘贴本文件内容
+#   6. 部署完成后，在 "应用管理" 中为 web 服务开启 "外部访问" 获取公网域名
+#
+# 注意：MySQL 也可以改用 Sealos 内置 "数据库" 服务（推荐），
+#       那样会有自动备份。如使用内置数据库，删除下方 mysql 段落，
+#       并将 backend 的 DB_HOST 改为 Sealos 提供的内网地址。
+# ============================================================
+
+---
+# MySQL 密码 Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: buyi-secrets
+  namespace: buyi-dict
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: "<MYSQL_PASSWORD>"
+  MYSQL_PASSWORD: "<MYSQL_PASSWORD>"
+  JWT_SECRET: "<JWT_SECRET>"
+  DEEPSEEK_API_KEY: "<DEEPSEEK_API_KEY>"
+
+---
+# 阿里云 ACR 镜像拉取凭证
+apiVersion: v1
+kind: Secret
+metadata:
+  name: acr-credentials
+  namespace: buyi-dict
+type: kubernetes.io/dockerconfigjson
+stringData:
+  .dockerconfigjson: |
+    {"auths":{"registry.cn-beijing.aliyuncs.com":{"username":"<ACR_USER>","password":"<ACR_PASSWORD>"}}}
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: buyi-dict
+
+---
+# MySQL 持久化存储
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-data
+  namespace: buyi-dict
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# MySQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: buyi-dict
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: buyi-secrets
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              value: "buyi_dictionary"
+            - name: MYSQL_USER
+              value: "buyi_user"
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: buyi-secrets
+                  key: MYSQL_PASSWORD
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-data
+
+---
+# MySQL Service（仅集群内访问）
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: buyi-dict
+spec:
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP
+
+---
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: buyi-dict
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: acr-credentials
+      containers:
+        - name: backend
+          # 替换 <ACR_NAMESPACE> 为你的阿里云 ACR 命名空间
+          image: registry.cn-beijing.aliyuncs.com/<ACR_NAMESPACE>/buyi-backend:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+            - name: APP_PUBLIC_BASE_URL
+              value: "https://<DEPLOY_DOMAIN>"  # 部署后替换为 Sealos 分配的域名
+            - name: ENABLE_SWAGGER
+              value: "false"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: buyi-secrets
+                  key: JWT_SECRET
+            - name: CORS_ORIGIN
+              value: "https://<DEPLOY_DOMAIN>,https://servicewechat.com"
+            - name: DB_TYPE
+              value: "mysql"
+            - name: DB_HOST
+              value: "mysql"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value: "buyi_user"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: buyi-secrets
+                  key: MYSQL_PASSWORD
+            - name: DB_NAME
+              value: "buyi_dictionary"
+            - name: DB_SYNCHRONIZE
+              value: "true"   # 首次部署开启自动建表，后续改为 false
+            - name: DB_LOGGING
+              value: "false"
+            - name: WECHAT_MOCK_MODE
+              value: "false"
+            - name: WECHAT_APP_ID
+              value: "<WECHAT_APP_ID>"
+            - name: WECHAT_APP_SECRET
+              value: "<WECHAT_APP_SECRET>"
+            - name: MEDIA_DRIVER
+              value: "local"
+            - name: MEDIA_MAX_FILE_SIZE
+              value: "10485760"
+            - name: MEDIA_PUBLIC_BASE_URL
+              value: "https://<DEPLOY_DOMAIN>/uploads"
+            - name: MEDIA_LOCAL_UPLOAD_DIR
+              value: "/app/backend/uploads"
+            - name: SEED_ON_BOOT
+              value: "false"
+            - name: AI_PROVIDER
+              value: "deepseek"
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: buyi-secrets
+                  key: DEEPSEEK_API_KEY
+            - name: AI_BASE_URL
+              value: "https://api.deepseek.com"
+            - name: AI_MODEL
+              value: "deepseek-chat"
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+
+---
+# Backend Service（仅集群内访问）
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: buyi-dict
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
+---
+# Web Deployment（前端 Nginx）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: buyi-dict
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      imagePullSecrets:
+        - name: acr-credentials
+      containers:
+        - name: web
+          # 替换 <ACR_NAMESPACE> 为你的阿里云 ACR 命名空间
+          image: registry.cn-beijing.aliyuncs.com/<ACR_NAMESPACE>/buyi-web:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          ports:
+            - containerPort: 80
+
+---
+# Web Service（暴露公网，Sealos 会自动分配 *.bja.sealos.run 域名）
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: buyi-dict
+  annotations:
+    # Sealos 通过此注解自动分配公网域名并签发 HTTPS 证书
+    sealos.io/domain: "auto"
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
