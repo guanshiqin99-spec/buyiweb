@@ -5,7 +5,7 @@ import { contentApi, recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
 import AudioSpectrum from '@/components/specific/AudioSpectrum.vue'
-import { fallbackSongs, normalizePlayableSongs } from '@/data/playableSongs'
+import { fallbackSongs, formatDuration, normalizePlayableSongs } from '@/data/playableSongs'
 import imgAmbient from '@/assets/images/music-ambient.jpg'
 import imgBg from '@/assets/images/folk-song-bg.jpg'
 import IconPause from '@/components/icons/IconPause.vue'
@@ -151,7 +151,7 @@ onUnmounted(() => {
                 <span>{{ song.artist }}</span>
               <small>{{ song.genre }} · {{ song.sourceTitle }}</small>
             </span>
-            <span class="song-row__status">{{ playerStore.currentSong?.id === song.id ? playerStore.formattedDuration : '实录' }}</span>
+            <span class="song-row__status">{{ playerStore.currentSong?.id === song.id ? playerStore.formattedDuration : formatDuration(song.duration) }}</span>
             <span class="song-row__action" aria-hidden="true">
               <IconPause v-if="playerStore.currentSong?.id === song.id && playerStore.isPlaying" :size="14" />
               <IconPlay v-else :size="14" />

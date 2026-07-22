@@ -104,28 +104,32 @@ App({
     } = options;
     const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
 
-    if (this.shouldUseCloudContainer() && wx.cloud && wx.cloud.callContainer) {
-      const cloudContainer = this.getCloudContainerConfig();
-      console.log('[CloudBase] callContainer →', method, `/api${normalizedPath}`, 'service:', cloudContainer.serviceName, 'env:', cloudContainer.envId);
-      return wx.cloud.callContainer({
-        config: { env: cloudContainer.envId },
-        path: `/api${normalizedPath}`,
-        method,
-        data,
-        header: {
-          'content-type': 'application/json',
-          'X-WX-SERVICE': cloudContainer.serviceName,
-          ...header,
+    if (this.shouldUseCloudContainer() && wx.cloud && wx.cloud.callFunction) {
+      const cloudConfig = this.getCloudContainerConfig();
+      console.log('[CloudFunc] callFunction →', method, normalizedPath, 'function:', cloudConfig.functionName, 'env:', cloudConfig.envId);
+      return wx.cloud.callFunction({
+        config: { env: cloudConfig.envId },
+        name: cloudConfig.functionName,
+        data: {
+          path: normalizedPath,
+          method,
+          data,
+          headers: header,
         },
       }).then((res) => {
-        console.log('[CloudBase] callContainer 响应', `/api${normalizedPath}`, 'statusCode:', res.statusCode, 'dataLen:', res.data ? JSON.stringify(res.data).length : 0);
-        return res;
+        const result = res && res.result ? res.result : {};
+        console.log('[CloudFunc] callFunction 响应', normalizedPath, 'statusCode:', result.statusCode, 'dataLen:', result.data ? JSON.stringify(result.data).length : 0);
+        return {
+          statusCode: result.statusCode || 200,
+          data: result.data,
+          headers: result.headers || {},
+        };
       }).catch((err) => {
-        console.error('[CloudBase] callContainer 失败', `/api${normalizedPath}`, 'errMsg:', err.errMsg, 'errCode:', err.errCode, 'fullErr:', JSON.stringify(err));
+        console.error('[CloudFunc] callFunction 失败', normalizedPath, 'errMsg:', err.errMsg, 'errCode:', err.errCode, 'fullErr:', JSON.stringify(err));
         throw err;
       });
     }
-    console.warn('[CloudBase] 未走 callContainer，降级到 wx.request，envVersion:', this.globalData.wechatEnvVersion, 'hasCloud:', !!wx.cloud, 'hasCallContainer:', !!(wx.cloud && wx.cloud.callContainer));
+    console.warn('[CloudFunc] 未走云函数，降级到 wx.request，envVersion:', this.globalData.wechatEnvVersion, 'hasCloud:', !!wx.cloud);
 
 
     return new Promise((resolve, reject) => {

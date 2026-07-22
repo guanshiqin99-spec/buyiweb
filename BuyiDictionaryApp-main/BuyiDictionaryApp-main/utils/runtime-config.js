@@ -4,17 +4,21 @@ const STORAGE_KEYS = {
   apiBaseProd: 'apiBaseProd',
 };
 
-const CLOUD_CONTAINER_CONFIG = {
-  envId: 'cloud1-1gl3y5g7fbe3c208',
-  serviceName: 'buyidict-backend',
+// 云函数代理配置
+// envId: 微信云开发环境 ID(开通云开发后获得)
+// functionName: 代理云函数名称
+// enabledEnvVersions: 在哪些小程序环境版本下启用云函数代理
+const CLOUD_FUNCTION_CONFIG = {
+  envId: 'cloud1-d3gj9ohe8a7ec0023',
+  functionName: 'apiProxy',
   enabledEnvVersions: ['develop', 'trial', 'release'],
 };
 
 const LOCAL_DEV_API_BASE = 'http://127.0.0.1:3000/api';
 
 const DEFAULT_API_BASES = {
-  development: 'https://buyidict-backend-255536-7-1374507614.sh.run.tcloudbase.com/api',
-  production: 'https://buyidict-backend-255536-7-1374507614.sh.run.tcloudbase.com/api',
+  development: 'https://casting-object-link-hide.trycloudflare.com/api',
+  production: 'https://casting-object-link-hide.trycloudflare.com/api',
 };
 
 function normalizeUrl(url) {
@@ -38,17 +42,22 @@ function normalizeApiMode(mode) {
   return 'auto';
 }
 
-function shouldUseCloudContainer(envVersion = getWechatEnvVersion()) {
-  if (!CLOUD_CONTAINER_CONFIG.envId || !CLOUD_CONTAINER_CONFIG.serviceName) {
+function shouldUseCloudFunction(envVersion = getWechatEnvVersion()) {
+  if (!CLOUD_FUNCTION_CONFIG.envId || !CLOUD_FUNCTION_CONFIG.functionName) {
     return false;
   }
-  return CLOUD_CONTAINER_CONFIG.enabledEnvVersions.includes(envVersion);
+  return CLOUD_FUNCTION_CONFIG.enabledEnvVersions.includes(envVersion);
+}
+
+// 保留旧接口名称以兼容 app.js 中的调用
+function shouldUseCloudContainer(envVersion) {
+  return shouldUseCloudFunction(envVersion);
 }
 
 function getCloudContainerConfig(envVersion = getWechatEnvVersion()) {
   return {
-    ...CLOUD_CONTAINER_CONFIG,
-    enabled: shouldUseCloudContainer(envVersion),
+    ...CLOUD_FUNCTION_CONFIG,
+    enabled: shouldUseCloudFunction(envVersion),
   };
 }
 
@@ -120,7 +129,7 @@ function getEnvLabel(envVersion) {
 }
 
 module.exports = {
-  CLOUD_CONTAINER_CONFIG,
+  CLOUD_FUNCTION_CONFIG,
   LOCAL_DEV_API_BASE,
   DEFAULT_API_BASES,
   getCloudContainerConfig,
@@ -129,5 +138,6 @@ module.exports = {
   saveApiBase,
   resetApiConfig,
   getEnvLabel,
+  shouldUseCloudFunction,
   shouldUseCloudContainer,
 };

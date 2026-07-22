@@ -1,3 +1,11 @@
+export function formatDuration(seconds) {
+  const value = Math.floor(Number(seconds) || 0)
+  if (value <= 0) return '—'
+  const minutes = Math.floor(value / 60)
+  const secs = value % 60
+  return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
+
 const LOCAL_AUDIO_FILES = new Set([
   'buyi-lulonghu.mp3',
   'buyi-wujian.mp3',
@@ -40,6 +48,7 @@ export function toPlayableSong(item, index = 0) {
     artist: item.artist || '布依民歌采集',
     genre: item.genre || item.zhText || item.description || '布依民歌',
     coverUrl: item.coverUrl || '',
+    duration: item.duration ?? null,
     lyrics: item.lyrics || '',
     audioUrl,
     fallbackAudioUrl,
@@ -60,6 +69,7 @@ export const fallbackSongs = fallbackMeta.map(([filename, title, artist], index)
   artist,
   genre: '本地演示民歌',
   coverUrl: '',
+  duration: null,
   lyrics: '',
   audioUrl: '',
   fallbackAudioUrl: `/audio/${filename}`,

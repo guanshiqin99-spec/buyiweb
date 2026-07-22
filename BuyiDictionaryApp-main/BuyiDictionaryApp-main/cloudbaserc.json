@@ -1,6 +1,9 @@
 {
-  "envId": "cloud1-1gl3y5g7fbe3c208",
-  "cloudrun": {
-    "name": "buyidict-backend"
-  }
+  "envId": "cloud1-d3gj9ohe8a7ec0023",
+  "functions": [
+    {
+      "name": "apiProxy",
+      "path": "./cloudfunctions/apiProxy"
+    }
+  ]
 }

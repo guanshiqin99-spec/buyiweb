@@ -1,0 +1,27 @@
+# 布依词典网站爬虫协议
+# 仅允许搜索引擎抓取公开页面，禁止抓取后端上传目录与 API
+
+User-agent: *
+Allow: /
+Disallow: /uploads/
+Disallow: /api/
+Disallow: /admin-web/
+
+# 显式拦截常见恶意爬虫扫描器
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+# Sitemap（如后续启用可取消注释）
+# Sitemap: http://39.105.222.204/sitemap.xml

@@ -465,6 +465,7 @@ export class ContentService {
         coverUrl: song.coverUrl,
         audioUrl: song.audioUrl,
         lyrics: song.lyrics,
+        duration: song.duration,
       };
     }
 

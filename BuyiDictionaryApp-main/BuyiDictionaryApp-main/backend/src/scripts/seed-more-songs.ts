@@ -1,8 +1,12 @@
+// @deprecated 此脚本已废弃。
+// 会友歌 / 分手调 / 鱼水情 已由根目录的 sync_songs_online.py 统一同步（含 duration 字段）。
+// 请使用 sync_songs_online.py 同步全部 9 首歌曲数据，不要再运行本脚本。
 import { DataSource } from 'typeorm';
 import dataSource from '../typeorm-cli.config';
 import { Song } from '../entities/song.entity';
 
 async function seedMoreSongs() {
+  console.warn('此脚本已废弃，请使用 sync_songs_online.py 统一同步歌曲数据');
   await dataSource.initialize();
   console.log('DataSource initialized for songs.');
 

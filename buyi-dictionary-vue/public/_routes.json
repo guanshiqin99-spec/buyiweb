@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/api/*", "/ping"],
+  "exclude": ["/audio/*", "/robots.txt", "/learning-reminder-sw.js", "/favicon.ico", "/index.html", "/*.{js,css,png,jpg,jpeg,gif,svg,ico,woff,woff2,ttf,eot,mp3}"]
+}

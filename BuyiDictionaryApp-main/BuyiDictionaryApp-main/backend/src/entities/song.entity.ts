@@ -24,4 +24,8 @@ export class Song extends BaseContentEntity {
 
   @Column({ type: 'int', nullable: true })
   audioMediaId!: number | null;
+
+  // 音频时长（秒）
+  @Column({ type: 'int', nullable: true })
+  duration!: number | null;
 }

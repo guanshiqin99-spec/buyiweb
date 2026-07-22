@@ -29,15 +29,39 @@ function getTypeLabel(type) {
   return TYPE_LABELS[normalizeType(type)] || TYPE_LABELS.dictionary;
 }
 
+function formatDuration(seconds) {
+  const value = Math.floor(Number(seconds) || 0);
+  if (value <= 0) return '';
+  const minutes = Math.floor(value / 60);
+  const secs = value % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// 把相对路径补全为完整 URL，避免小程序 InnerAudioContext 无法播放
+function resolveMediaUrl(url) {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  let base = '';
+  try {
+    const app = getApp();
+    base = (app && typeof app.getApiBase === 'function' ? app.getApiBase() : '') || '';
+  } catch (error) {}
+  if (!base) return url;
+  const origin = String(base).replace(/\/+$/, '').replace(/\/api$/i, '');
+  const path = String(url).startsWith('/') ? url : `/${url}`;
+  return `${origin}${path}`;
+}
+
 function mapContent(item = {}, forcedType) {
   const contentType = normalizeType(forcedType || item.type);
   const buyiText = item.buyiText || item.buyi || '';
   const zhText = item.zhText || item.zh || item.ch || '';
   const enText = item.enText || item.en || '';
-  const audioUrl = item.audioUrl || item.audio || '';
-  const coverUrl = item.coverUrl || item.image || '';
+  const audioUrl = resolveMediaUrl(item.audioUrl || item.audio || '');
+  const coverUrl = resolveMediaUrl(item.coverUrl || item.image || '');
   const title = item.title || zhText || buyiText || '未命名内容';
 
+  const duration = item.duration != null ? Number(item.duration) : null;
   return {
     ...item,
     id: item.id,
@@ -53,6 +77,8 @@ function mapContent(item = {}, forcedType) {
     coverUrl,
     title,
     artist: item.artist || '',
+    duration,
+    durationText: formatDuration(duration),
     isFavorited: !!item.isFavorited || !!item.fav,
     buyi: buyiText,
     zh: zhText,

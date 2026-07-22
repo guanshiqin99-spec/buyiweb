@@ -68,12 +68,12 @@
         <view class="record-info">
           <view class="record-title-row">
             <text class="record-title">{{item.title}}</text>
-            <text class="record-tag">{{index === 0 ? '迎宾歌' : (index % 2 !== 0 ? '山歌' : '劳动歌')}}</text>
+            <text class="record-tag">{{item.artist || '布依民歌'}}</text>
           </view>
           <text class="record-artist">{{item.artist || item.ch || '布依青年合唱团  黔西南'}}</text>
           <view class="record-meta">
-            <text class="play-count">▶ {{12 - index > 0 ? 12 - index : 2}}.{{index % 9}}万</text>
-            <text class="duration">03:{{42 - index * 5 > 9 ? 42 - index * 5 : '15'}}</text>
+            <text class="play-count">{{item.genre || item.description || '布依民歌'}}</text>
+            <text class="duration">{{item.durationText || '--:--'}}</text>
           </view>
         </view>
         <!-- 青花印章感收藏按钮 -->
