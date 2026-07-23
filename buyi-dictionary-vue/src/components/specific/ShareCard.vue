@@ -96,6 +96,21 @@ function roundedRectPath(context, x, y, width, height, radius) {
   context.closePath()
 }
 
+// 跨域封面需以 anonymous 方式加载，避免画布被污染导致 toBlob 失败
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    if (!url) {
+      reject(new Error('缺少图片地址'))
+      return
+    }
+    const image = new Image()
+    image.crossOrigin = 'anonymous'
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('封面图片加载失败'))
+    image.src = url
+  })
+}
+
 async function generate(options = {}) {
   const canvas = canvasRef.value
   if (!canvas) throw new Error('分享卡片画布尚未就绪')
@@ -122,8 +137,62 @@ async function generate(options = {}) {
   context.fillText(options.title || '今日布依语', 110, 210)
   context.letterSpacing = '0px'
 
+  // 封面加载：优先传入的 coverUrl，失败时回退到 fallbackCover，保证画布不被污染且不卡死
+  let coverImage = null
+  if (options.coverUrl) {
+    try {
+      coverImage = await loadImage(options.coverUrl)
+    } catch {
+      coverImage = null
+    }
+  }
+  if (!coverImage && options.fallbackCover) {
+    try {
+      coverImage = await loadImage(options.fallbackCover)
+    } catch {
+      coverImage = null
+    }
+  }
+
   const stats = normalizeStats(options.stats)
-  if (stats.length) {
+
+  if (coverImage) {
+    // 民歌分享卡布局：封面 + 曲名 + 演唱者
+    const coverSize = 720
+    const coverX = (CARD_WIDTH - coverSize) / 2
+    const coverY = 280
+
+    context.save()
+    context.shadowColor = 'rgba(0, 0, 0, 0.45)'
+    context.shadowBlur = 56
+    context.shadowOffsetY = 24
+    context.beginPath()
+    roundedRectPath(context, coverX, coverY, coverSize, coverSize, 32)
+    context.fillStyle = '#0d2538'
+    context.fill()
+    context.restore()
+
+    context.save()
+    context.beginPath()
+    roundedRectPath(context, coverX, coverY, coverSize, coverSize, 32)
+    context.clip()
+    context.drawImage(coverImage, coverX, coverY, coverSize, coverSize)
+    context.restore()
+
+    context.strokeStyle = 'rgba(255, 255, 255, 0.32)'
+    context.lineWidth = 2
+    context.beginPath()
+    roundedRectPath(context, coverX, coverY, coverSize, coverSize, 32)
+    context.stroke()
+
+    context.fillStyle = '#ffffff'
+    context.font = '700 76px "Noto Serif SC", "Songti SC", serif'
+    const translationTop = drawWrappedText(context, options.word || '布依民歌', 110, 1100, 980, 92, 2)
+
+    context.fillStyle = 'rgba(255, 255, 255, 0.74)'
+    context.font = '500 38px "Noto Sans SC", sans-serif'
+    drawWrappedText(context, options.translation || '', 110, translationTop + 50, 920, 56, 2)
+  } else if (stats.length) {
     context.fillStyle = '#ffffff'
     context.font = '700 72px "Noto Serif SC", "Songti SC", serif'
     const reportBottom = drawWrappedText(context, options.title || '我的布依语学习报告', 110, 390, 980, 100, 2)

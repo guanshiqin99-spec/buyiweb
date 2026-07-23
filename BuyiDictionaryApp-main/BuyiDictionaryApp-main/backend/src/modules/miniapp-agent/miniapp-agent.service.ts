@@ -197,7 +197,7 @@ export class MiniappAgentService {
     const normalizedWord = (word || '').trim().slice(0, 100);
     const prompts: Record<'sentence' | 'quiz' | 'related', string> = {
       sentence: `请用布依语"${normalizedWord}"造一个日常例句，给出中文翻译和简要语法说明，150字以内。`,
-      quiz: '基于布依族文化一次生成5道四选一选择题，严格返回JSON数组：[{"prompt":"题目","answer":"正确答案","options":["A","B","C","D"],"explanation":"解析","source":"AI生成"}]。数组必须恰好包含5项，每题必须有4个不重复选项，answer必须是options中的一项。不要返回其他内容。',
+      quiz: '基于布依族文化一次生成5道四选一选择题，严格返回JSON数组。每题格式：{"prompt":"题目","answer":"正确选项的完整文本","options":["选项一完整文本","选项二完整文本","选项三完整文本","选项四完整文本"],"explanation":"解析","source":"AI生成"}。要求：数组恰好5项；options 必须是4个不重复的完整选项文本（不要用单字母 A/B/C/D，要写完整内容如"传统音乐"）；answer 必须与 options 中某一项的文本完全一致。只返回 JSON 数组，不要代码围栏或其他文字。',
       related: `基于布依语"${normalizedWord}"，推荐3个相关词汇，严格返回JSON：{"words":["词1","词2","词3"]}。不要返回其他内容。`,
     };
     const prompt = prompts[type];

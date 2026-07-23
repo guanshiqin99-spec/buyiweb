@@ -2,15 +2,13 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SearchBar from '@/components/common/SearchBar.vue'
-import SourceBadge from '@/components/common/SourceBadge.vue'
 import ShareCard from '@/components/specific/ShareCard.vue'
-import { healthApi, searchApi, recordsApi } from '@/utils/api'
+import DictionaryEntryDetail from '@/components/specific/DictionaryEntryDetail.vue'
+import { healthApi, searchApi, recordsApi, apiBaseURL } from '@/utils/api'
 import { generateStream } from '@/utils/agentStream'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useAuthStore } from '@/stores/auth'
 import { useAgentStore } from '@/stores/agent'
-import IconHeart from '@/components/icons/IconHeart.vue'
-import IconVolume from '@/components/icons/IconVolume.vue'
 import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
 import { getContentLabel } from '../utils/contentTypes'
 
@@ -35,6 +33,9 @@ const shareCardRef = ref(null)
 const isSharing = ref(false)
 const aiSentenceState = ref({ itemId: '', status: 'idle', content: '' })
 const relatedState = ref({ itemId: '', status: 'idle', words: [] })
+const showDetailModal = ref(false)
+const isMobile = ref(false)
+let mediaQuery = null
 const relatedCache = new Map()
 let sentenceController = null
 let relatedController = null
@@ -173,6 +174,22 @@ function setFilter(key) {
 function selectItem(item) {
   selectedId.value = item.id
   recordSearchView(item)
+  if (isMobile.value) openDetailModal()
+}
+
+function checkMobile() {
+  isMobile.value = window.matchMedia('(max-width: 860px)').matches
+  if (!isMobile.value) closeDetailModal()
+}
+
+function openDetailModal() {
+  showDetailModal.value = true
+  document.body.style.overflow = 'hidden'
+}
+
+function closeDetailModal() {
+  showDetailModal.value = false
+  document.body.style.overflow = ''
 }
 
 // 搜索并查看词条即记一次浏览，让“搜索词语”也进入学习足迹；同会话同词条去重。
@@ -234,10 +251,15 @@ function stopPronunciation() {
 }
 
 async function handlePlay(item) {
-  const audioUrl = String(item.audioUrl || '').trim()
+  let audioUrl = String(item.audioUrl || '').trim()
   if (!audioUrl) {
-    notify('该词条暂未收录可播放发音。')
+    notify('该词条暂未收录布依语真人发音，正在招募母语者录音，请联系 24011953@muc.edu.cn。')
     return
+  }
+  // 后端可能返回相对路径（如 /uploads/...），需拼接后端域名
+  if (!/^https?:\/\//i.test(audioUrl)) {
+    const base = (apiBaseURL || '').replace(/\/api\/?$/, '')
+    audioUrl = `${base}${audioUrl.startsWith('/') ? '' : '/'}${audioUrl}`
   }
 
   if (playingId.value === item.id && pronunciationAudio && !pronunciationAudio.paused) {
@@ -387,6 +409,10 @@ watch(() => route.query.q, (value) => {
   if (next !== searchQuery.value) searchQuery.value = next
 })
 
+function handleModalKeydown(event) {
+  if (event.key === 'Escape' && showDetailModal.value) closeDetailModal()
+}
+
 onMounted(async () => {
   await runSearch()
   if (route.query.focus) {
@@ -394,9 +420,14 @@ onMounted(async () => {
     document.querySelector('.dictionary-search input')?.focus()
   }
 
+  mediaQuery = window.matchMedia('(max-width: 860px)')
+  checkMobile()
+  mediaQuery.addEventListener('change', checkMobile)
+  document.addEventListener('keydown', handleModalKeydown)
+
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const isMobile = window.matchMedia('(max-width: 768px)').matches
-    const coefficient = isMobile ? 0.04 : 0.08
+    const isMobileViewport = window.matchMedia('(max-width: 768px)').matches
+    const coefficient = isMobileViewport ? 0.04 : 0.08
     scrollHandler = () => {
       bgParallax.value = window.scrollY * coefficient
     }
@@ -407,6 +438,9 @@ onMounted(async () => {
 onUnmounted(() => {
   clearTimeout(debounceTimer)
   stopPronunciation()
+  closeDetailModal()
+  document.removeEventListener('keydown', handleModalKeydown)
+  if (mediaQuery) mediaQuery.removeEventListener('change', checkMobile)
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
 })
 
@@ -427,6 +461,13 @@ onUnmounted(() => {
         <span class="dict-hero-subtitle">支持布依语、汉字与拼音查询；每个关联展项都保留资料出处。</span>
       </div>
     </header>
+
+    <!-- 招募母语者录音：当前词库暂未收录真人发音，欢迎布依语母语者参与 -->
+    <p class="recruit-banner" aria-label="招募母语者录音">
+      <span class="recruit-banner__kicker">招募母语者录音</span>
+      <span class="recruit-banner__text">词条暂未收录布依语真人发音，期待母语者协助录制。</span>
+      <a class="recruit-banner__contact" href="mailto:24011953@muc.edu.cn">24011953@muc.edu.cn</a>
+    </p>
 
     <section class="dictionary-search liquid-glass liquid-glass-hero dict-search-anim" aria-label="词典搜索">
       <SearchBar v-model="searchQuery" placeholder="输入布依语、汉字或拼音" @search="runSearch" />
@@ -484,74 +525,22 @@ onUnmounted(() => {
       </div>
 
       <aside class="entry-detail liquid-glass liquid-glass-content" aria-label="词条详情">
-        <template v-if="selectedItem">
-          <div class="entry-detail__topline"><span>{{ getContentLabel(selectedItem.type) }}</span><span>{{ selectedItem.english || '布依语词典' }}</span></div>
-          <h2>{{ selectedItem.bouyei }}</h2>
-          <p class="entry-detail__meaning">{{ selectedItem.chinese }}</p>
-          <p v-if="selectedItem.example" class="entry-detail__note">{{ selectedItem.example }}</p>
-
-          <div class="entry-actions">
-            <button
-              v-pointer-glow="{ tone: 'brand', size: 'sm' }"
-              type="button"
-              :class="{ 'is-playing': playingId === selectedItem.id }"
-              :aria-pressed="playingId === selectedItem.id"
-              @click="handlePlay(selectedItem)"
-            ><IconVolume :size="16" />{{ playingId === selectedItem.id ? '停止播放' : '播放发音' }}</button>
-            <button v-pointer-glow="{ tone: 'accent', size: 'sm' }" type="button" :aria-pressed="isFavoriteSelected" :aria-label="isFavoriteSelected ? '取消收藏' : '收藏词条'" @click="handleFavorite(selectedItem)"><IconHeart :size="16" :filled="isFavoriteSelected" />{{ isFavoriteSelected ? '已收藏' : '收藏词条' }}</button>
-            <button type="button" :disabled="isSharing" @click="handleShare(selectedItem)">{{ isSharing ? '生成中…' : '分享卡片' }}</button>
-            <button type="button" @click="handleLearn(selectedItem)">加入学习</button>
-            <button type="button" @click="handleAskAgent(selectedItem)">请求解释</button>
-            <button
-              type="button"
-              :disabled="aiSentenceState.itemId === selectedItem.id && aiSentenceState.status === 'loading'"
-              @click="handleAISentence(selectedItem)"
-            >{{ aiSentenceState.itemId === selectedItem.id && aiSentenceState.status === 'loading' ? '造句中…' : 'AI 造句' }}</button>
-          </div>
-
-          <div
-            v-if="aiSentenceState.itemId === selectedItem.id && aiSentenceState.status !== 'idle'"
-            class="ai-sentence"
-            role="status"
-          >
-            <strong>AI 学习辅助</strong>
-            <p v-if="aiSentenceState.status === 'error'">AI 造句暂不可用</p>
-            <p v-else>{{ aiSentenceState.content || '正在组织例句…' }}</p>
-          </div>
-
-          <section v-if="selectedItem.relatedExhibits.length" class="culture-links" aria-labelledby="culture-links-title">
-            <p>由词入馆</p>
-            <h3 id="culture-links-title">继续探索关联文化</h3>
-            <RouterLink
-              v-for="exhibit in selectedItem.relatedExhibits"
-              :key="exhibit.slug"
-              :to="{ path: '/culture', query: { exhibit: exhibit.slug } }"
-            >
-              <span>{{ exhibit.kicker || '文化展项' }}</span>
-              <strong>{{ exhibit.title }}</strong>
-              <b aria-hidden="true">→</b>
-            </RouterLink>
-          </section>
-
-          <SourceBadge
-            class="entry-detail__source"
-            :source="selectedItem.source || '布依词典数据库'"
-          />
-
-          <section class="related-learning" aria-label="AI 关联推荐">
-            <button
-              type="button"
-              :disabled="relatedState.itemId === selectedItem.id && relatedState.status === 'loading'"
-              @click="handleRelated(selectedItem)"
-            >{{ relatedState.itemId === selectedItem.id && relatedState.status === 'loading' ? '推荐中…' : '猜你想学' }}</button>
-            <div v-if="relatedState.itemId === selectedItem.id && relatedState.words.length">
-              <span>AI 推荐</span>
-              <button v-for="word in relatedState.words" :key="word" type="button" @click="searchRelatedWord(word)">{{ word }}</button>
-            </div>
-          </section>
-
-          <RouterLink class="related-navigation" :to="{ path: '/culture', hash: '#pattern-exhibit' }">相关文化展项 →</RouterLink>
-        </template>
+        <DictionaryEntryDetail
+          v-if="selectedItem"
+          :item="selectedItem"
+          :playing-id="playingId"
+          :is-sharing="isSharing"
+          :ai-sentence-state="aiSentenceState"
+          :related-state="relatedState"
+          @play="handlePlay"
+          @favorite="handleFavorite"
+          @learn="handleLearn"
+          @share="handleShare"
+          @ask-agent="handleAskAgent"
+          @ai-sentence="handleAISentence"
+          @related="handleRelated"
+          @search-related="searchRelatedWord"
+        />
         <div v-else class="entry-detail__empty">
           <span aria-hidden="true">⌁</span>
           <p>从左侧选择一个词条，阅读释义并继续走进文化展项。</p>
@@ -559,6 +548,46 @@ onUnmounted(() => {
         <p v-if="actionMsg" class="action-message" aria-live="polite">{{ actionMsg }}</p>
       </aside>
     </section>
+
+    <!-- 移动端悬浮详情弹窗 -->
+    <Transition name="modal-fade">
+      <div
+        v-if="showDetailModal"
+        class="mobile-detail-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="词条详情"
+      >
+        <div class="mobile-detail-overlay" @click="closeDetailModal" />
+        <div class="mobile-detail-panel liquid-glass liquid-glass-hero">
+          <div class="mobile-detail-header">
+            <div class="drag-handle" aria-hidden="true" />
+            <button type="button" class="mobile-detail-close" aria-label="关闭详情" @click="closeDetailModal">
+              <span aria-hidden="true">✕</span>
+            </button>
+          </div>
+          <div class="mobile-detail-body">
+            <DictionaryEntryDetail
+              v-if="selectedItem"
+              :item="selectedItem"
+              :playing-id="playingId"
+              :is-sharing="isSharing"
+              :ai-sentence-state="aiSentenceState"
+              :related-state="relatedState"
+              @play="handlePlay"
+              @favorite="handleFavorite"
+              @learn="handleLearn"
+              @share="handleShare"
+              @ask-agent="handleAskAgent"
+              @ai-sentence="handleAISentence"
+              @related="handleRelated"
+              @search-related="searchRelatedWord"
+            />
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <ShareCard ref="shareCardRef" />
   </main>
 </template>
@@ -570,34 +599,51 @@ onUnmounted(() => {
 @keyframes dictBgReveal { to { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .dictionary-bg, .dictionary-bg img { animation: none !important; transform: none !important; } }
 .dictionary-hero { padding: 8px 0 22px; }.dictionary-hero p, .culture-links > p { margin: 0; color: var(--c-accent); font-size: .75rem; font-weight: 700; letter-spacing: .08em; }.dictionary-hero h1 { max-width: 18ch; margin: 6px 0 8px; color: var(--c-text); font: 600 clamp(1.85rem, 3.4vw, 2.85rem) / 1.08 var(--font-serif); letter-spacing: -.025em; text-shadow: 0 2px 16px rgba(255, 255, 255, .78); text-wrap: balance; }.dictionary-hero > div > span { display: block; max-width: 48ch; color: var(--c-text-70); font-size: 1rem; line-height: 1.75; text-shadow: 0 1px 10px rgba(255, 255, 255, .82); }
+/* 招募母语者录音横幅：单行紧凑展示，不抢视觉重心 */
+.recruit-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 16px; padding: 8px 14px; border-left: 2px solid var(--c-accent); border-radius: var(--radius-sm); background: var(--c-accent-04); font-size: .75rem; line-height: 1.6; }
+.recruit-banner__kicker { color: var(--c-accent-text); font-weight: 700; letter-spacing: .06em; }
+.recruit-banner__text { color: var(--c-text-70); }
+.recruit-banner__contact { color: var(--c-brand); font-weight: 600; text-decoration: none; word-break: break-all; }
+.recruit-banner__contact:hover { text-decoration: underline; }
+.recruit-banner__contact:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; border-radius: 2px; }
 /* 搜索区：hero 玻璃外壳。内部 SearchBar 自带 content 玻璃会被下面 :deep 抹平，避免双层玻璃叠糊。 */
 .dictionary-search { padding: 24px; }.dictionary-search :deep(.search-bar) { border-color: transparent; background: var(--c-glass); box-shadow: none; }.dictionary-search :deep(.search-bar:focus-within) { box-shadow: 0 0 0 4px var(--c-brand-08); }.dictionary-search__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }.dictionary-search__meta p { margin: 0; color: var(--c-text-60); font-size: .875rem; }.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }.filter-pills button { min-height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; color: var(--c-text-70); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.filter-pills button:hover { color: var(--c-text); background: var(--c-brand-06); }.filter-pills button.active { color: var(--c-white); background: var(--c-brand); }.filter-pills button:focus-visible, .entry-actions button:focus-visible, .state-panel button:focus-visible, .result-row:focus-visible, .culture-links a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
 .dictionary-results { display: grid; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr); gap: 32px; align-items: start; margin-top: 28px; }.result-list { min-height: 420px; padding: 4px 8px 12px; }.result-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; width: 100%; padding: 18px 14px; border: 0; border-bottom: 1px solid var(--c-divider); color: inherit; background: transparent; cursor: pointer; text-align: left; }.result-row:hover { background: var(--c-brand-06); }.result-row.selected { background: var(--c-brand-08); box-shadow: inset 3px 0 0 var(--c-brand); }.result-row__type { grid-row: span 2; align-self: start; padding: 4px 7px; border-radius: 999px; color: var(--c-brand); background: var(--c-brand-08); font-size: .6875rem; font-weight: 700; }.result-row strong { overflow: hidden; color: var(--c-text); font-size: 1.0625rem; text-overflow: ellipsis; white-space: nowrap; }.result-row > span:not(.result-row__type) { overflow: hidden; color: var(--c-text-70); font-size: .875rem; text-overflow: ellipsis; white-space: nowrap; }.result-row small { grid-column: 2; color: var(--c-accent); font-size: .75rem; }
-.entry-detail { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px) + 20px); min-height: 420px; padding: clamp(24px, 4vw, 46px); }.entry-detail__topline { display: flex; justify-content: space-between; gap: 16px; color: var(--c-text-60); font-size: .75rem; }.entry-detail__topline span:first-child { color: var(--c-accent); font-weight: 700; }.entry-detail h2 { margin: 26px 0 6px; font: 600 3rem / 1.1 var(--font-serif); letter-spacing: -.025em; }.entry-detail__meaning { margin: 0; color: var(--c-text); font-size: 1.25rem; font-weight: 600; }.entry-detail__note { max-width: 55ch; margin: 28px 0; padding-left: 16px; border-left: 1px solid var(--c-brand-40); color: var(--c-text-70); line-height: 1.8; }.entry-actions { display: flex; flex-wrap: wrap; gap: 8px; }.entry-actions button { min-height: 40px; padding: 0 14px; border: 1px solid var(--c-brand-25); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.entry-actions button:hover { color: var(--c-white); background: var(--c-brand); }
-.entry-actions button.is-playing { color: var(--c-white); background: var(--c-brand); }
-.entry-actions button:disabled { cursor: wait; opacity: .58; }
-.entry-detail__source { margin-top: 28px; }
-.ai-sentence { margin-top: 18px; padding: 16px 18px; border-left: 3px solid var(--c-accent); border-radius: var(--radius-sm); color: var(--c-text); background: var(--c-accent-04); }
-.ai-sentence strong { color: var(--c-accent-text); font-size: .75rem; letter-spacing: .06em; }
-.ai-sentence p { margin: 7px 0 0; color: var(--c-text-70); font-size: .875rem; line-height: 1.75; white-space: pre-wrap; }
-.related-learning { display: grid; gap: 12px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--c-divider); }
-.related-learning > button { justify-self: start; min-height: 38px; padding: 0 15px; border: 1px solid var(--c-brand-25); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }
-.related-learning > button:hover { color: var(--c-white); background: var(--c-brand); }
-.related-learning > button:disabled { cursor: wait; opacity: .58; }
-.related-learning > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.related-learning > div > span { color: var(--c-text-60); font-size: .75rem; }
-.related-learning > div > button { min-height: 34px; padding: 0 12px; border: 0; border-radius: 999px; color: var(--c-brand); background: var(--c-brand-08); cursor: pointer; font: 600 .8125rem var(--font-sans); }
-.related-learning > div > button:hover { color: var(--c-white); background: var(--c-brand); }
-.related-learning button:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
-.related-navigation { display: inline-flex; margin-top: 20px; color: var(--c-brand); font-size: .875rem; font-weight: 700; text-decoration: none; }
-.related-navigation:hover { text-decoration: underline; }
-.related-navigation:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
-.culture-links { display: grid; gap: 10px; margin-top: 38px; padding-top: 28px; border-top: 1px solid var(--c-divider); }.culture-links h3 { margin: 0 0 4px; font: 600 1.5rem var(--font-serif); }.culture-links a { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 15px 0; border-bottom: 1px solid var(--c-divider); color: inherit; text-decoration: none; }.culture-links a:hover strong { color: var(--c-brand); }.culture-links a span { color: var(--c-text-60); font-size: .75rem; }.culture-links a strong { color: var(--c-text); font-size: 1rem; }.culture-links a b { grid-row: span 2; align-self: center; color: var(--c-accent); }
+.entry-detail { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px) + 20px); min-height: 420px; padding: clamp(24px, 4vw, 46px); }
 .state-panel { max-width: 34rem; margin: 40px auto; padding: 28px; border: 1px solid var(--c-divider); border-radius: var(--radius-md); background: var(--c-bg-silver); }.state-panel strong { color: var(--c-text); }.state-panel p { margin: 8px 0 20px; color: var(--c-text-70); line-height: 1.7; }.state-panel button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 600 .875rem var(--font-sans); }.state-panel--error { background: var(--c-danger-08); border-color: color-mix(in srgb, var(--c-danger) 28%, transparent); }.state-copy { margin: 16px 0; color: var(--c-text-60); font-size: .875rem; }.result-skeleton { display: grid; grid-template-columns: 50px 1fr; gap: 10px; padding: 20px 14px; border-bottom: 1px solid var(--c-divider); }.result-skeleton i, .result-skeleton b, .result-skeleton span { display: block; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-06), var(--c-brand-08), var(--c-brand-06)); animation: shimmer 1.4s ease-in-out infinite; }.result-skeleton i { grid-row: span 2; height: 22px; }.result-skeleton b { height: 17px; width: 44%; }.result-skeleton span { height: 12px; width: 64%; }.entry-detail__empty { display: grid; min-height: 340px; place-content: center; gap: 14px; color: var(--c-text-60); text-align: center; }.entry-detail__empty span { color: var(--c-accent); font: 3rem var(--font-serif); }.entry-detail__empty p { max-width: 25ch; margin: 0; line-height: 1.8; }.action-message { position: absolute; right: 24px; bottom: 18px; left: 24px; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--c-text); background: var(--c-accent-10); font-size: .8125rem; }
 .service-status { display: block; margin: -8px 0 20px; color: var(--c-text-60); font-size: .75rem; }.service-status--ready { color: var(--c-brand); }.service-status--degraded, .service-status--offline { color: var(--c-danger); }
 @keyframes shimmer { 50% { opacity: .45; } }
-@media (max-width: 860px) { .dictionary-workspace { padding-top: 92px; }.dictionary-results { grid-template-columns: 1fr; }.entry-detail { position: static; }.result-list { min-height: 0; }.dictionary-search__meta { align-items: flex-start; flex-direction: column; } }
-@media (max-width: 560px) { .dictionary-workspace { padding-right: 16px; padding-left: 16px; }.dictionary-hero { padding-bottom: 28px; }.dictionary-hero h1 { font-size: 2.45rem; }.dictionary-search { padding: 14px; }.dictionary-search :deep(.search-bar) { height: 52px; padding-left: 16px; }.dictionary-search :deep(.search-btn) { padding: 0 17px; }.entry-detail { padding: 24px; }.entry-detail h2 { font-size: 2.5rem; }.entry-actions button { flex: 1 1 calc(50% - 8px); } }
+
+/* 移动端详情弹窗过渡动画 */
+.modal-fade-enter-active,
+.modal-fade-leave-active { transition: opacity var(--duration-base) ease; }
+.modal-fade-enter-from,
+.modal-fade-leave-to { opacity: 0; }
+.modal-fade-enter-active .mobile-detail-panel,
+.modal-fade-leave-active .mobile-detail-panel { transition: transform var(--duration-slow) var(--ease-out-quint), opacity var(--duration-base) ease; }
+.modal-fade-enter-from .mobile-detail-panel,
+.modal-fade-leave-to .mobile-detail-panel { opacity: 0; transform: translateY(40px) scale(0.98); }
+
+@media (max-width: 860px) {
+  .dictionary-workspace { padding-top: 92px; }
+  .dictionary-results { grid-template-columns: 1fr; }
+  .entry-detail { display: none; }
+  .result-list { min-height: 0; }
+  .dictionary-search__meta { align-items: flex-start; flex-direction: column; }
+
+  /* 移动端悬浮详情弹窗 */
+  .mobile-detail-modal { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; }
+  .mobile-detail-modal > * { pointer-events: auto; }
+  .mobile-detail-overlay { position: absolute; inset: 0; background: var(--c-modal-overlay); backdrop-filter: blur(2px); }
+  .mobile-detail-panel { position: relative; max-height: 78vh; margin: 0 16px 24px; border-radius: var(--radius-lg); display: flex; flex-direction: column; overflow: hidden; }
+  .mobile-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 8px; flex-shrink: 0; }
+  .drag-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--c-text-35); }
+  .mobile-detail-close { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--c-brand-08); color: var(--c-text); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .mobile-detail-close:hover { background: var(--c-brand-06); }
+  .mobile-detail-close:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+  .mobile-detail-body { padding: 4px 18px 22px; overflow-y: auto; overscroll-behavior: contain; }
+}
+@media (max-width: 560px) { .dictionary-workspace { padding-right: 16px; padding-left: 16px; }.dictionary-hero { padding-bottom: 28px; }.dictionary-hero h1 { font-size: 2.45rem; }.dictionary-search { padding: 14px; }.dictionary-search :deep(.search-bar) { height: 52px; padding-left: 16px; }.dictionary-search :deep(.search-btn) { padding: 0 17px; } }
 .dict-hero-kicker {
   opacity: 0;
   transform: translateY(12px);

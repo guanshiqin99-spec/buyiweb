@@ -36,13 +36,32 @@ const streak = computed(() => {
 })
 
 function startQuiz() {
-  round.value = createQuizRound(10)
-  currentIndex.value = 0
-  answers.value = []
-  selectedOption.value = ''
-  isAnswered.value = false
-  phase.value = 'question'
-  resultSaveMessage.value = ''
+  // AI 为主：先尝试 AI 五题挑战，失败时降级到经典十题库
+  if (isGeneratingAIQuiz.value) return
+  if (aiQuizMessageTimer) window.clearTimeout(aiQuizMessageTimer)
+  aiQuizMessage.value = ''
+  isGeneratingAIQuiz.value = true
+  collectAIQuizContent()
+    .then((content) => {
+      round.value = parseAIQuizRound(content)
+    })
+    .catch(() => {
+      // AI 不可用：降级到经典十题库
+      round.value = createQuizRound(10)
+      aiQuizMessage.value = 'AI 出题暂不可用，已切换到经典题库。'
+      aiQuizMessageTimer = window.setTimeout(() => {
+        aiQuizMessage.value = ''
+      }, 4200)
+    })
+    .finally(() => {
+      isGeneratingAIQuiz.value = false
+      currentIndex.value = 0
+      answers.value = []
+      selectedOption.value = ''
+      isAnswered.value = false
+      phase.value = 'question'
+      resultSaveMessage.value = ''
+    })
 }
 
 function collectAIQuizContent() {
@@ -102,32 +121,6 @@ function parseAIQuizRound(content) {
       source
     }
   })
-}
-
-async function startAIQuiz() {
-  if (isGeneratingAIQuiz.value) return
-  isGeneratingAIQuiz.value = true
-  if (aiQuizMessageTimer) window.clearTimeout(aiQuizMessageTimer)
-  aiQuizMessage.value = ''
-  try {
-    if (!authStore.isLoggedIn) throw new Error('AI 挑战需要登录')
-    const content = await collectAIQuizContent()
-    round.value = parseAIQuizRound(content)
-    currentIndex.value = 0
-    answers.value = []
-    selectedOption.value = ''
-    isAnswered.value = false
-    phase.value = 'question'
-    resultSaveMessage.value = ''
-  } catch {
-    startQuiz()
-    aiQuizMessage.value = 'AI 挑战暂不可用，已切换到经典题库。'
-    aiQuizMessageTimer = window.setTimeout(() => {
-      aiQuizMessage.value = ''
-    }, 4200)
-  } finally {
-    isGeneratingAIQuiz.value = false
-  }
 }
 
 async function loadLastAttempt() {
@@ -226,10 +219,9 @@ onUnmounted(() => {
     <section v-if="phase === 'intro'" class="quiz-intro">
       <p>趣味闯关</p>
       <h1>把刚刚看见的文化线索，变成一次轻松回顾。</h1>
-      <span>每局随机抽取 10 道四选一问题。答对得 10 分，连续答对会获得鼓励，但不会改变分数。</span>
+      <span>由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。答对得 10 分。</span>
       <small v-if="lastAttempt" class="quiz-intro__last">最近成绩：{{ lastAttempt.score }} 分（答对 {{ lastAttempt.correctCount }} / {{ lastAttempt.totalQuestions }} 题）</small>
-      <button v-pointer-glow="{ tone: 'accent', size: 'lg' }" type="button" @click="startQuiz">开始答题 <b aria-hidden="true">→</b></button>
-      <button type="button" :disabled="isGeneratingAIQuiz" @click="startAIQuiz">{{ isGeneratingAIQuiz ? '生成中…' : 'AI 五题挑战' }}</button>
+      <button v-pointer-glow="{ tone: 'accent', size: 'lg' }" type="button" :disabled="isGeneratingAIQuiz" @click="startQuiz">{{ isGeneratingAIQuiz ? '生成中…' : '开始答题' }} <b aria-hidden="true">→</b></button>
       <RouterLink to="/culture">先去文化页看看</RouterLink>
     </section>
 
@@ -284,7 +276,7 @@ onUnmounted(() => {
           <h2>{{ answer.prompt }}</h2>
           <span>你的答案：{{ answer.selected }} · 正确答案：{{ answer.answer }}</span>
         </article>
-        <p v-if="correctCount === round.length" class="quiz-review__perfect">十题全对。下一次可以试着不用提示再挑战一次。</p>
+        <p v-if="correctCount === round.length" class="quiz-review__perfect">{{ round.length }} 题全对。下一次可以试着不用提示再挑战一次。</p>
       </div>
       <div class="quiz-result__actions">
         <button type="button" @click="startQuiz">再来一局</button>

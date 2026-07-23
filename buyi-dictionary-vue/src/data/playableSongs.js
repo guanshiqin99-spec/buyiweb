@@ -1,9 +1,19 @@
+import { apiBaseURL } from '@/utils/api'
+
 export function formatDuration(seconds) {
   const value = Math.floor(Number(seconds) || 0)
   if (value <= 0) return '—'
   const minutes = Math.floor(value / 60)
   const secs = value % 60
   return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
+
+// 后端可能返回相对路径（如 /uploads/...），需拼接后端域名以便浏览器直接访问
+function resolveMediaUrl(url = '') {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  const base = (apiBaseURL || '').replace(/\/api\/?$/, '')
+  return `${base}${url.startsWith('/') ? '' : '/'}${url}`
 }
 
 const LOCAL_AUDIO_FILES = new Set([
@@ -38,8 +48,8 @@ function fallbackUrlFor(url) {
 }
 
 export function toPlayableSong(item, index = 0) {
-  const audioUrl = item?.audioUrl || ''
-  const fallbackAudioUrl = fallbackUrlFor(audioUrl)
+  const audioUrl = resolveMediaUrl(item?.audioUrl || '')
+  const fallbackAudioUrl = fallbackUrlFor(item?.audioUrl || '')
   if (!audioUrl && !fallbackAudioUrl) return null
 
   return {
@@ -47,7 +57,7 @@ export function toPlayableSong(item, index = 0) {
     title: item.title || item.zhText || '未命名民歌',
     artist: item.artist || '布依民歌采集',
     genre: item.genre || item.zhText || item.description || '布依民歌',
-    coverUrl: item.coverUrl || '',
+    coverUrl: resolveMediaUrl(item.coverUrl || ''),
     duration: item.duration ?? null,
     lyrics: item.lyrics || '',
     audioUrl,

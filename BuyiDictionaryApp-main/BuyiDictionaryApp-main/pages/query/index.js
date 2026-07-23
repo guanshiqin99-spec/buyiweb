@@ -1,4 +1,5 @@
 const { contentApi } = require('../../utils/api');
+const { generateStream } = require('../../utils/agentStream');
 const Favorites = require('../../utils/favorites');
 const History = require('../../utils/learningHistory');
 const { flattenSearchResults } = require('../../utils/content-mapper');
@@ -230,5 +231,130 @@ Page({
 
   toRecord() {
     wx.navigateTo({ url: '/pages/record/index' });
+  },
+
+  // ============ AI 造句 / AI 关联推荐 ============
+
+  // 校验登录态，返回 false 时已自动提示
+  _checkLoginForAI() {
+    const app = getApp();
+    if (app && app.globalData && app.globalData.isLogin && app.globalData.token) {
+      return true;
+    }
+    wx.showToast({ title: '登录后可以使用 AI 功能', icon: 'none' });
+    return false;
+  },
+
+  // 更新单条结果的字段
+  _patchResult(index, patch) {
+    const list = this.data.results.slice();
+    const current = list[index];
+    if (!current) return;
+    list[index] = { ...current, ...patch };
+    this.setData({ results: list });
+  },
+
+  // AI 造句
+  onAISentence(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.results[index];
+    if (!item || item.aiSentenceLoading) return;
+    if (!this._checkLoginForAI()) return;
+
+    const word = item.ch || item.buyi || '';
+    if (!word) {
+      wx.showToast({ title: '当前词条没有可用词汇', icon: 'none' });
+      return;
+    }
+
+    this._patchResult(index, {
+      aiSentenceLoading: true,
+      aiSentence: '',
+      aiSentenceError: '',
+    });
+
+    let accumulated = '';
+    generateStream('sentence', word, {
+      onDelta: (chunk) => {
+        accumulated += chunk;
+        this._patchResult(index, { aiSentence: accumulated });
+      },
+      onDone: () => {
+        if (!accumulated) {
+          this._patchResult(index, {
+            aiSentenceLoading: false,
+            aiSentenceError: 'AI 未返回内容，请稍后重试',
+          });
+          return;
+        }
+        this._patchResult(index, { aiSentenceLoading: false, aiSentence: accumulated });
+      },
+      onError: (err) => {
+        this._patchResult(index, {
+          aiSentenceLoading: false,
+          aiSentence: '',
+          aiSentenceError: `AI 造句暂不可用：${err.message || '请稍后重试'}`,
+        });
+      },
+    }).catch(() => {
+      this._patchResult(index, { aiSentenceLoading: false });
+    });
+  },
+
+  onClearAISentence(e) {
+    const index = e.currentTarget.dataset.index;
+    this._patchResult(index, { aiSentence: '', aiSentenceError: '' });
+  },
+
+  // AI 关联推荐
+  onAIRelated(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.results[index];
+    if (!item || item.aiRelatedLoading) return;
+    if (!this._checkLoginForAI()) return;
+
+    const word = item.ch || item.buyi || '';
+    if (!word) {
+      wx.showToast({ title: '当前词条没有可用词汇', icon: 'none' });
+      return;
+    }
+
+    this._patchResult(index, {
+      aiRelatedLoading: true,
+      aiRelated: '',
+      aiRelatedError: '',
+    });
+
+    let accumulated = '';
+    generateStream('related', word, {
+      onDelta: (chunk) => {
+        accumulated += chunk;
+        this._patchResult(index, { aiRelated: accumulated });
+      },
+      onDone: () => {
+        if (!accumulated) {
+          this._patchResult(index, {
+            aiRelatedLoading: false,
+            aiRelatedError: 'AI 未返回内容，请稍后重试',
+          });
+          return;
+        }
+        this._patchResult(index, { aiRelatedLoading: false, aiRelated: accumulated });
+      },
+      onError: (err) => {
+        this._patchResult(index, {
+          aiRelatedLoading: false,
+          aiRelated: '',
+          aiRelatedError: `AI 推荐暂不可用：${err.message || '请稍后重试'}`,
+        });
+      },
+    }).catch(() => {
+      this._patchResult(index, { aiRelatedLoading: false });
+    });
+  },
+
+  onClearAIRelated(e) {
+    const index = e.currentTarget.dataset.index;
+    this._patchResult(index, { aiRelated: '', aiRelatedError: '' });
   },
 });

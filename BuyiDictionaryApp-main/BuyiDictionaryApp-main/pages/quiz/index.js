@@ -1,4 +1,5 @@
 const { quizApi } = require('../../utils/api');
+const { generateStream } = require('../../utils/agentStream');
 const { syncAppearance } = require('../../utils/view');
 
 const QUIZ_BANK = [
@@ -25,6 +26,52 @@ function shuffle(items) {
   return copy;
 }
 
+// 从 AI 返回的文本中提取 JSON 数组（容忍前后多余文字和代码围栏）
+function parseAIQuizJSON(rawText) {
+  if (!rawText) return null;
+  let text = String(rawText).trim();
+  // 去除可能的 markdown 代码围栏
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+  // 找到第一个 [ 和最后一个 ]
+  const start = text.indexOf('[');
+  const end = text.lastIndexOf(']');
+  if (start === -1 || end === -1 || end <= start) return null;
+  const jsonStr = text.slice(start, end + 1);
+  try {
+    const arr = JSON.parse(jsonStr);
+    if (!Array.isArray(arr)) return null;
+    return arr;
+  } catch (e) {
+    return null;
+  }
+}
+
+// 规范化 AI 题目格式：每题必须有 prompt、answer、4 个不重复 options
+function normalizeAIQuestions(rawList) {
+  if (!Array.isArray(rawList) || !rawList.length) return [];
+  const result = [];
+  rawList.forEach((item, idx) => {
+    if (!item || typeof item !== 'object') return;
+    const prompt = String(item.prompt || item.question || '').trim();
+    const options = Array.isArray(item.options) ? item.options.map((o) => String(o)) : [];
+    const answer = String(item.answer || '').trim();
+    if (!prompt || options.length !== 4 || !answer) return;
+    // answer 必须在 options 中
+    if (!options.includes(answer)) return;
+    // options 不重复
+    if (new Set(options).size !== 4) return;
+    result.push({
+      id: `ai-${Date.now()}-${idx}`,
+      prompt,
+      answer,
+      options: shuffle(options),
+      explanation: String(item.explanation || '由 AI 实时生成。'),
+      source: 'AI生成',
+    });
+  });
+  return result;
+}
+
 Page({
   data: {
     currentTheme: 'light',
@@ -41,6 +88,8 @@ Page({
     saveMsg: '',
     saving: false,
     lastAttempt: null,
+    generatingAI: false,
+    aiQuizError: '',
   },
 
   async onShow() {
@@ -57,8 +106,51 @@ Page({
     }
   },
 
+  // 开始答题：AI 为主，先尝试 AI 五题挑战，失败时降级到经典十题库
   startQuiz() {
-    const questions = shuffle(QUIZ_BANK).map((question) => ({ ...question, options: shuffle(question.options) }));
+    if (this.data.generatingAI) return;
+
+    this.setData({ generatingAI: true, aiQuizError: '' });
+    wx.showLoading({ title: 'AI 出题中...', mask: true });
+
+    let fullText = '';
+    generateStream('quiz', '', {
+      onDelta: (chunk) => {
+        fullText += chunk;
+      },
+      onDone: () => {
+        wx.hideLoading();
+        this.setData({ generatingAI: false });
+        const rawList = parseAIQuizJSON(fullText);
+        const questions = normalizeAIQuestions(rawList);
+        if (!questions.length) {
+          // AI 格式异常：降级到经典十题库
+          this.setData({ aiQuizError: 'AI 出题格式异常，已切换经典题库。' });
+          const fallback = shuffle(QUIZ_BANK).map((q) => ({ ...q, options: shuffle(q.options) }));
+          this._enterAIQuiz(fallback);
+          return;
+        }
+        this._enterAIQuiz(questions);
+      },
+      onError: (err) => {
+        wx.hideLoading();
+        this.setData({
+          generatingAI: false,
+          aiQuizError: `AI 暂不可用，已切换经典题库：${err.message || '请稍后重试'}`,
+        });
+        // 降级到经典十题库
+        const fallback = shuffle(QUIZ_BANK).map((q) => ({ ...q, options: shuffle(q.options) }));
+        this._enterAIQuiz(fallback);
+      },
+    }).catch(() => {
+      wx.hideLoading();
+      this.setData({ generatingAI: false, aiQuizError: 'AI 暂不可用，已切换经典题库。' });
+      const fallback = shuffle(QUIZ_BANK).map((q) => ({ ...q, options: shuffle(q.options) }));
+      this._enterAIQuiz(fallback);
+    });
+  },
+
+  _enterAIQuiz(questions) {
     this.setData({
       phase: 'question',
       questions,

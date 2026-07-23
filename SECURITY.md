@@ -2,7 +2,9 @@
 
 > 本文档说明项目的安全策略、生产环境检查清单与漏洞报告流程。
 >
-> 最后更新：2026-07-21
+> 最后更新：2026-07-24
+>
+> ⚠️ 当前生产实际部署架构见 [`部署方案.md`](部署方案.md)（阿里云北京 ECS + Cloudflare Named Tunnel + Cloudflare Pages + 微信云函数代理）。本文档的检查清单已对齐该架构。
 
 ---
 
@@ -65,13 +67,15 @@ createDictionary() { ... }
 
 ### 2.4 CORS 策略
 
-仅允许配置的来源访问：
+仅允许配置的来源访问。**生产实际值**（对齐 [`部署方案.md`](部署方案.md)）：
 
 ```env
-CORS_ORIGIN=https://your-domain.com,https://servicewechat.com
+CORS_ORIGIN=https://buyi-dictionary.pages.dev
 ```
 
 开发环境默认允许 `http://localhost:5173`、`http://localhost:8080`。
+
+> 注意：小程序走云函数 `apiProxy` 直连后端 IP，请求由微信服务器发起，**不受浏览器 CORS 限制**，因此 `CORS_ORIGIN` 只需配置 Web 前端域名。
 
 ### 2.5 限流策略
 
@@ -106,7 +110,7 @@ CORS_ORIGIN=https://your-domain.com,https://servicewechat.com
 
 - **ORM 防注入**：所有数据库操作通过 TypeORM 参数化查询，禁止字符串拼接 SQL
 - **密码哈希**：使用 bcryptjs，cost factor = 10
-- **生产环境禁用 synchronize**：通过 migration 管理结构
+- **生产环境建议禁用 synchronize**：通过 migration 管理结构。**注意**：当前生产 `.env` 实际仍写 `DB_SYNCHRONIZE=true`（见 [docs/handover/02-重大漏洞与修复清单.md](docs/handover/02-重大漏洞与修复清单.md) V5），赛前最稳做法是不改代码仅在 `.env` 显式写 `DB_SYNCHRONIZE=false` 关闭
 - **生产环境禁用 seed**：避免覆盖真实数据
 
 ---
@@ -131,13 +135,14 @@ CORS_ORIGIN=https://your-domain.com,https://servicewechat.com
 - [ ] `ENABLE_SWAGGER=false`（生产关闭 API 文档）
 - [ ] `CORS_ORIGIN` 已正确配置，未使用通配符 `*`
 
-### 3.2 网络与证书
+### 3.2 网络与证书（Cloudflare 通道）
 
-- [ ] 域名已备案并解析到服务器
-- [ ] HTTPS 证书有效（Let's Encrypt 或云服务商）
-- [ ] HTTP 自动 301 跳转到 HTTPS
+- [ ] Cloudflare Pages 域名 `buyi-dictionary.pages.dev` 可访问（无需 ICP 备案，Cloudflare 提供 HTTPS）
+- [ ] Cloudflare Named Tunnel `api.buyitech.asia` 状态 active（`systemctl status cloudflared`）
+- [ ] 后端 `.env` 的 `CORS_ORIGIN=https://buyi-dictionary.pages.dev` 已配置
+- [ ] 服务器安全组仅开放 22/80/443，3000 端口不对公网开放
 - [ ] Nginx `client_max_body_size` ≥ 10MB
-- [ ] 服务器仅暴露 80 / 443 端口，3000 端口仅本地可访问
+- [ ] HTTP 自动 301 跳转到 HTTPS（由 Cloudflare 强制）
 
 ### 3.3 数据库
 
@@ -147,18 +152,20 @@ CORS_ORIGIN=https://your-domain.com,https://servicewechat.com
 - [ ] 已测试备份可恢复
 - [ ] 已执行 migration，未开启 synchronize
 
-### 3.4 微信小程序
+### 3.4 微信小程序（云函数代理方案）
 
-- [ ] 公众平台已配置合法 request 域名（HTTPS）
-- [ ] 小程序生产接口地址为 HTTPS 域名（非 HTTP IP）
+- [ ] 云函数 `apiProxy` 已上传并部署（微信开发者工具右键「上传并部署:云端安装依赖」）
+- [ ] `cloudfunctions/apiProxy/index.js` 的 `BACKEND_BASE` 指向正确的后端地址（当前 `http://39.96.81.132:80/api`）
+- [ ] `utils/runtime-config.js` 与 `cloudbaserc.json` 的 `envId` 一致
 - [ ] `WECHAT_APP_ID` 与 `WECHAT_APP_SECRET` 与小程序后台一致
+- [ ] **无需在微信公众平台配置合法 request 域名**（云函数代理绕开白名单限制）
 
-### 3.5 媒体存储
+### 3.5 媒体存储（当前生产用 local）
 
-- [ ] `MEDIA_DRIVER=cos`
-- [ ] COS 桶权限为「私有读写」，通过签名 URL 访问
-- [ ] `COS_PUBLIC_BASE_URL` 指向 CDN 加速域名
-- [ ] 已配置防盗链
+- [ ] `MEDIA_DRIVER=local`（当前生产实际值）
+- [ ] `MEDIA_PUBLIC_BASE_URL=https://api.buyitech.asia/uploads`（通过 Cloudflare Tunnel 暴露）
+- [ ] 服务器 `/opt/buyi-dictionary/backend/uploads/buyi_audio/` 音频文件存在
+- [ ] **如切换 COS**：`MEDIA_DRIVER=cos`，COS 桶权限设为「私有读写」通过签名 URL 访问，`COS_PUBLIC_BASE_URL` 指向 CDN 加速域名，配置防盗链
 
 ### 3.6 日志与监控
 

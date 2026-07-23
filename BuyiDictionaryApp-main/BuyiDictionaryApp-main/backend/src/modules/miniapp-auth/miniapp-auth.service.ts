@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { WechatService } from '../../common/services/wechat.service';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service';
+import { LoginLockoutService } from '../auth-security/login-lockout.service';
 import { UsersService } from '../users/users.service';
 import { WebLoginDto, WebRegisterDto } from './dto/web-login.dto';
 import { WechatLoginDto } from './dto/wechat-login.dto';
@@ -22,6 +23,7 @@ export class MiniappAuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly authSessionsService: AuthSessionsService,
+    private readonly loginLockoutService: LoginLockoutService,
   ) {}
 
   async login(payload: WechatLoginDto) {
@@ -101,16 +103,26 @@ export class MiniappAuthService {
 
   // Web 端账号密码登录：校验通过后签发与小程序同类型（miniapp）的 token，
   // 这样 Web 端可直接复用所有 /miniapp/* 业务接口
-  async webLogin(payload: WebLoginDto) {
+  async webLogin(payload: WebLoginDto, ip: string) {
+    // 登录前检查：账号或 IP 被锁定则直接拒绝
+    this.loginLockoutService.ensureNotLocked(payload.username, ip);
+
     const user = await this.usersRepository.findOne({ where: { username: payload.username } });
     if (!user?.isActive || !user.passwordHash) {
+      // 账号不存在或未激活：同样计入失败，防止用户名枚举
+      this.loginLockoutService.recordFailure(payload.username, ip);
       throw new UnauthorizedException('用户名或密码错误');
     }
 
     const isValid = await bcrypt.compare(payload.password, user.passwordHash);
     if (!isValid) {
+      // 密码校验失败：累加失败计数
+      this.loginLockoutService.recordFailure(payload.username, ip);
       throw new UnauthorizedException('用户名或密码错误');
     }
+
+    // 登录成功：清零计数
+    this.loginLockoutService.recordSuccess(payload.username, ip);
 
     user.lastLoginTime = new Date();
     await this.usersRepository.save(user);

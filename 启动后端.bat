@@ -7,8 +7,9 @@ echo  Buyi Dictionary - Backend Launcher
 echo ========================================
 echo.
 
-set "PROJECT_DIR=%~dp0BuyiDictionaryApp-main\BuyiDictionaryApp-main\backend"
-set "SOURCE_DB=%~dp0buyi_dictionary.db"
+set "ROOT=%~dp0"
+set "PROJECT_DIR=%ROOT%BuyiDictionaryApp-main\BuyiDictionaryApp-main\backend"
+set "SOURCE_DB=%ROOT%buyi_dictionary.db"
 set "RUNTIME_DB=%PROJECT_DIR%\buyi-runtime.sqlite"
 
 rem Local development defaults. Existing environment variables always take precedence.

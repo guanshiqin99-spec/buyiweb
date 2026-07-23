@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { Admin } from '../../entities/admin.entity';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service';
+import { LoginLockoutService } from '../auth-security/login-lockout.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
 
 @Injectable()
@@ -17,18 +18,29 @@ export class AdminAuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly authSessionsService: AuthSessionsService,
+    private readonly loginLockoutService: LoginLockoutService,
   ) {}
 
-  async login(payload: AdminLoginDto) {
+  async login(payload: AdminLoginDto, ip: string) {
+    // 登录前检查：账号或 IP 被锁定则直接拒绝
+    this.loginLockoutService.ensureNotLocked(payload.username, ip);
+
     const admin = await this.adminRepository.findOne({ where: { username: payload.username } });
     if (!admin?.isActive) {
+      // 账号不存在或未激活：同样计入失败，防止用户名枚举
+      this.loginLockoutService.recordFailure(payload.username, ip);
       throw new UnauthorizedException('\u7ba1\u7406\u5458\u8d26\u53f7\u6216\u5bc6\u7801\u9519\u8bef');
     }
 
     const isValid = await bcrypt.compare(payload.password, admin.passwordHash);
     if (!isValid) {
+      // 密码校验失败：累加失败计数
+      this.loginLockoutService.recordFailure(payload.username, ip);
       throw new UnauthorizedException('\u7ba1\u7406\u5458\u8d26\u53f7\u6216\u5bc6\u7801\u9519\u8bef');
     }
+
+    // 登录成功：清零计数
+    this.loginLockoutService.recordSuccess(payload.username, ip);
 
     const tokens = await this.issueTokens(admin);
 

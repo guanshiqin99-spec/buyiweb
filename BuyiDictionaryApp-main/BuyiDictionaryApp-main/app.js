@@ -116,6 +116,7 @@ App({
           data,
           headers: header,
         },
+        timeout,
       }).then((res) => {
         const result = res && res.result ? res.result : {};
         console.log('[CloudFunc] callFunction 响应', normalizedPath, 'statusCode:', result.statusCode, 'dataLen:', result.data ? JSON.stringify(result.data).length : 0);

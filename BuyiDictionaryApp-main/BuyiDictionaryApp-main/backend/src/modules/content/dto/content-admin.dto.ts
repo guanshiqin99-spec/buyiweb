@@ -20,6 +20,10 @@ export class BaseAdminContentDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  culturalNote?: string;
+
+  @IsOptional()
   @IsBoolean()
   isPublished?: boolean;
 
@@ -63,6 +67,15 @@ export class SongAdminDto extends BaseAdminContentDto {
   @IsString()
   @MaxLength(500)
   audioUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  lyrics?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  duration?: number;
 
   @IsOptional()
   @IsInt()

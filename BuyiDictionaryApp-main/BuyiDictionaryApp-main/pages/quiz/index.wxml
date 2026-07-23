@@ -2,10 +2,11 @@
   <custom-nav title="文化答题"></custom-nav>
 
   <view wx:if="{{phase === 'intro'}}" class="card quiz-intro">
-    <text class="text-h1">布依文化十问</text>
-    <text class="text-sub">随机完成 10 道四选一题目，每题 10 分，成绩会保存在本机；登录后同时同步到账号。</text>
+    <text class="text-h1">布依文化闯关</text>
+    <text class="text-sub">由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。每题 10 分，成绩保存在本机，登录后同步到账号。</text>
     <text wx:if="{{lastAttempt}}" class="text-sub last-attempt">最近成绩：{{lastAttempt.score}} 分（答对 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题）</text>
-    <button class="btn btn-primary" bindtap="startQuiz">开始答题</button>
+    <button class="btn btn-primary" loading="{{generatingAI}}" disabled="{{generatingAI}}" bindtap="startQuiz">{{generatingAI ? 'AI 出题中...' : '开始答题'}}</button>
+    <text wx:if="{{aiQuizError}}" class="text-sub ai-quiz-error">{{aiQuizError}}</text>
   </view>
 
   <view wx:elif="{{phase === 'question' && currentQuestion}}" class="quiz-question">
@@ -41,4 +42,7 @@
     <text class="text-sub save-message">{{saveMsg}}</text>
     <button class="btn btn-primary" disabled="{{saving}}" bindtap="startQuiz">再来一轮</button>
   </view>
+
+  <!-- AI 导览员悬浮入口 -->
+  <agent-panel></agent-panel>
 </view>

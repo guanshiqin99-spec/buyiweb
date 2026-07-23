@@ -88,6 +88,48 @@
         <!-- 音标展示 (如果有) -->
         <text class="text-sub result-phonetic" wx:if="{{item.ipa}}">国际音标: [{{item.ipa}}]</text>
         <text wx:if="{{item.contentType === 'song'}}" class="text-sub result-note">来源: 民歌《{{item.title}}》</text>
+
+        <!-- AI 工具区：造句 + 关联推荐 -->
+        <view wx:if="{{item.contentType === 'dictionary'}}" class="ai-tools">
+          <view class="ai-tools-btns">
+            <view
+              class="ai-tool-btn {{item.aiSentenceLoading ? 'loading' : ''}}"
+              data-index="{{index}}"
+              catchtap="onAISentence"
+            >
+              <text class="ai-tool-icon">✍</text>
+              <text>{{item.aiSentenceLoading ? '造句中...' : 'AI 造句'}}</text>
+            </view>
+            <view
+              class="ai-tool-btn {{item.aiRelatedLoading ? 'loading' : ''}}"
+              data-index="{{index}}"
+              catchtap="onAIRelated"
+            >
+              <text class="ai-tool-icon">🔗</text>
+              <text>{{item.aiRelatedLoading ? '推荐中...' : 'AI 推荐'}}</text>
+            </view>
+          </view>
+
+          <!-- AI 造句结果 -->
+          <view wx:if="{{item.aiSentence || item.aiSentenceError}}" class="ai-result-block">
+            <view class="ai-result-title">
+              <text class="ai-result-tag">AI 例句</text>
+              <view class="ai-result-close" data-index="{{index}}" catchtap="onClearAISentence">✕</view>
+            </view>
+            <text wx:if="{{item.aiSentence}}" class="ai-result-text">{{item.aiSentence}}</text>
+            <text wx:if="{{item.aiSentenceError}}" class="ai-result-error">{{item.aiSentenceError}}</text>
+          </view>
+
+          <!-- AI 关联推荐结果 -->
+          <view wx:if="{{item.aiRelated || item.aiRelatedError}}" class="ai-result-block">
+            <view class="ai-result-title">
+              <text class="ai-result-tag">AI 推荐</text>
+              <view class="ai-result-close" data-index="{{index}}" catchtap="onClearAIRelated">✕</view>
+            </view>
+            <text wx:if="{{item.aiRelated}}" class="ai-result-text">{{item.aiRelated}}</text>
+            <text wx:if="{{item.aiRelatedError}}" class="ai-result-error">{{item.aiRelatedError}}</text>
+          </view>
+        </view>
       </view>
       <button wx:if="{{page < totalPages}}" class="btn btn-primary load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="loadMore">
         {{loadingMore ? '正在加载' : '加载更多结果'}}
@@ -100,5 +142,8 @@
       <text class="text-sub">{{emptyText || '未找到匹配的词条或短语，换个词试试吧'}}</text>
     </view>
   </view>
+
+  <!-- AI 导览员悬浮入口 -->
+  <agent-panel></agent-panel>
 
 </view>

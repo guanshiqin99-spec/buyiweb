@@ -48,7 +48,6 @@ class GenerateDto {
 }
 
 @Controller('miniapp/agent')
-@UseGuards(MiniappJwtGuard)
 export class MiniappAgentController {
   private readonly logger = new Logger(MiniappAgentController.name);
 
@@ -60,6 +59,7 @@ export class MiniappAgentController {
    */
   @Post('ask')
   @HttpCode(200)
+  @UseGuards(MiniappJwtGuard)
   async ask(
     @Body() dto: AskDto,
     @CurrentUser() _user: { sub: number },
@@ -131,13 +131,12 @@ export class MiniappAgentController {
 
   /**
    * AI 内容生成（SSE 流式）
-   * 需登录，仅开放造句、五题挑战和关联词推荐三类任务。
+   * 免登录，开放造句、五题挑战和关联词推荐三类任务；已登录则带上身份用于风控审计。
    */
   @Post('generate')
   @HttpCode(200)
   async generate(
     @Body() dto: GenerateDto,
-    @CurrentUser() _user: { sub: number },
     @Res() res: Response,
   ): Promise<void> {
     const supportedTypes: GenerateType[] = ['sentence', 'quiz', 'related'];

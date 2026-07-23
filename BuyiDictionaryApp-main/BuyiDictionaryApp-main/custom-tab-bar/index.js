@@ -4,6 +4,7 @@ Component({
   data: {
     selected: 0,
     theme: 'light',
+    hidden: false,
     list: [
       { pagePath: '/pages/home/index', text: '首页', iconPath: '/assets/icons/home.png', selectedIconPath: '/assets/icons/home-active.png' },
       { pagePath: '/pages/app/index', text: '应用', iconPath: '/assets/icons/app.png', selectedIconPath: '/assets/icons/app-active.png' },
@@ -18,13 +19,19 @@ Component({
       this.updateSelected();
       this.updateTheme();
       this._themeHandler = () => this.updateTheme();
+      this._tabBarShow = () => this.setData({ hidden: false });
+      this._tabBarHide = () => this.setData({ hidden: true });
       try {
         app.eventBus.on('theme:changed', this._themeHandler);
+        app.eventBus.on('tabbar:show', this._tabBarShow);
+        app.eventBus.on('tabbar:hide', this._tabBarHide);
       } catch (error) {}
     },
     detached() {
       try {
         app.eventBus.off('theme:changed', this._themeHandler);
+        app.eventBus.off('tabbar:show', this._tabBarShow);
+        app.eventBus.off('tabbar:hide', this._tabBarHide);
       } catch (error) {}
     },
   },

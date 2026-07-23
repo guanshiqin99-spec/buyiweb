@@ -14,6 +14,31 @@
 - 完善后端测试覆盖率（miniapp-auth / content-import / media service）
 - 移动端 Web 端适配优化
 
+### 新增
+
+- **小程序 AI 导览员**：新增 `components/agent-panel/` 与 `utils/agentStream.js`，在 `app.json` 全局注册后挂载到 home / query / quiz 三个页面，通过云函数 `apiProxy` 对接后端 `/miniapp/agent/*`
+- **小程序 query 页 AI 工具区**：词条结果内新增「AI 造句 / AI 推荐」按钮与结果展示区
+- **小程序 quiz 页 AI 五题挑战**：新增「AI 五题挑战」入口，由 DeepSeek 实时生成 5 道布依文化题
+- **Web 词典移动端详情弹窗**：抽出 `buyi-dictionary-vue/src/components/specific/DictionaryEntryDetail.vue` 复用详情渲染；`Dictionary.vue` 在窄屏（≤860px）下改为点击词条弹出底部悬浮弹窗，解决竖屏数据量大时详解卡片掉到底部的问题
+- **部署方案（Cloudflare Named Tunnel）**：`部署方案.md` 重写，落地北京 ECS（39.96.81.132）+ Cloudflare Named Tunnel（`api.buyitech.asia`）+ Cloudflare Pages 前端的三段式架构，cloudflared 安装为 systemd 守护进程保证开机自启
+
+### 变更
+
+- **小程序 AI 导览员弹窗遮挡导航栏修复**：`components/agent-panel/agent-panel.js` 新增 `_toggleTabBar` 方法，面板展开时调用 `wx.hideTabBar`、关闭时调用 `wx.showTabBar`，并通过 `app.eventBus` 广播 `tabbar:hide` / `tabbar:show` 事件，组件 `detached` 时恢复 TabBar；`agent-panel.wxss` 输入区 `padding-bottom` 调整为 `calc(24rpx + env(safe-area-inset-bottom))` 适配全面屏安全区，解决 AI 面板覆盖底部导航栏导致无法切页的问题
+- **云函数 apiProxy**：`cloudfunctions/apiProxy/index.js` 对 `/miniapp/agent/*` 路径新增 `requestStream` 流式累积逻辑（解析 SSE `delta`/`done`/`error` 事件后一次性返回完整结果）；`BACKEND_BASE` 由 `:3000` 改为 `:80`（走 Nginx 入口）；`cloudbaserc.json` 云函数超时调整为 60s；`app.js` 的 `wx.cloud.callFunction` 透传 `timeout`
+- **Web 个人中心徽章视觉**：`Profile.vue` 徽章增加「已解锁 / 未解锁」状态文案与差异化样式（已解锁品牌色描边 + 光晕，未解锁灰度 + 虚线边框）
+- **Web 民歌媒体 URL 解析**：`buyi-dictionary-vue/src/data/playableSongs.js` 新增 `resolveMediaUrl`，自动把后端返回的相对路径（如 `/uploads/...`）拼接为完整媒体域名
+- **bat 脚本路径**：`启动前端.bat` / `启动后端.bat` / `导入示例数据.bat` 中的硬编码 `D:\BuyiDictionaryWeb\...` 改为 `%~dp0` 相对路径，仓库迁移目录后不再报错
+- **deploy_ssh.py**：新增 `--shell` 第三参数模式，调用 `run_shell` 而非 `run_ssh`
+
+### 安全
+
+- **Vercel 弱 JWT_SECRET 处置**：删除 `BuyiDictionaryApp-main/BuyiDictionaryApp-main/backend/vercel.json`，通过 Vercel CLI 下线并删除 `backend`（backend-nine-alpha-35.vercel.app）与 `buyi-dictionary-vue`（buyi-dictionary-vue.vercel.app）两个 Vercel 项目，项目列表已确认为空，风险消除
+
+### 移除
+
+- 删除根目录 `DEPLOY.md`（旧版部署文档，已被重写后的 `部署方案.md` 取代）
+
 ---
 
 ## [1.0.0] — 2026-07-21

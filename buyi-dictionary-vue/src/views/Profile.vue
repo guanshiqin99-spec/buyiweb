@@ -307,13 +307,14 @@ onUnmounted(() => {
               v-for="badge in badges"
               :key="badge.id || badge.code || badge.name"
               class="badge-item"
-              :class="{ 'badge-locked': !isBadgeUnlocked(badge) }"
+              :class="{ 'badge-locked': !isBadgeUnlocked(badge), 'badge-unlocked': isBadgeUnlocked(badge) }"
               :title="badge.description || badge.name"
             >
               <div class="badge-icon" :class="`badge-icon--${badgeMotif(badge)}`" aria-hidden="true">
                 <IconAchievementBadge :motif="badgeMotif(badge)" :size="44" />
               </div>
               <span class="badge-name">{{ badge.name }}</span>
+              <span class="badge-status">{{ isBadgeUnlocked(badge) ? '已解锁' : '未解锁' }}</span>
             </div>
           </div>
         </div>
@@ -689,13 +690,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  min-height: 82px;
+  gap: 4px;
+  min-height: 92px;
   padding: 10px 6px 8px;
   border: 1px solid var(--c-divider);
   border-radius: 16px;
   background: var(--c-glass);
   text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* 已解锁徽章：品牌色描边 + 浅色光晕，强化“获得”的视觉权重 */
+.badge-item.badge-unlocked {
+  border-color: var(--c-brand-40);
+  background: linear-gradient(180deg, var(--c-brand-08), var(--c-glass));
+  box-shadow: 0 2px 10px rgba(58, 107, 140, 0.12);
 }
 
 .badge-icon {
@@ -713,8 +722,16 @@ onUnmounted(() => {
   color: var(--c-text-70);
 }
 
+/* 未解锁徽章：灰度 + 半透明 + 虚线边框，明确“不可用”状态 */
+.badge-item.badge-locked {
+  opacity: 0.55;
+  border: 1px dashed var(--c-divider);
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .badge-item.badge-locked .badge-icon {
   color: var(--c-text-35);
+  filter: grayscale(1);
 }
 
 .badge-name {
@@ -723,8 +740,33 @@ onUnmounted(() => {
   line-height: 1.3;
 }
 
+.badge-item.badge-unlocked .badge-name {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
 .badge-item.badge-locked .badge-name {
   color: var(--c-text-50);
+}
+
+/* 状态标签：已解锁用品牌色，未解锁用灰色 */
+.badge-status {
+  margin-top: 2px;
+  padding: 1px 6px;
+  font-size: 10px;
+  line-height: 1.4;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge-item.badge-unlocked .badge-status {
+  color: var(--c-brand);
+  background: var(--c-brand-08);
+}
+
+.badge-item.badge-locked .badge-status {
+  color: var(--c-text-50);
+  background: rgba(75, 102, 128, 0.08);
 }
 
 /* 学习类型分布图 */

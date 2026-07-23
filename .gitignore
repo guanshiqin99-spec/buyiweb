@@ -106,3 +106,27 @@ original_assets_backup/
 
 # Local review quarantine (keep locally, never commit)
 _trash_review/
+
+# ---------- Python 脚本(暂不推送) ----------
+# 用户偏好:暂不推送 Python 脚本,仅保留本地使用
+*.py
+**/*.py
+
+# Python 运行时缓存
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# ---------- 临时/误生成文件 ----------
+$null
+$null.*
+
+# ---------- 本地构建脚本(不入库) ----------
+sealos-build.bat
+
+# ---------- TRAE IDE 运行时(保留 specs 文档) ----------
+.trae/skills/
+
+# ---------- 后端运行时上传文件(不入库) ----------
+BuyiDictionaryApp-main/BuyiDictionaryApp-main/backend/uploads/

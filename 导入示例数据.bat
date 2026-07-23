@@ -7,7 +7,8 @@ echo  Buyi Dictionary - Import Sample Data
 echo ========================================
 echo.
 
-set "PROJECT_DIR=%~dp0BuyiDictionaryApp-main\BuyiDictionaryApp-main\backend"
+set "ROOT=%~dp0"
+set "PROJECT_DIR=%ROOT%BuyiDictionaryApp-main\BuyiDictionaryApp-main\backend"
 
 echo Project directory: %PROJECT_DIR%
 echo.

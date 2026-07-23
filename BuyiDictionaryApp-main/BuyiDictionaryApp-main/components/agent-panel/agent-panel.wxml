@@ -1,0 +1,65 @@
+<view class="agent-panel-root">
+  <!-- 悬浮入口按钮 -->
+  <view class="agent-fab {{open ? 'hidden' : ''}}" bindtap="onTogglePanel">
+    <view class="agent-fab-inner">
+      <text class="agent-fab-icon">布</text>
+      <text class="agent-fab-text">AI 导览员</text>
+    </view>
+  </view>
+
+  <!-- 聊天面板 -->
+  <view class="agent-panel-mask {{open ? 'show' : ''}}" bindtap="onClosePanel"></view>
+  <view class="agent-panel {{open ? 'open' : ''}}">
+    <!-- 头部 -->
+    <view class="agent-header">
+      <view class="agent-header-info">
+        <view class="agent-avatar">布</view>
+        <view class="agent-header-text">
+          <text class="agent-title">布依文化导览员</text>
+          <text class="agent-status">{{sending ? '正在思考...' : '在线 · 可解答词汇/纹样/民俗'}}</text>
+        </view>
+      </view>
+      <view class="agent-close" bindtap="onClosePanel">✕</view>
+    </view>
+
+    <!-- 消息列表 -->
+    <scroll-view
+      class="agent-messages"
+      scroll-y
+      scroll-into-view="{{scrollIntoView}}"
+      scroll-with-animation
+      enhanced
+      show-scrollbar="{{false}}"
+    >
+      <view
+        wx:for="{{messages}}"
+        wx:key="index"
+        id="{{index === messages.length - 1 ? 'agent-msg-last' : ''}}"
+        class="agent-msg {{item.role}}"
+      >
+        <view class="agent-msg-bubble {{item.error ? 'error' : ''}}">
+          <text class="agent-msg-text">{{item.content}}{{item.loading ? '▍' : ''}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 输入区 -->
+    <view class="agent-input-bar">
+      <input
+        class="agent-input"
+        value="{{inputText}}"
+        placeholder="问问布依文化..."
+        placeholder-class="agent-input-placeholder"
+        confirm-type="send"
+        bindinput="onInput"
+        bindconfirm="onSend"
+        disabled="{{sending}}"
+        adjust-position
+      />
+      <view
+        class="agent-send-btn {{(!inputText || sending) ? 'disabled' : ''}}"
+        bindtap="onSend"
+      >{{sending ? '...' : '发送'}}</view>
+    </view>
+  </view>
+</view>

@@ -1,4 +1,4 @@
-<view class="custom-tabbar {{theme}}">
+<view class="custom-tabbar {{theme}} {{hidden ? 'hidden' : ''}}">
   <view class="tabbar-list">
     <block wx:for="{{list}}" wx:key="pagePath">
       <view class="tabbar-item" data-index="{{index}}" bindtap="onTabItemTap">

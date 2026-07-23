@@ -2,7 +2,7 @@
 
 > 本文档描述布依族词典项目的整体架构、模块划分与数据流。
 >
-> 最后更新：2026-07-21
+> 最后更新：2026-07-24
 
 ---
 
@@ -17,10 +17,11 @@
 │  Web 前端 (Vue) │  微信小程序         │  运营后台 (静态 SPA)  │
 │  /              │  /pages/*           │  /admin-web/         │
 └────────┬────────┴──────────┬──────────┴──────────┬───────────┘
-         │ Axios             │ wx.request          │ fetch
-         │                   │                     │
-         │   /api/* (HTTPS)  │                     │
-         └───────────────────┼─────────────────────┘
+         │ Axios             │ wx.cloud.callFunction │ fetch
+         │ HTTPS             │ → 云函数 apiProxy     │
+         │                   │   (直连 IP HTTP)      │
+         │   /api/*          │                       │
+         └───────────────────┼───────────────────────┘
                              ▼
 ┌──────────────────────────────────────────────────────────────┐
 │                  NestJS 后端（端口 3000）                    │
@@ -37,9 +38,13 @@
 ├────────────────────┬─────────────────────────────────────────┤
 │  TypeORM 实体层     │  17 个实体：用户、词条、民歌、收藏等     │
 │  MySQL / SQLite    │  生产 MySQL 8 / 开发 sqljs              │
-│  腾讯云 COS        │  媒体资源存储（图片、音频）              │
+│  本地 uploads/     │  媒体资源存储（图片、音频，当前未用 COS）│
 └────────────────────┴─────────────────────────────────────────┘
 ```
+
+> **生产访问通道**（详见 [`部署方案.md`](部署方案.md)）：
+> - Web 浏览器 → Cloudflare Pages（HTTPS）→ Cloudflare Named Tunnel → 阿里云北京 ECS NestJS:3000
+> - 小程序 → 微信云函数 `apiProxy` → 阿里云 ECS Nginx:80 → NestJS:3000（直连 IP，绕开白名单）
 
 ---
 
@@ -214,8 +219,10 @@ Axios 请求 → 401 → 队列暂停
 
 ### 4.3 AI 助手 SSE 流式
 
+**Web 端**：
+
 ```text
-前端 AgentPanel → agentApi.askStream(question)
+前端 AgentPanel → src/utils/agentStream.js (fetch 流式读取 SSE)
                                 ↓
                           fetch('/miniapp/agent/ask', { stream: true })
                                 ↓
@@ -225,6 +232,22 @@ Axios 请求 → 401 → 队列暂停
                                 ↓
                           reader.read() 逐块渲染
 ```
+
+**小程序端**（通过云函数累积 SSE）：
+
+```text
+小程序 agent-panel → utils/agentStream.js
+                                ↓
+                  wx.cloud.callFunction('apiProxy', { path, method, data })
+                                ↓
+              云函数 apiProxy 对 /miniapp/agent/* 调用 requestStream
+                                ↓
+              累积 SSE delta/done/error 事件，一次性返回完整结果
+                                ↓
+                  小程序 onDone 回调渲染完整内容
+```
+
+> 小程序 `agent-panel` 展开时会通过 `_toggleTabBar` 调用 `wx.hideTabBar`，关闭时 `wx.showTabBar`，避免遮挡底部导航栏。
 
 ### 4.4 内容管理流程
 
@@ -255,20 +278,36 @@ Axios 请求 → 401 → 队列暂停
 
 ## 六、部署架构
 
-### 6.1 推荐生产架构
+### 6.1 当前生产架构（阿里云北京 ECS + Cloudflare）
 
 ```text
-阿里云 ECS / 自建服务器
-  Nginx :80 / 443
-    ├─ / → Web 静态文件 (buyi-dictionary-vue/dist)
-    ├─ /api/ → NestJS :3000
-    └─ /admin-web/ → NestJS :3000
-  Node/NestJS :127.0.0.1:3000 (PM2 守护)
-  MySQL :127.0.0.1:3306 或独立 RDS
-  腾讯云 COS（媒体资源）
+Web 浏览器 ──HTTPS──> Cloudflare Pages (buyi-dictionary.pages.dev)
+                              │ BACKEND_URL=https://api.buyitech.asia/api
+                              ▼
+                      Cloudflare Named Tunnel (api.buyitech.asia)
+                              │
+                              ▼
+       阿里云北京 ECS 39.96.81.132 (Ubuntu 22.04, 2c4g)
+       ├─ cloudflared (systemd 守护)
+       ├─ Nginx :80 → 反代 :3000
+       ├─ NestJS :3000 (PM2 守护)
+       └─ MySQL :3306 (Docker, 仅本地)
+
+微信小程序 ──> 云函数 apiProxy ──HTTP IP──> 阿里云 ECS Nginx:80
+                                              │
+                                              └─> NestJS :3000
 ```
 
-### 6.2 Docker Compose 架构
+详见 [`部署方案.md`](部署方案.md)。架构核心：
+
+- **Web 通道**走 Cloudflare Pages + Named Tunnel，固定 HTTPS 域名，服务器重启自动恢复
+- **小程序通道**走云函数代理直连后端 IP，无需在微信公众平台配置合法域名
+- **MySQL** 仅监听 127.0.0.1:3306，3000 端口不对公网开放
+- 媒体走本地 `uploads/`，由 Nginx/Tunnel 暴露为 `https://api.buyitech.asia/uploads`
+
+### 6.2 Docker Compose 备用架构
+
+仅在本地或备用环境使用，未用于当前生产：
 
 ```text
 容器编排

@@ -3,7 +3,8 @@
   "functions": [
     {
       "name": "apiProxy",
-      "path": "./cloudfunctions/apiProxy"
+      "path": "./cloudfunctions/apiProxy",
+      "timeout": 60
     }
   ]
 }

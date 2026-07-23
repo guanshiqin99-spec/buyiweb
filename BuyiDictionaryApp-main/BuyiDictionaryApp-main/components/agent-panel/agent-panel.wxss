@@ -1,0 +1,246 @@
+/* AI 导览员组件样式 - 青花瓷釉彩风格 */
+.agent-panel-root {
+  position: fixed;
+  z-index: 999;
+}
+
+/* 悬浮入口按钮 */
+.agent-fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: 200rpx;
+  z-index: 1000;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.agent-fab.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.8);
+}
+
+.agent-fab-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1664D9 0%, #5AA9FF 100%);
+  box-shadow: 0 8rpx 24rpx rgba(22, 100, 217, 0.35);
+  color: #fff;
+}
+
+.agent-fab-icon {
+  font-size: 36rpx;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.agent-fab-text {
+  font-size: 18rpx;
+  margin-top: 4rpx;
+  line-height: 1;
+}
+
+/* 遮罩层 */
+.agent-panel-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.agent-panel-mask.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 聊天面板 */
+.agent-panel {
+  position: fixed;
+  right: 24rpx;
+  bottom: 24rpx;
+  width: 680rpx;
+  max-width: calc(100vw - 48rpx);
+  height: 80vh;
+  max-height: 1080rpx;
+  background: #fff;
+  border-radius: 28rpx;
+  box-shadow: 0 16rpx 48rpx rgba(22, 100, 217, 0.18);
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(120%) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.agent-panel.open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 头部 */
+.agent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 28rpx;
+  background: linear-gradient(135deg, #1664D9 0%, #123B6B 100%);
+  color: #fff;
+}
+
+.agent-header-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.agent-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.agent-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.agent-title {
+  font-size: 30rpx;
+  font-weight: bold;
+}
+
+.agent-status {
+  font-size: 22rpx;
+  opacity: 0.85;
+}
+
+.agent-close {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  opacity: 0.85;
+}
+
+/* 消息列表 */
+.agent-messages {
+  flex: 1;
+  padding: 24rpx 24rpx 16rpx;
+  background: #F4F8FF;
+  box-sizing: border-box;
+}
+
+.agent-msg {
+  margin-bottom: 20rpx;
+  display: flex;
+}
+
+.agent-msg.user {
+  justify-content: flex-end;
+}
+
+.agent-msg.assistant {
+  justify-content: flex-start;
+}
+
+.agent-msg-bubble {
+  max-width: 78%;
+  padding: 18rpx 24rpx;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.agent-msg.user .agent-msg-bubble {
+  background: #1664D9;
+  color: #fff;
+  border-bottom-right-radius: 6rpx;
+}
+
+.agent-msg.assistant .agent-msg-bubble {
+  background: #fff;
+  color: #173B6C;
+  border: 1px solid #E0E8F5;
+  border-bottom-left-radius: 6rpx;
+  box-shadow: 0 2rpx 8rpx rgba(22, 100, 217, 0.04);
+}
+
+.agent-msg-bubble.error {
+  background: #FFF0F0 !important;
+  color: #D9534F !important;
+  border-color: #F5C6C6 !important;
+}
+
+.agent-msg-text {
+  white-space: pre-wrap;
+}
+
+/* 输入栏 */
+.agent-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1px solid #E0E8F5;
+  box-sizing: border-box;
+}
+
+.agent-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 24rpx;
+  background: #F4F8FF;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+  color: #173B6C;
+}
+
+.agent-input-placeholder {
+  color: #9FB8D8;
+  font-size: 28rpx;
+}
+
+.agent-send-btn {
+  min-width: 112rpx;
+  height: 72rpx;
+  padding: 0 24rpx;
+  border-radius: 36rpx;
+  background: #1664D9;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.agent-send-btn.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}

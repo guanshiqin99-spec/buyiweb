@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
-import { contentApi, recordsApi } from '@/utils/api'
+import { contentApi, recordsApi, apiBaseURL } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
 import { USER_PROGRESS_UPDATED_EVENT } from '@/utils/userProgress'
@@ -56,7 +56,7 @@ function handleVisibilityChange() {
 }
 
 const currentWord = computed(() => words.value[currentIndex.value] || {
-  bouyei: '', chinese: '', english: '', phonetic: ''
+  bouyei: '', chinese: '', english: '', phonetic: '', audioUrl: ''
 })
 
 const flipCard = () => {
@@ -69,9 +69,63 @@ function showMsg(text) {
   msgTimer = setTimeout(() => { actionMsg.value = '' }, 2200)
 }
 
-// 发音（占位：后端暂无 TTS）
+// 发音：播放当前词条的布依语真人发音（来自后端 audioUrl 字段，不回退到通用 TTS）
+const isPlaying = ref(false)
+let pronunciationAudio = null
+
+function stopPronunciation() {
+  if (pronunciationAudio) {
+    pronunciationAudio.onended = null
+    pronunciationAudio.onerror = null
+    pronunciationAudio.pause()
+    try { pronunciationAudio.currentTime = 0 } catch { /* 尚未加载元数据时无需重置进度 */ }
+  }
+  pronunciationAudio = null
+  isPlaying.value = false
+}
+
 function handlePlay() {
-  showMsg('发音功能即将上线')
+  const audioUrl = String(currentWord.value?.audioUrl || '').trim()
+  if (!audioUrl) {
+    showMsg('该词条暂未收录布依语真人发音，正在招募母语者录音，请联系 24011953@muc.edu.cn')
+    return
+  }
+
+  // 正在播放则停止
+  if (isPlaying.value && pronunciationAudio && !pronunciationAudio.paused) {
+    stopPronunciation()
+    showMsg('已停止播放')
+    return
+  }
+
+  stopPronunciation()
+
+  // 后端可能返回相对路径（如 /uploads/...），需拼接后端域名
+  let fullUrl = audioUrl
+  if (!/^https?:\/\//i.test(fullUrl)) {
+    const base = (apiBaseURL || '').replace(/\/api\/?$/, '')
+    fullUrl = `${base}${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`
+  }
+
+  const audio = new Audio(fullUrl)
+  audio.preload = 'auto'
+  pronunciationAudio = audio
+  isPlaying.value = true
+  audio.onended = () => {
+    if (pronunciationAudio === audio) stopPronunciation()
+  }
+  audio.onerror = () => {
+    if (pronunciationAudio !== audio) return
+    stopPronunciation()
+    showMsg('发音加载失败，请检查网络后重试')
+  }
+
+  audio.play().catch(() => {
+    if (pronunciationAudio === audio) {
+      stopPronunciation()
+      showMsg('浏览器未能播放该发音，请稍后重试')
+    }
+  })
 }
 
 // 收藏切换
@@ -140,6 +194,7 @@ async function handleReview() {
 
 const nextWord = () => {
   isFlipped.value = false
+  stopPronunciation()
   if (words.value.length > 0) {
     // 先记录当前词，再切换索引，避免把“下一词”写入学习记录
     const previousVisitId = currentVisitId
@@ -163,7 +218,8 @@ onMounted(async () => {
         bouyei: item.buyiText || '',
         chinese: item.zhText || '',
         english: item.enText || '',
-        phonetic: item.description || ''
+        phonetic: item.description || '',
+        audioUrl: item.audioUrl || ''
       }))
     }).catch(e => {
       console.error('词汇加载失败', e)
@@ -192,6 +248,7 @@ onMounted(async () => {
 onUnmounted(() => {
   isPageActive = false
   if (msgTimer) clearTimeout(msgTimer)
+  stopPronunciation()
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
   window.removeEventListener(USER_PROGRESS_UPDATED_EVENT, refreshLearnStats)
   window.removeEventListener('focus', refreshLearnStats)
@@ -256,9 +313,9 @@ onUnmounted(() => {
       <p v-if="actionMsg" class="action-msg" aria-live="polite">{{ actionMsg }}</p>
 
       <div class="action-bar" role="group" aria-label="学习动作">
-        <button v-pointer-glow="{ tone: 'brand', size: 'sm' }" class="action-btn" type="button" aria-label="播放发音" @click="handlePlay">
+        <button v-pointer-glow="{ tone: 'brand', size: 'sm' }" class="action-btn" type="button" :aria-label="isPlaying ? '停止播放' : '播放发音'" @click="handlePlay">
           <IconPlay :size="20" />
-          <span>发音</span>
+          <span>{{ isPlaying ? '停止' : '发音' }}</span>
         </button>
         <button v-pointer-glow="{ tone: 'accent', size: 'sm' }" class="action-btn" type="button" aria-label="收藏词条" @click="handleFavorite">
           <IconHeart :size="20" />

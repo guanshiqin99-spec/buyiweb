@@ -10,6 +10,7 @@ import { AdminRole } from './common/enums/admin-role.enum';
 import { ContentType } from './common/enums/content-type.enum';
 import { AdminAuthModule } from './modules/admin-auth/admin-auth.module';
 import { AuthSessionsModule } from './modules/auth-sessions/auth-sessions.module';
+import { AuthSecurityModule } from './modules/auth-security/auth-security.module';
 import { AdminContentModule } from './modules/admin-content/admin-content.module';
 import { AdminDashboardModule } from './modules/admin-dashboard/admin-dashboard.module';
 import { AdminMediaModule } from './modules/admin-media/admin-media.module';
@@ -59,6 +60,7 @@ import { UsersModule } from './modules/users/users.module';
     }),
     UsersModule,
     AuthSessionsModule,
+    AuthSecurityModule,
     ContentModule,
     CultureExhibitsModule,
     MediaModule,

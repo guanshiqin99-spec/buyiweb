@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { createRateLimitMiddleware } from './common/http/rate-limit';
@@ -13,11 +14,14 @@ async function bootstrap() {
 
   const logger = new Logger('Bootstrap');
   
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: false,
     logger: ['error', 'warn'],
   });
-  
+
+  // 信任反向代理，使 req.ip 能正确解析 X-Forwarded-For 中的客户端真实 IP
+  app.set('trust proxy', 1);
+
   app.setGlobalPrefix('api');
 
   app.use(

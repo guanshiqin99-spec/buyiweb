@@ -102,4 +102,7 @@
     </view>
   </view>
 
+  <!-- AI 导览员悬浮入口 -->
+  <agent-panel></agent-panel>
+
 </view>

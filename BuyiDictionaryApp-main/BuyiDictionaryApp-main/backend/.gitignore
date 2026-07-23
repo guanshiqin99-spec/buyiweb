@@ -1,3 +1,6 @@
 .vercel
 dist/
 buyi-runtime.sqlite
+.env
+.env.local
+.env.production

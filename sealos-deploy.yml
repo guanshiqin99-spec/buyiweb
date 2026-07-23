@@ -209,12 +209,21 @@ spec:
               value: "true"   # 首次部署开启自动建表，后续改为 false
             - name: DB_LOGGING
               value: "false"
+            # 微信登录配置：必须从 Kubernetes Secret (buyi-secrets) 读取真实 AppID 和 AppSecret，
+            # 否则微信服务端会返回 invalid appsecret，小程序无法登录。
+            # 本地/测试环境可将 WECHAT_MOCK_MODE 改为 "true"，无需真实凭证。
             - name: WECHAT_MOCK_MODE
               value: "false"
             - name: WECHAT_APP_ID
-              value: "<WECHAT_APP_ID>"
+              valueFrom:
+                secretKeyRef:
+                  name: buyi-secrets
+                  key: WECHAT_APP_ID
             - name: WECHAT_APP_SECRET
-              value: "<WECHAT_APP_SECRET>"
+              valueFrom:
+                secretKeyRef:
+                  name: buyi-secrets
+                  key: WECHAT_APP_SECRET
             - name: MEDIA_DRIVER
               value: "local"
             - name: MEDIA_MAX_FILE_SIZE

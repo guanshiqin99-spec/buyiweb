@@ -68,6 +68,7 @@
   "sitemapLocation": "sitemap.json",
   "cloud": true,
   "usingComponents": {
-    "custom-nav": "/components/custom-nav/custom-nav"
+    "custom-nav": "/components/custom-nav/custom-nav",
+    "agent-panel": "/components/agent-panel/agent-panel"
   }
 }

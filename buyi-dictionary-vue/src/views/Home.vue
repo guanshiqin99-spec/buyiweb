@@ -12,10 +12,24 @@ import imgMusic from '@/assets/images/folk-song-bg.jpg'
 const authStore = useAuthStore()
 const searchStore = useSearchStore()
 const homeRef = ref(null)
+const spotlightRef = ref(null)
 const learningStats = ref(null)
 const heroParallax = ref(0)
 let revealObserver = null
 let scrollHandler = null
+let spotlightFrame = null
+let lastPointerEvent = null
+let pointerMoveHandler = null
+let pointerLeaveHandler = null
+
+// 整页光晕跟随：rAF 节流，直接写 CSS 变量避免响应式开销
+function renderSpotlight() {
+  spotlightFrame = null
+  if (!lastPointerEvent || !spotlightRef.value) return
+  spotlightRef.value.style.setProperty('--spot-x', `${lastPointerEvent.clientX}px`)
+  spotlightRef.value.style.setProperty('--spot-y', `${lastPointerEvent.clientY}px`)
+  spotlightRef.value.style.setProperty('--spot-opacity', '1')
+}
 
 const learningCopy = computed(() => {
   if (!authStore.isLoggedIn) return '登录后，把每一次查词、练习和答题变成可回看的学习轨迹。'
@@ -35,7 +49,24 @@ async function loadLearningStats() {
 onMounted(() => {
   loadLearningStats()
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+
+  // 整页鼠标光晕：仅桌面细指针且未要求减少动效时启用
+  if (!reduceMotion && finePointer) {
+    pointerMoveHandler = (event) => {
+      lastPointerEvent = event
+      if (!spotlightFrame) spotlightFrame = window.requestAnimationFrame(renderSpotlight)
+    }
+    pointerLeaveHandler = () => {
+      lastPointerEvent = null
+      if (spotlightRef.value) spotlightRef.value.style.setProperty('--spot-opacity', '0')
+    }
+    window.addEventListener('pointermove', pointerMoveHandler, { passive: true })
+    document.addEventListener('pointerleave', pointerLeaveHandler)
+  }
+
+  if (reduceMotion) return
 
   const isMobile = window.matchMedia('(max-width: 768px)').matches
   const coefficient = isMobile ? 0.06 : 0.12
@@ -66,15 +97,19 @@ onMounted(() => {
 onUnmounted(() => {
   revealObserver?.disconnect()
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
+  if (pointerMoveHandler) window.removeEventListener('pointermove', pointerMoveHandler)
+  if (pointerLeaveHandler) document.removeEventListener('pointerleave', pointerLeaveHandler)
+  if (spotlightFrame) window.cancelAnimationFrame(spotlightFrame)
 })
 </script>
 
 <template>
   <main id="main" ref="homeRef" class="museum-home" data-nav-tone="light">
+    <div ref="spotlightRef" class="home-spotlight" aria-hidden="true"></div>
     <section class="museum-hero" data-nav-tone="dark" :style="{ '--hero-image': `url(${imgHero})`, '--hero-parallax': `${heroParallax}px` }">
       <div class="museum-hero__content">
         <p>布依数字文化馆</p>
-        <h1>从一个词，<br>走进一座文化馆。</h1>
+        <h1>从一个词，<br>走进一座<span class="keep-together">文化馆</span>。</h1>
         <span>让语言、纹样与民歌在同一段探索里相遇。</span>
         <button v-pointer-glow="{ tone: 'accent', size: 'lg' }" type="button" class="primary-action" @click="searchStore.open()">开始查词 <b aria-hidden="true">↗</b></button>
       </div>
@@ -94,7 +129,7 @@ onUnmounted(() => {
         <p>沿着纹样、声调与非遗展品，理解语言背后的生活语境。</p>
         <b aria-hidden="true">→</b>
       </RouterLink>
-      <RouterLink to="/quiz" class="scene-entry">
+      <RouterLink to="/quiz" class="scene-entry" v-pointer-glow="{ tone: 'brand', size: 'lg' }">
         <span>03 · 即学即练</span>
         <strong>趣味答题</strong>
         <p>用一轮轻量挑战检验刚刚认识的词汇与文化线索。</p>
@@ -150,7 +185,7 @@ onUnmounted(() => {
         <h2 id="participation-title">让每一次探索都留下回应</h2>
       </div>
       <div class="participation-exhibit__actions">
-        <article>
+        <article v-pointer-glow="{ tone: 'brand', size: 'md' }">
           <span>学习档案</span>
           <p>{{ learningCopy }}</p>
           <RouterLink :to="authStore.isLoggedIn ? '/record' : '/login'">{{ authStore.isLoggedIn ? '查看学习记录' : '登录并开始学习' }} →</RouterLink>
@@ -160,7 +195,7 @@ onUnmounted(() => {
           <p>用十道轻量问题回顾刚刚认识的文化线索，答完即可复盘与再挑战。</p>
           <RouterLink to="/quiz">开始答题 →</RouterLink>
         </article>
-        <article>
+        <article v-pointer-glow="{ tone: 'brand', size: 'md' }">
           <span>文化探索</span>
           <p>从声调、纹样与非遗资料继续认识布依族语言背后的生活语境。</p>
           <RouterLink to="/culture">进入文化页 →</RouterLink>
@@ -178,12 +213,26 @@ onUnmounted(() => {
 
 <style scoped>
 .museum-home { color: var(--c-text); background: var(--background); }
+/* 整页鼠标光晕跟随：multiply 混合让浅色区呈现淡青色可见、非白色，不拦截交互 */
+.home-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: var(--spot-opacity, 0);
+  transition: opacity 320ms ease;
+  background: radial-gradient(520px circle at var(--spot-x, 50vw) var(--spot-y, 50vh), rgba(var(--pointer-glow-brand-rgb), .16) 0%, rgba(var(--pointer-glow-brand-rgb), .05) 45%, transparent 75%);
+}
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .home-spotlight { display: none; }
+}
 .museum-hero { position: relative; display: flex; align-items: end; justify-content: space-between; min-height: min(760px, 88svh); padding: 120px max(24px, calc((100vw - 1180px) / 2)) 54px; overflow: hidden; color: var(--c-white); }
 .museum-hero::before { position: absolute; inset: -10% 0; background: linear-gradient(90deg, rgba(13, 37, 56, .94), rgba(27,58,92,.66) 46%, rgba(27,58,92,.15)), var(--hero-image) center / cover; content: ''; will-change: transform; transform: translate3d(0, var(--hero-parallax, 0px), 0); }.museum-hero::after { position: absolute; right: 7vw; bottom: 8vw; width: 14vw; min-width: 120px; aspect-ratio: 1; border: 1px solid rgba(255,255,255,.36); border-radius: 50%; content: ''; }
 .museum-hero__content, .museum-hero__caption { position: relative; z-index: 1; }.museum-hero__content { max-width: 700px; }.museum-hero__content p, .section-heading p, .language-exhibit header p, .sound-exhibit p, .participation-exhibit > div > p, .closing-exhibit > p { margin: 0; color: var(--c-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
-.museum-hero h1 { margin: 16px 0; font: 600 clamp(48px, 8vw, 92px) / .96 var(--font-serif); letter-spacing: -.04em; text-wrap: balance; }.museum-hero__content > span { display: block; max-width: 33ch; color: var(--c-white-78); font-size: 17px; line-height: 1.7; }.museum-hero__caption { max-width: 17ch; color: var(--c-white-65); font-size: 13px; line-height: 1.7; }
+.museum-hero h1 { margin: 16px 0; font: 600 clamp(48px, 8vw, 92px) / .96 var(--font-serif); letter-spacing: -.04em; text-wrap: balance; }.museum-hero h1 .keep-together { white-space: nowrap; }.museum-hero__content > span { display: block; max-width: 33ch; color: var(--c-white-78); font-size: 17px; line-height: 1.7; }.museum-hero__caption { max-width: 17ch; color: var(--c-white-65); font-size: 13px; line-height: 1.7; }
 .primary-action, .light-action, .outline-action { position: relative; display: inline-flex; align-items: center; gap: 10px; margin-top: 30px; padding: 13px 19px; border: 1px solid transparent; border-radius: 999px; text-decoration: none; cursor: pointer; font: 700 14px var(--font-sans); -webkit-appearance: none; appearance: none; transition: transform var(--duration-fast) var(--ease-out-quart), filter var(--duration-fast) var(--ease-out-quart), box-shadow var(--duration-fast) var(--ease-out-quart), background var(--duration-fast) var(--ease-out-quart); }.primary-action { color: var(--c-white); background: var(--c-accent); }.primary-action:hover, .light-action:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: var(--shadow-md); }.primary-action:active, .light-action:active, .outline-action:active { transform: scale(.98); }.primary-action:focus-visible, .light-action:focus-visible, .outline-action:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
-.scene-entries { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(1080px, calc(100% - 48px)); margin: -28px auto 0; border: 1px solid var(--c-divider); border-radius: 20px; background: color-mix(in srgb, var(--background) 94%, transparent); box-shadow: var(--shadow-lg); overflow: hidden; }
+.scene-entries { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(1080px, calc(100% - 48px)); margin: 24px auto 0; border: 1px solid var(--c-divider); border-radius: 20px; background: color-mix(in srgb, var(--background) 94%, transparent); box-shadow: var(--shadow-lg); overflow: hidden; }
 .scene-entry { position: relative; display: grid; min-height: 210px; padding: 30px; border-right: 1px solid var(--c-divider); color: var(--c-text); text-decoration: none; transition: background var(--duration-fast) var(--ease-out-quart), transform var(--duration-fast) var(--ease-out-quart); }
 .scene-entry:last-child { border-right: 0; }
 .scene-entry > span { color: var(--c-accent-text); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
@@ -216,7 +265,7 @@ onUnmounted(() => {
   from { opacity: .25; transform: translateY(22px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@media (max-width: 760px) { .museum-hero { align-items: end; min-height: min(640px, 82svh); padding-top: 104px; padding-bottom: 48px; }.museum-hero__caption { display: none; }.scene-entries { grid-template-columns: 1fr; margin-top: -18px; border-radius: 16px; }.scene-entry { min-height: 168px; border-right: 0; border-bottom: 1px solid var(--c-divider); }.scene-entry:last-child { border-bottom: 0; }.language-exhibit, .participation-exhibit { grid-template-columns: 1fr; padding: 72px 0; }.craft-exhibit { padding-top: 72px; padding-bottom: 72px; }.craft-exhibit__images { grid-template-columns: 1fr; gap: 30px; }.craft-exhibit figure:nth-child(2), .craft-exhibit figure:nth-child(3) { margin-top: 0; }.craft-exhibit img, .craft-exhibit figure:first-child img { aspect-ratio: 16 / 10; }.sound-exhibit { min-height: 510px; }.museum-hero h1 { font-size: clamp(45px, 13vw, 70px); } }
+@media (max-width: 760px) { .museum-hero { align-items: end; min-height: min(640px, 82svh); padding-top: 104px; padding-bottom: 48px; }.museum-hero__caption { display: none; }.scene-entries { grid-template-columns: 1fr; margin-top: 16px; border-radius: 16px; }.scene-entry { min-height: 168px; border-right: 0; border-bottom: 1px solid var(--c-divider); }.scene-entry:last-child { border-bottom: 0; }.language-exhibit, .participation-exhibit { grid-template-columns: 1fr; padding: 72px 0; }.craft-exhibit { padding-top: 72px; padding-bottom: 72px; }.craft-exhibit__images { grid-template-columns: 1fr; gap: 30px; }.craft-exhibit figure:nth-child(2), .craft-exhibit figure:nth-child(3) { margin-top: 0; }.craft-exhibit img, .craft-exhibit figure:first-child img { aspect-ratio: 16 / 10; }.sound-exhibit { min-height: 510px; }.museum-hero h1 { font-size: clamp(45px, 13vw, 70px); } }
 /* 跳转按钮呼吸动效：伪元素向外柔和发光，强度随呼吸缓慢起伏 */
 .primary-action::after, .light-action::after, .outline-action::after {
   content: '';

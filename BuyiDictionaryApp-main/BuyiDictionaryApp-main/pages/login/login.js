@@ -81,23 +81,6 @@ Page({
         }
       }
 
-      // Step 1.5: call cloud function to save user in cloudbase
-      let cloudOpenId = '';
-      try {
-        const cloudRes = await wx.cloud.callFunction({
-          name: 'login',
-          data: { nickname, avatarUrl: cloudAvatarUrl || avatarUrl }
-        });
-        if (cloudRes && cloudRes.result) {
-          cloudOpenId = cloudRes.result.openid;
-          if (cloudRes.result.avatarUrl && !cloudAvatarUrl) {
-            cloudAvatarUrl = cloudRes.result.avatarUrl;
-          }
-        }
-      } catch (err) {
-        console.error('[Login] cloud function login fail:', err);
-      }
-
       // Step 2: wx.login
       const loginResult = await new Promise((resolve, reject) => {
         wx.login({
@@ -133,7 +116,7 @@ Page({
       const finalUserInfo = {
         nickname: nickname,
         avatarUrl: cloudAvatarUrl || avatarUrl,
-        openid: payload.user.openid || cloudOpenId || ''
+        openid: payload.user.openid || ''
       };
       loginState.userInfo = finalUserInfo;
       loginState.isLogin = true;

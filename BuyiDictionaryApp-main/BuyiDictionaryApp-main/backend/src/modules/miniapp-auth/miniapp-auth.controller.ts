@@ -1,4 +1,5 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { RefreshTokenDto } from '../../common/dto/refresh-token.dto';
@@ -20,8 +21,10 @@ export class MiniappAuthController {
   // Web 端账号密码登录
   @Public()
   @Post('web-login')
-  webLogin(@Body() payload: WebLoginDto) {
-    return this.miniappAuthService.webLogin(payload);
+  webLogin(@Body() payload: WebLoginDto, @Req() req: Request) {
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = req.ip || (typeof forwarded === 'string' ? forwarded : forwarded?.[0]) || '';
+    return this.miniappAuthService.webLogin(payload, ip);
   }
 
   // Web 端账号注册

@@ -57,8 +57,11 @@ async function handleShareSong(song) {
   shareNotice.value = ''
   try {
     const result = await shareCardRef.value?.share({
+      title: '民歌声场',
       word: song.title,
       translation: song.artist,
+      coverUrl: song.coverUrl || imgAmbient,
+      fallbackCover: imgAmbient,
       filename: `${song.title || '布依民歌'}-分享卡片.png`
     })
     if (result?.action === 'shared') shareNotice.value = '已打开系统分享。'
