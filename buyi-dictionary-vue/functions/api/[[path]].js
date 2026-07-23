@@ -1,42 +1,58 @@
-const BACKEND_URL = 'https://casting-object-link-hide.trycloudflare.com/api'
+const FORWARDED_REQUEST_HEADERS = ['Authorization', 'Content-Type', 'Accept']
 
 export async function onRequest(context) {
-  // Debug: return simple response to verify function runs
   const { request } = context
-  const url = new URL(request.url)
-  const path = url.pathname.replace(/^\/api/, '') || '/'
-  const targetUrl = BACKEND_URL + path + url.search
 
-  // 处理 CORS 预检
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
       headers: {
-        'access-control-allow-origin': '*',
-        'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'access-control-allow-headers': 'Authorization, Content-Type, Accept'
+        'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': FORWARDED_REQUEST_HEADERS.join(', ')
       }
     })
   }
 
+  const backendUrl = context.env?.BACKEND_URL?.trim()
+  if (!backendUrl) {
+    return Response.json(
+      {
+        error: 'Backend unavailable',
+        message: 'Cloudflare Pages environment variable BACKEND_URL is not configured.'
+      },
+      { status: 503 }
+    )
+  }
+
+  const requestUrl = new URL(request.url)
+  const path = requestUrl.pathname.replace(/^\/api(?=\/|$)/, '') || '/'
+  const targetUrl = `${backendUrl.replace(/\/+$/, '')}${path}${requestUrl.search}`
+  const headers = new Headers()
+
+  for (const name of FORWARDED_REQUEST_HEADERS) {
+    const value = request.headers.get(name)
+    if (value !== null) headers.set(name, value)
+  }
+
   try {
-    const response = await fetch(targetUrl, {
+    const upstream = await fetch(targetUrl, {
       method: request.method,
-      headers: { 'accept': 'application/json' },
-      redirect: 'follow'
+      headers,
+      body: request.method === 'GET' || request.method === 'HEAD' ? undefined : request.body
     })
-    const body = await response.text()
-    return new Response(body, {
-      status: response.status,
-      headers: {
-        'content-type': 'application/json',
-        'access-control-allow-origin': '*'
-      }
+    const responseHeaders = new Headers(upstream.headers)
+
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers: responseHeaders
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Proxy error', message: error.message, target: targetUrl }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return Response.json(
+      {
+        error: 'Proxy error',
+        message: error instanceof Error ? error.message : String(error)
+      },
+      { status: 502 }
+    )
   }
 }
