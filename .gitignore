@@ -103,3 +103,6 @@ original_assets_backup/
 *.bak
 *.swp
 *~
+
+# Local review quarantine (keep locally, never commit)
+_trash_review/

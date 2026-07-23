@@ -1,1 +1,0 @@
-{"version":3,"file":"miniapp-me.module.js","sourceRoot":"","sources":["../../../src/modules/miniapp-me/miniapp-me.module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,2CAAwC;AACxC,wDAAoD;AACpD,mEAA8D;AAMvD,IAAM,eAAe,GAArB,MAAM,eAAe;CAAG,CAAA;AAAlB,0CAAe;0BAAf,eAAe;IAJ3B,IAAA,eAAM,EAAC;QACN,OAAO,EAAE,CAAC,0BAAW,CAAC;QACtB,WAAW,EAAE,CAAC,2CAAmB,CAAC;KACnC,CAAC;GACW,eAAe,CAAG"}
