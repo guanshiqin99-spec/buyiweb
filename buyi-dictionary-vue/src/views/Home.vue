@@ -81,6 +81,27 @@ onUnmounted(() => {
       <div class="museum-hero__caption">以声音留存记忆，以查询连接日常。</div>
     </section>
 
+    <section class="scene-entries reveal-target" data-nav-tone="light" aria-label="按场景开始学习">
+      <RouterLink to="/dictionary" class="scene-entry">
+        <span>01 · 语言入门</span>
+        <strong>学生快速学习</strong>
+        <p>从常用词和准确发音开始，快速建立第一组布依语记忆。</p>
+        <b aria-hidden="true">→</b>
+      </RouterLink>
+      <RouterLink to="/culture" class="scene-entry">
+        <span>02 · 文化脉络</span>
+        <strong>文化探索</strong>
+        <p>沿着纹样、声调与非遗展品，理解语言背后的生活语境。</p>
+        <b aria-hidden="true">→</b>
+      </RouterLink>
+      <RouterLink to="/quiz" class="scene-entry">
+        <span>03 · 即学即练</span>
+        <strong>趣味答题</strong>
+        <p>用一轮轻量挑战检验刚刚认识的词汇与文化线索。</p>
+        <b aria-hidden="true">→</b>
+      </RouterLink>
+    </section>
+
     <section class="language-exhibit reveal-target" data-nav-tone="light" aria-labelledby="language-title">
       <header>
         <p>先从语言开始</p>
@@ -162,6 +183,16 @@ onUnmounted(() => {
 .museum-hero__content, .museum-hero__caption { position: relative; z-index: 1; }.museum-hero__content { max-width: 700px; }.museum-hero__content p, .section-heading p, .language-exhibit header p, .sound-exhibit p, .participation-exhibit > div > p, .closing-exhibit > p { margin: 0; color: var(--c-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
 .museum-hero h1 { margin: 16px 0; font: 600 clamp(48px, 8vw, 92px) / .96 var(--font-serif); letter-spacing: -.04em; text-wrap: balance; }.museum-hero__content > span { display: block; max-width: 33ch; color: var(--c-white-78); font-size: 17px; line-height: 1.7; }.museum-hero__caption { max-width: 17ch; color: var(--c-white-65); font-size: 13px; line-height: 1.7; }
 .primary-action, .light-action, .outline-action { position: relative; display: inline-flex; align-items: center; gap: 10px; margin-top: 30px; padding: 13px 19px; border: 1px solid transparent; border-radius: 999px; text-decoration: none; cursor: pointer; font: 700 14px var(--font-sans); -webkit-appearance: none; appearance: none; transition: transform var(--duration-fast) var(--ease-out-quart), filter var(--duration-fast) var(--ease-out-quart), box-shadow var(--duration-fast) var(--ease-out-quart), background var(--duration-fast) var(--ease-out-quart); }.primary-action { color: var(--c-white); background: var(--c-accent); }.primary-action:hover, .light-action:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: var(--shadow-md); }.primary-action:active, .light-action:active, .outline-action:active { transform: scale(.98); }.primary-action:focus-visible, .light-action:focus-visible, .outline-action:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
+.scene-entries { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(1080px, calc(100% - 48px)); margin: -28px auto 0; border: 1px solid var(--c-divider); border-radius: 20px; background: color-mix(in srgb, var(--background) 94%, transparent); box-shadow: var(--shadow-lg); overflow: hidden; }
+.scene-entry { position: relative; display: grid; min-height: 210px; padding: 30px; border-right: 1px solid var(--c-divider); color: var(--c-text); text-decoration: none; transition: background var(--duration-fast) var(--ease-out-quart), transform var(--duration-fast) var(--ease-out-quart); }
+.scene-entry:last-child { border-right: 0; }
+.scene-entry > span { color: var(--c-accent-text); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.scene-entry > strong { align-self: end; margin-top: 28px; font: 600 23px var(--font-serif); }
+.scene-entry > p { margin: 10px 28px 0 0; color: var(--c-text-60); font-size: 12px; line-height: 1.75; }
+.scene-entry > b { position: absolute; right: 28px; bottom: 28px; color: var(--c-brand); font-size: 20px; transition: transform var(--duration-fast) var(--ease-out-quart); }
+.scene-entry:hover { z-index: 1; background: var(--c-brand-06); transform: translateY(-4px); }
+.scene-entry:hover > b { transform: translateX(4px); }
+.scene-entry:focus-visible { z-index: 2; outline: 2px solid var(--c-focus); outline-offset: -4px; }
 .language-exhibit, .participation-exhibit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .82fr); gap: clamp(42px, 10vw, 150px); width: min(960px, calc(100% - 48px)); margin: 0 auto; padding: 112px 0; }.language-exhibit h2, .section-heading h2, .participation-exhibit h2, .closing-exhibit h2 { margin: 9px 0 0; font: 600 clamp(32px, 5vw, 58px) / 1.15 var(--font-serif); text-wrap: balance; }.language-exhibit__body { display: grid; align-content: end; gap: 25px; }.language-exhibit__body p { max-width: 42ch; margin: 0; color: var(--c-text-70); line-height: 1.9; }.text-link, .participation-exhibit a { color: var(--c-brand); font-weight: 700; text-decoration: none; }.text-link span { margin-left: 8px; }
 .craft-exhibit { padding: 100px max(24px, calc((100vw - 1180px) / 2)); background: var(--c-bg-silver); }.section-heading { max-width: 700px; }.craft-exhibit__images { display: grid; grid-template-columns: 1.15fr .85fr .85fr; gap: 18px; margin-top: 46px; }.craft-exhibit figure { margin: 0; }.craft-exhibit figure:nth-child(2) { margin-top: 58px; }.craft-exhibit figure:nth-child(3) { margin-top: 118px; }.craft-exhibit img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }.craft-exhibit figure:first-child img { aspect-ratio: 4 / 5; }.craft-exhibit figcaption { margin-top: 12px; color: var(--c-text-70); font-size: 13px; line-height: 1.55; }.outline-action { border-color: var(--c-brand-40); color: var(--c-brand); background: transparent; }.outline-action:hover { background: var(--c-brand-06); }
 .sound-exhibit { position: relative; display: grid; place-items: center start; min-height: 630px; padding: 80px max(24px, calc((100vw - 1180px) / 2)); color: var(--c-white); overflow: hidden; }.sound-exhibit::before { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(13,37,56,.95), rgba(13,37,56,.68)), var(--sound-image) center / cover; content: ''; }.sound-exhibit > div { position: relative; z-index: 1; max-width: 620px; }.sound-exhibit h2 { margin: 12px 0; font: 600 clamp(42px, 7vw, 74px) / 1 var(--font-serif); text-wrap: balance; }.sound-exhibit span { color: var(--c-white-78); font-size: 16px; line-height: 1.7; }.light-action { color: var(--c-brand); background: var(--c-white); }
@@ -185,7 +216,7 @@ onUnmounted(() => {
   from { opacity: .25; transform: translateY(22px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@media (max-width: 760px) { .museum-hero { align-items: end; min-height: min(640px, 82svh); padding-top: 104px; padding-bottom: 48px; }.museum-hero__caption { display: none; }.language-exhibit, .participation-exhibit { grid-template-columns: 1fr; padding: 72px 0; }.craft-exhibit { padding-top: 72px; padding-bottom: 72px; }.craft-exhibit__images { grid-template-columns: 1fr; gap: 30px; }.craft-exhibit figure:nth-child(2), .craft-exhibit figure:nth-child(3) { margin-top: 0; }.craft-exhibit img, .craft-exhibit figure:first-child img { aspect-ratio: 16 / 10; }.sound-exhibit { min-height: 510px; }.museum-hero h1 { font-size: clamp(45px, 13vw, 70px); } }
+@media (max-width: 760px) { .museum-hero { align-items: end; min-height: min(640px, 82svh); padding-top: 104px; padding-bottom: 48px; }.museum-hero__caption { display: none; }.scene-entries { grid-template-columns: 1fr; margin-top: -18px; border-radius: 16px; }.scene-entry { min-height: 168px; border-right: 0; border-bottom: 1px solid var(--c-divider); }.scene-entry:last-child { border-bottom: 0; }.language-exhibit, .participation-exhibit { grid-template-columns: 1fr; padding: 72px 0; }.craft-exhibit { padding-top: 72px; padding-bottom: 72px; }.craft-exhibit__images { grid-template-columns: 1fr; gap: 30px; }.craft-exhibit figure:nth-child(2), .craft-exhibit figure:nth-child(3) { margin-top: 0; }.craft-exhibit img, .craft-exhibit figure:first-child img { aspect-ratio: 16 / 10; }.sound-exhibit { min-height: 510px; }.museum-hero h1 { font-size: clamp(45px, 13vw, 70px); } }
 /* 跳转按钮呼吸动效：伪元素向外柔和发光，强度随呼吸缓慢起伏 */
 .primary-action::after, .light-action::after, .outline-action::after {
   content: '';
