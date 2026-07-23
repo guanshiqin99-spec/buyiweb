@@ -19,6 +19,7 @@ import {
   USER_PROGRESS_UPDATED_EVENT
 } from '@/utils/userProgress'
 import { generateSuggestions } from '@/utils/learningSuggestion'
+import { getDailyTasks } from '@/utils/dailyTasks'
 
 const authStore = useAuthStore()
 const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
@@ -41,6 +42,12 @@ const typeChartData = computed(() => {
     .map(([k, v]) => ({ category: getContentLabel(k), count: v }))
 })
 const suggestions = computed(() => generateSuggestions(learnStats.value))
+const dailyTasks = computed(() => getDailyTasks(learnStats.value))
+
+function taskProgress(task) {
+  if (!task.target) return 0
+  return Math.min(100, Math.round((task.current / task.target) * 100))
+}
 
 // 菜单项统一使用线性 SVG 图标，避免 emoji 跨平台渲染差异与读屏朗读
 const menuItems = [
@@ -232,6 +239,35 @@ onUnmounted(() => {
                 <span>{{ suggestion.text }}</span>
                 <span class="suggestion-card__arrow" aria-hidden="true">→</span>
               </RouterLink>
+            </li>
+          </ul>
+        </section>
+
+        <section class="daily-tasks liquid-glass liquid-glass-content" aria-labelledby="daily-tasks-title">
+          <div class="daily-tasks__header">
+            <div>
+              <p>循序学习</p>
+              <h3 id="daily-tasks-title">学习任务</h3>
+            </div>
+            <span>{{ dailyTasks.filter((task) => task.completed).length }} / {{ dailyTasks.length }} 已完成</span>
+          </div>
+          <ul>
+            <li v-for="task in dailyTasks" :key="task.title" :class="{ 'is-complete': task.completed }">
+              <div class="daily-tasks__row">
+                <span>{{ task.title }}</span>
+                <span>{{ Math.min(task.current, task.target) }} / {{ task.target }}</span>
+              </div>
+              <div
+                class="daily-tasks__track"
+                role="progressbar"
+                :aria-label="task.title"
+                aria-valuemin="0"
+                :aria-valuemax="task.target"
+                :aria-valuenow="Math.min(task.current, task.target)"
+              >
+                <span :style="{ width: `${taskProgress(task)}%` }"></span>
+              </div>
+              <RouterLink :to="task.link">{{ task.completed ? '再学一次' : '去完成' }}</RouterLink>
             </li>
           </ul>
         </section>
@@ -439,6 +475,114 @@ onUnmounted(() => {
 .suggestion-card__arrow {
   color: var(--c-accent-text);
   font-size: 16px;
+}
+
+.daily-tasks {
+  padding: 20px;
+}
+
+.daily-tasks__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.daily-tasks__header p,
+.daily-tasks__header h3 {
+  margin: 0;
+}
+
+.daily-tasks__header p {
+  color: var(--c-accent-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.daily-tasks__header h3 {
+  margin-top: 4px;
+  color: var(--c-text);
+  font: 600 17px var(--font-serif);
+}
+
+.daily-tasks__header > span {
+  color: var(--c-text-60);
+  font-size: 11px;
+}
+
+.daily-tasks ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.daily-tasks li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px 12px;
+  align-items: center;
+}
+
+.daily-tasks__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--c-text-80);
+  font-size: 12px;
+}
+
+.daily-tasks__row span:last-child {
+  color: var(--c-text-50);
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-tasks__track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--c-brand-08);
+}
+
+.daily-tasks__track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c-brand);
+  transition: width 220ms ease;
+}
+
+.daily-tasks a {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 6px 9px;
+  border: 1px solid var(--c-divider);
+  border-radius: 999px;
+  color: var(--c-brand);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.daily-tasks a:hover {
+  border-color: var(--c-brand);
+  background: var(--c-brand-08);
+}
+
+.daily-tasks a:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.daily-tasks li.is-complete .daily-tasks__track > span {
+  background: var(--c-accent);
+}
+
+.daily-tasks li.is-complete a {
+  color: var(--c-text-50);
 }
 
 .achievement-export {
