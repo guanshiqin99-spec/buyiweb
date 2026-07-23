@@ -139,6 +139,11 @@ onUnmounted(() => {
           <p>用十道轻量问题回顾刚刚认识的文化线索，答完即可复盘与再挑战。</p>
           <RouterLink to="/quiz">开始答题 →</RouterLink>
         </article>
+        <article>
+          <span>文化探索</span>
+          <p>从声调、纹样与非遗资料继续认识布依族语言背后的生活语境。</p>
+          <RouterLink to="/culture">进入文化页 →</RouterLink>
+        </article>
       </div>
     </section>
 

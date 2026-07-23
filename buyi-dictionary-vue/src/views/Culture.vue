@@ -223,6 +223,7 @@ onUnmounted(() => {
           <h2>{{ selectedPattern.title }}</h2>
           <p>{{ selectedPattern.detail }}</p>
           <a :href="selectedPattern.sourceUrl" target="_blank" rel="noreferrer">查看出处：{{ selectedPattern.sourceTitle }} <span aria-hidden="true">↗</span></a>
+          <RouterLink to="/songs">听相关民歌 <span aria-hidden="true">→</span></RouterLink>
         </div>
       </article>
     </dialog>

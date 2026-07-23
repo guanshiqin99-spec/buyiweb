@@ -155,6 +155,7 @@ onUnmounted(() => {
         <AudioSpectrum :active="isHeroPlaying" class="hero-spectrum-anim" />
         <p v-if="playerStore.message" class="songs-hero__status hero-status-anim" role="status">{{ playerStore.message }}</p>
         <p v-if="shareNotice" class="songs-hero__status" role="status">{{ shareNotice }}</p>
+        <RouterLink class="songs-hero__next" to="/quiz">去答题检验 <span aria-hidden="true">→</span></RouterLink>
       </div>
     </section>
 
@@ -253,6 +254,9 @@ onUnmounted(() => {
 .songs-hero__copy > p, .song-library__heading p, .song-note p:first-child, .song-provenance p { margin: 0; color: var(--page-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
 .songs-hero__copy h1 { max-width: 650px; margin: 10px 0 14px; font: 600 clamp(44px, 7vw, 82px) / .98 var(--font-serif); letter-spacing: -.03em; text-wrap: balance; }
 .songs-hero__copy > span { color: var(--c-white-78); font-size: 16px; }.songs-hero__status { max-width: 42ch; margin: 14px 0 0; color: var(--c-white-78); font-size: 13px; line-height: 1.6; }
+.songs-hero__next { display: inline-flex; gap: 8px; margin-top: 22px; color: var(--page-accent); font-size: 14px; font-weight: 700; text-decoration: none; }
+.songs-hero__next:hover { color: var(--c-white); }
+.songs-hero__next:focus-visible { outline: 2px solid var(--page-accent); outline-offset: 3px; }
 
 .song-library {
   position: relative;

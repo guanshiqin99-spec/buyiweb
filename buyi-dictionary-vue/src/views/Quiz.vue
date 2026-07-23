@@ -289,6 +289,7 @@ onUnmounted(() => {
       <div class="quiz-result__actions">
         <button type="button" @click="startQuiz">再来一局</button>
         <RouterLink to="/culture">回到文化页</RouterLink>
+        <RouterLink to="/record">查看学习记录 →</RouterLink>
       </div>
     </section>
   </main>
