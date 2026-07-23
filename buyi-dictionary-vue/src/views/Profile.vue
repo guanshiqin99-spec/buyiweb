@@ -7,7 +7,7 @@ import BarChart from '@/components/specific/BarChart.vue'
 import RadarChart from '@/components/specific/RadarChart.vue'
 import ShareCard from '@/components/specific/ShareCard.vue'
 import { useAuthStore } from '@/stores/auth'
-import { meApi, recordsApi, badgesApi } from '@/utils/api'
+import { meApi, recordsApi, badgesApi, quizApi } from '@/utils/api'
 import IconHeartFilled from '@/components/icons/IconHeartFilled.vue'
 import IconBook from '@/components/icons/IconBook.vue'
 import IconSettings from '@/components/icons/IconSettings.vue'
@@ -25,6 +25,7 @@ const authStore = useAuthStore()
 const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
 // 学习统计仪表盘：今日/总数/连续天数/各类型计数
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
+const quizAttemptCount = ref(0)
 const badges = ref([])
 const shareCardRef = ref(null)
 const isExportingAchievement = ref(false)
@@ -42,7 +43,13 @@ const typeChartData = computed(() => {
     .map(([k, v]) => ({ category: getContentLabel(k), count: v }))
 })
 const suggestions = computed(() => generateSuggestions(learnStats.value))
-const dailyTasks = computed(() => getDailyTasks(learnStats.value))
+const dailyTasks = computed(() => getDailyTasks({
+  ...learnStats.value,
+  typeCounts: {
+    ...(learnStats.value.typeCounts || {}),
+    quiz: quizAttemptCount.value
+  }
+}))
 
 function taskProgress(task) {
   if (!task.target) return 0
@@ -116,8 +123,9 @@ async function refreshProfileProgress() {
   refreshPromise = Promise.allSettled([
     meApi.get(),
     recordsApi.stats(),
-    badgesApi.list()
-  ]).then(([profileResult, statsResult, badgesResult]) => {
+    badgesApi.list(),
+    quizApi.list({ page: 1, pageSize: 1 })
+  ]).then(([profileResult, statsResult, badgesResult, quizResult]) => {
     if (profileResult.status === 'fulfilled') {
       userStats.value = profileResult.value?.stats || userStats.value
     } else {
@@ -138,6 +146,11 @@ async function refreshProfileProgress() {
       badges.value = badgesResult.value?.items || badgesResult.value?.list || badgesResult.value || []
     } else {
       console.error('获取徽章失败', badgesResult.reason)
+    }
+
+    if (quizResult.status === 'fulfilled') {
+      const total = Number(quizResult.value?.total ?? quizResult.value?.items?.length ?? 0)
+      quizAttemptCount.value = Number.isFinite(total) && total > 0 ? Math.floor(total) : 0
     }
   }).finally(() => {
     refreshPromise = null
