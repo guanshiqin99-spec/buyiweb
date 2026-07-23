@@ -7,8 +7,8 @@ echo  Buyi Dictionary - Backend Launcher
 echo ========================================
 echo.
 
-set "PROJECT_DIR=D:\BuyiDictionaryWeb\BuyiDictionaryApp-main\BuyiDictionaryApp-main\backend"
-set "SOURCE_DB=D:\BuyiDictionaryWeb\buyi_dictionary.db"
+set "PROJECT_DIR=%~dp0BuyiDictionaryApp-main\BuyiDictionaryApp-main\backend"
+set "SOURCE_DB=%~dp0buyi_dictionary.db"
 
 echo Project directory: %PROJECT_DIR%
 echo.

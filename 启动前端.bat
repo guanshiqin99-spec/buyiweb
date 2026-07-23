@@ -7,7 +7,7 @@ echo  Buyi Dictionary - Frontend Launcher
 echo ========================================
 echo.
 
-set "PROJECT_DIR=D:\BuyiDictionaryWeb\buyi-dictionary-vue"
+set "PROJECT_DIR=%~dp0buyi-dictionary-vue"
 
 echo Project directory: %PROJECT_DIR%
 echo.
