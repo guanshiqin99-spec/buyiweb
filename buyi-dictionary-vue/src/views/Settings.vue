@@ -114,9 +114,9 @@ watch(() => settings.value.theme, (mode) => {
           </div>
         </section>
 
-        <!-- 数据来源与离线能力说明 -->
+        <!-- 数据来源、核验边界、离线能力与隐私说明 -->
         <section class="settings-group data-notes liquid-glass-quiet" aria-labelledby="data-notes-title">
-          <h2 id="data-notes-title" class="group-title">数据说明</h2>
+          <h2 id="data-notes-title" class="group-title">数据与隐私</h2>
           <div class="data-note">
             <SourceBadge
               source="中国非物质文化遗产网"
@@ -129,9 +129,24 @@ watch(() => settings.value.theme, (mode) => {
             <SourceBadge source="布依词典数据库" />
             <p>词典词条、学习记录及馆内数字内容为项目整理数据，持续接受校订。</p>
           </div>
-          <p class="offline-note">
-            离线时可使用随前端打包的题库和本地回退资源；此前成功查询的词典结果可能从本地缓存展示。实时检索、账户同步与 AI 服务仍需连接本地或远程后端。
-          </p>
+          <div class="data-policy-grid">
+            <article>
+              <strong>核验状态</strong>
+              <p>“已核验”只表示该条内容已对照所标注来源，不代表全部项目数据均完成同等核验；未标记内容仍在持续校订。</p>
+            </article>
+            <article>
+              <strong>离线范围</strong>
+              <p>离线时可使用随前端打包的题库、本地音频回退和此前成功缓存的 GET 数据；实时检索、账户同步与 AI 服务仍需连接后端。</p>
+            </article>
+            <article>
+              <strong>缓存策略</strong>
+              <p>成功访问的 API 数据采用网络优先缓存，登录态按令牌摘要隔离；民歌在首次成功播放后缓存。清除浏览器站点数据即可移除这些副本。</p>
+            </article>
+            <article>
+              <strong>账号隐私</strong>
+              <p>登录状态与界面偏好保存在当前浏览器，学习记录通过账号接口同步。使用公共设备后请退出登录并清除站点数据。</p>
+            </article>
+          </div>
         </section>
 
         <!-- 账户操作 -->
@@ -233,17 +248,36 @@ watch(() => settings.value.theme, (mode) => {
   border-bottom: 1px solid var(--c-divider);
 }
 
-.data-note p,
-.offline-note {
+.data-note p {
   margin: 0;
   color: var(--c-text-60);
   font-size: 13px;
   line-height: 1.7;
 }
 
-.offline-note {
-  padding: 12px 14px;
-  border-left: 3px solid var(--c-brand);
+.data-policy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.data-policy-grid article {
+  padding: 14px;
+  border: 1px solid var(--c-divider);
+  border-radius: 12px;
+  background: var(--c-brand-06);
+}
+
+.data-policy-grid strong {
+  color: var(--c-text);
+  font-size: 12px;
+}
+
+.data-policy-grid p {
+  margin: 7px 0 0;
+  color: var(--c-text-60);
+  font-size: 12px;
+  line-height: 1.7;
 }
 
 .setting-select {
@@ -391,5 +425,11 @@ watch(() => settings.value.theme, (mode) => {
 .save-btn:focus-visible {
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .data-policy-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
