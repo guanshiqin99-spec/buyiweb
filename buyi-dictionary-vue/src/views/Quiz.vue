@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import SourceBadge from '@/components/common/SourceBadge.vue'
 import { createQuizRound, scoreAnswers } from '@/data/quiz'
 import { quizApi } from '@/utils/api'
+import { generateStream } from '@/utils/agentStream'
 import { useAuthStore } from '@/stores/auth'
 import imgBg from '@/assets/images/bouyei-nature.jpg'
 
@@ -18,6 +19,10 @@ const bgParallax = ref(0)
 const isSavingResult = ref(false)
 const resultSaveMessage = ref('')
 const lastAttempt = ref(null)
+const isGeneratingAIQuiz = ref(false)
+const aiQuizMessage = ref('')
+let aiQuizController = null
+let aiQuizMessageTimer = null
 let scrollHandler = null
 
 const currentQuestion = computed(() => round.value[currentIndex.value])
@@ -38,6 +43,91 @@ function startQuiz() {
   isAnswered.value = false
   phase.value = 'question'
   resultSaveMessage.value = ''
+}
+
+function collectAIQuizContent() {
+  return new Promise((resolve, reject) => {
+    let content = ''
+    let settled = false
+    const finish = (callback, value) => {
+      if (settled) return
+      settled = true
+      callback(value)
+    }
+    aiQuizController = generateStream({
+      type: 'quiz',
+      onDelta: (chunk) => {
+        content += chunk
+      },
+      onDone: () => finish(resolve, content),
+      onError: (error) => finish(reject, error)
+    })
+  })
+}
+
+function parseAIQuizRound(content) {
+  const withoutFence = String(content || '')
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+  const start = withoutFence.indexOf('[')
+  const end = withoutFence.lastIndexOf(']')
+  if (start < 0 || end <= start) throw new Error('AI 题目 JSON 无效')
+  const parsed = JSON.parse(withoutFence.slice(start, end + 1))
+  if (!Array.isArray(parsed) || parsed.length !== 5) throw new Error('AI 题目数量必须为 5')
+
+  return parsed.map((question, index) => {
+    const prompt = String(question?.prompt || '').trim()
+    const answer = String(question?.answer || '').trim()
+    const explanation = String(question?.explanation || '').trim()
+    const source = String(question?.source || '').trim()
+    const options = Array.isArray(question?.options)
+      ? question.options.map((option) => String(option || '').trim())
+      : []
+    const isValid = prompt
+      && answer
+      && explanation
+      && source
+      && options.length === 4
+      && options.every(Boolean)
+      && new Set(options).size === 4
+      && options.includes(answer)
+    if (!isValid) throw new Error(`AI 第 ${index + 1} 题字段不完整`)
+    return {
+      id: `ai-${Date.now()}-${index + 1}`,
+      prompt,
+      answer,
+      options,
+      explanation,
+      source
+    }
+  })
+}
+
+async function startAIQuiz() {
+  if (isGeneratingAIQuiz.value) return
+  isGeneratingAIQuiz.value = true
+  if (aiQuizMessageTimer) window.clearTimeout(aiQuizMessageTimer)
+  aiQuizMessage.value = ''
+  try {
+    if (!authStore.isLoggedIn) throw new Error('AI 挑战需要登录')
+    const content = await collectAIQuizContent()
+    round.value = parseAIQuizRound(content)
+    currentIndex.value = 0
+    answers.value = []
+    selectedOption.value = ''
+    isAnswered.value = false
+    phase.value = 'question'
+    resultSaveMessage.value = ''
+  } catch {
+    startQuiz()
+    aiQuizMessage.value = 'AI 挑战暂不可用，已切换到经典题库。'
+    aiQuizMessageTimer = window.setTimeout(() => {
+      aiQuizMessage.value = ''
+    }, 4200)
+  } finally {
+    isGeneratingAIQuiz.value = false
+  }
 }
 
 async function loadLastAttempt() {
@@ -120,12 +210,18 @@ onMounted(() => {
 onUnmounted(() => {
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
 })
+
+onUnmounted(() => {
+  aiQuizController?.abort()
+  if (aiQuizMessageTimer) window.clearTimeout(aiQuizMessageTimer)
+})
 </script>
 
 <template>
   <main id="main" class="quiz-page" data-motion-surface="tool" data-tool-page="">
     <div class="quiz-page__bg" :style="{ transform: `translate3d(0, ${bgParallax}px, 0)` }"><img :src="imgBg" alt="" loading="eager" fetchpriority="high" /></div>
     <div class="quiz-page__scrim" aria-hidden="true"></div>
+    <p v-if="aiQuizMessage" class="quiz-ai-message" role="status">{{ aiQuizMessage }}</p>
 
     <section v-if="phase === 'intro'" class="quiz-intro">
       <p>趣味闯关</p>
@@ -133,6 +229,7 @@ onUnmounted(() => {
       <span>每局随机抽取 10 道四选一问题。答对得 10 分，连续答对会获得鼓励，但不会改变分数。</span>
       <small v-if="lastAttempt" class="quiz-intro__last">最近成绩：{{ lastAttempt.score }} 分（答对 {{ lastAttempt.correctCount }} / {{ lastAttempt.totalQuestions }} 题）</small>
       <button v-pointer-glow="{ tone: 'accent', size: 'lg' }" type="button" @click="startQuiz">开始答题 <b aria-hidden="true">→</b></button>
+      <button type="button" :disabled="isGeneratingAIQuiz" @click="startAIQuiz">{{ isGeneratingAIQuiz ? '生成中…' : 'AI 五题挑战' }}</button>
       <RouterLink to="/culture">先去文化页看看</RouterLink>
     </section>
 
@@ -210,11 +307,15 @@ onUnmounted(() => {
 @keyframes quizBgReveal { to { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .quiz-page__bg, .quiz-page__bg img { animation: none !important; transform: none !important; } }
 .quiz-intro, .quiz-question, .quiz-result { width: min(760px, 100%); }.quiz-intro > p, .quiz-question__type, .quiz-result > p, .quiz-feedback > p, .quiz-review article p { margin: 0; color: var(--c-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }.quiz-intro h1, .quiz-question h1, .quiz-result h1 { margin: 14px 0; font: 600 clamp(38px, 6vw, 66px) / 1.08 var(--font-serif); letter-spacing: -.03em; text-wrap: balance; }.quiz-intro h1, .quiz-question h1 { color: var(--c-white); text-shadow: 0 1px 2px var(--c-shadow-40), 0 2px 18px rgba(7, 23, 36, .78); }.quiz-intro h1 { margin: 10px 0; font-size: clamp(26px, 4vw, 40px); }.quiz-intro > span, .quiz-result > span { display: block; max-width: 49ch; color: var(--c-text-70); font-size: 16px; line-height: 1.85; }.quiz-intro > span { color: var(--c-white-78); text-shadow: 0 1px 2px var(--c-shadow-40), 0 1px 12px rgba(7, 23, 36, .84); }.quiz-intro button, .quiz-feedback button, .quiz-result__actions button { margin-top: 28px; padding: 14px 22px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 700 14px var(--font-sans); }.quiz-intro button:hover, .quiz-feedback button:hover, .quiz-result__actions button:hover { background: var(--c-brand-dark); }.quiz-intro button:focus-visible, .quiz-feedback button:focus-visible, .quiz-result__actions button:focus-visible, .quiz-options button:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }.quiz-intro a { display: inline-block; margin: 22px 0 0 20px; color: var(--c-brand); font-size: 14px; font-weight: 700; text-decoration: none; }
+.quiz-intro button + button { margin-left: 10px; color: var(--c-brand); background: rgba(255, 255, 255, .9); }
+.quiz-intro button + button:hover { color: var(--c-white); background: var(--c-brand-dark); }
+.quiz-intro button:disabled { cursor: wait; opacity: .62; }
+.quiz-ai-message { position: fixed; top: calc(72px + env(safe-area-inset-top, 0px)); z-index: 3; max-width: calc(100% - 32px); margin: 0; padding: 10px 16px; border-radius: 999px; color: var(--c-text); background: rgba(255, 255, 255, .92); box-shadow: 0 8px 28px var(--c-shadow-20); font-size: 13px; }
 .quiz-question header { display: flex; justify-content: space-between; color: var(--c-text-60); font: 13px var(--font-mono); }.quiz-question header strong { color: var(--c-brand); }.quiz-progress { height: 3px; margin: 18px 0 56px; overflow: hidden; background: var(--c-brand-08); }.quiz-progress i { display: block; height: 100%; background: var(--c-accent); transition: width 260ms ease; }.quiz-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 34px; }.quiz-options button { display: flex; align-items: center; justify-content: space-between; min-height: 82px; padding: 18px; border: 1px solid rgba(27, 58, 92, 0.12); border-radius: var(--radius-md); color: var(--c-text); background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); box-shadow: 0 2px 8px rgba(7, 23, 36, 0.08), 0 1px 2px rgba(7, 23, 36, 0.06); cursor: pointer; text-align: left; transition: border-color 160ms ease, background 160ms ease, transform 160ms ease, box-shadow 160ms ease; }.quiz-options button:hover:not(:disabled) { border-color: var(--c-brand); background: rgba(255, 255, 255, 0.96); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(7, 23, 36, 0.12), 0 2px 4px rgba(7, 23, 36, 0.08); }.quiz-options button:disabled { cursor: default; }.quiz-options button.is-selected { border-color: var(--c-brand); background: rgba(235, 242, 247, 0.95); }.quiz-options button.is-correct { border-color: var(--c-success); color: #0f5c26; background: rgba(220, 244, 228, 0.95); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); box-shadow: 0 2px 10px rgba(28, 119, 54, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6); }.quiz-options button.is-wrong { border-color: var(--c-danger); color: #8a2a2a; background: rgba(248, 226, 226, 0.95); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); box-shadow: 0 2px 10px rgba(181, 64, 64, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.6); }.quiz-options b { font-size: 20px; font-weight: 700; }.quiz-feedback { margin-top: 24px; padding: 24px; }.quiz-feedback--right { border-color: color-mix(in srgb, var(--c-success) 38%, transparent); }.quiz-feedback h2 { margin: 8px 0; font: 600 24px var(--font-serif); }.quiz-feedback > span { display: block; color: var(--c-text-70); line-height: 1.75; }.quiz-feedback__source { margin-top: 13px; }
 .quiz-result { text-align: center; }.quiz-result h1 { margin-bottom: 2px; color: var(--c-brand); font-family: var(--font-mono); font-size: clamp(68px, 12vw, 130px); }.quiz-result h1 small { color: var(--c-accent); font: 700 26px var(--font-sans); }.quiz-result > span { margin: 0 auto; }.quiz-review { display: grid; gap: 10px; margin: 38px 0; text-align: left; }.quiz-review article { padding: 20px; }.quiz-review h2 { margin: 8px 0; font: 600 18px var(--font-serif); }.quiz-review article > span { color: var(--c-text-70); font-size: 13px; }.quiz-review__perfect { margin: 0; padding: 22px; color: var(--c-brand); background: var(--c-brand-06); line-height: 1.7; }.quiz-result__actions { display: flex; justify-content: center; gap: 16px; }.quiz-result__actions button { margin-top: 0; }.quiz-result__actions a { padding: 14px 0; color: var(--c-brand); font-size: 14px; font-weight: 700; text-decoration: none; }
 .quiz-result__save { min-height: 22px; margin: 12px auto 0; color: var(--c-text-70); font-size: 13px; }
 .quiz-intro__last { display: block; margin-top: 14px; color: var(--c-white-78); font-size: 13px; }
-@media (max-width: 580px) { .quiz-page { padding-right: 20px; padding-left: 20px; }.quiz-options { grid-template-columns: 1fr; }.quiz-intro a { display: block; margin-left: 0; }.quiz-result__actions { flex-direction: column; align-items: center; } }
+@media (max-width: 580px) { .quiz-page { padding-right: 20px; padding-left: 20px; }.quiz-options { grid-template-columns: 1fr; }.quiz-intro button { width: 100%; }.quiz-intro button + button { margin-left: 0; }.quiz-intro a { display: block; margin-left: 0; }.quiz-result__actions { flex-direction: column; align-items: center; } }
 @media (prefers-reduced-motion: reduce) { .quiz-progress i, .quiz-options button { transition: none; }.quiz-options button:hover:not(:disabled) { transform: none; } }
 
 [data-theme="dark"] .quiz-options button {

@@ -183,6 +183,104 @@ export class MiniappAgentService {
     }
   }
 
+  /**
+   * 生成布依语例句、五题文化挑战或关联词推荐。
+   * 独立使用生成提示词，避免改动现有问答的 system prompt 与缓存逻辑。
+   */
+  async streamGenerate(
+    type: 'sentence' | 'quiz' | 'related',
+    word: string,
+    onDelta: (chunk: string) => void,
+    onDone: () => void,
+    onError: (err: Error) => void,
+  ): Promise<void> {
+    const normalizedWord = (word || '').trim().slice(0, 100);
+    const prompts: Record<'sentence' | 'quiz' | 'related', string> = {
+      sentence: `请用布依语"${normalizedWord}"造一个日常例句，给出中文翻译和简要语法说明，150字以内。`,
+      quiz: '基于布依族文化一次生成5道四选一选择题，严格返回JSON数组：[{"prompt":"题目","answer":"正确答案","options":["A","B","C","D"],"explanation":"解析","source":"AI生成"}]。数组必须恰好包含5项，每题必须有4个不重复选项，answer必须是options中的一项。不要返回其他内容。',
+      related: `基于布依语"${normalizedWord}"，推荐3个相关词汇，严格返回JSON：{"words":["词1","词2","词3"]}。不要返回其他内容。`,
+    };
+    const prompt = prompts[type];
+
+    // 与问答端点共用同一关键词白名单，生成任务也必须限定在项目主题内。
+    if (!prompt || !this.isProjectRelated(prompt)) {
+      onError(new Error('生成任务不在布依文化范围内'));
+      return;
+    }
+
+    const apiKey = this.configService.get('ai.apiKey', { infer: true });
+    const baseURL = this.configService.get('ai.baseURL', { infer: true });
+    const model = this.configService.get('ai.model', { infer: true });
+    if (!apiKey) {
+      onError(new ServiceUnavailableException('智能体服务未配置 API Key'));
+      return;
+    }
+
+    const generationSystemPrompt = [
+      '你是「布依文化导览员」的内容生成模块，只生成与布依语和布依族文化有关的学习内容。',
+      '不得编造无法确认的权威来源；题目与推荐中的 source 固定写为“AI生成”。',
+      '用户要求 JSON 时必须只输出合法 JSON，不要使用 Markdown 代码围栏或补充说明。',
+      '使用简体中文，布依语内容应简洁并明确标注其为学习辅助内容。',
+    ].join('\n');
+
+    try {
+      const resp = await fetch(`${baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: generationSystemPrompt },
+            { role: 'user', content: prompt },
+          ],
+          stream: true,
+          temperature: type === 'quiz' ? 0.5 : 0.6,
+          max_tokens: type === 'quiz' ? 2048 : 768,
+        }),
+      });
+
+      if (!resp.ok || !resp.body) {
+        const errText = await resp.text().catch(() => '');
+        throw new Error(`DeepSeek 接口错误 ${resp.status}: ${errText.slice(0, 200)}`);
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith('data:')) continue;
+          const data = trimmed.slice(5).trim();
+          if (data === '[DONE]') {
+            onDone();
+            return;
+          }
+          try {
+            const json = JSON.parse(data);
+            const delta: unknown = json?.choices?.[0]?.delta?.content;
+            if (typeof delta === 'string' && delta) onDelta(delta);
+          } catch {
+            // 忽略无法解析的上游分片，继续读取后续 SSE。
+          }
+        }
+      }
+      onDone();
+    } catch (err) {
+      this.logger.error(`DeepSeek 生成调用失败: ${err instanceof Error ? err.message : String(err)}`);
+      onError(err instanceof Error ? err : new Error(String(err)));
+    }
+  }
+
   /** 回写缓存：upsert，避免并发重复写入 */
   private async saveCache(question: string, answer: string): Promise<void> {
     const trimmedAnswer = (answer || '').trim();

@@ -63,3 +63,66 @@ export function askStream({ question, history, onDelta, onDone, onError }) {
 
   return controller
 }
+
+// AI 内容生成：沿用问答端点的 SSE 分片协议，支持造句、五题挑战和关联词推荐。
+export function generateStream({ type, word, onDelta, onDone, onError }) {
+  const controller = new AbortController()
+  const token = localStorage.getItem('token')
+
+  fetch(`${apiBaseURL}/miniapp/agent/generate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
+    body: JSON.stringify({ type, word }),
+    signal: controller.signal
+  })
+    .then(async (resp) => {
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => '')
+        throw new Error(`智能体生成失败 (${resp.status}): ${text.slice(0, 120)}`)
+      }
+      if (!resp.body) {
+        onDone?.()
+        return
+      }
+      const reader = resp.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let buffer = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed || !trimmed.startsWith('data:')) continue
+          const data = trimmed.slice(5).trim()
+          if (!data) continue
+          try {
+            const payload = JSON.parse(data)
+            if (payload.type === 'delta' && payload.content) {
+              onDelta?.(payload.content)
+            } else if (payload.type === 'done') {
+              onDone?.()
+              return
+            } else if (payload.type === 'error') {
+              onError?.(new Error(payload.message || '智能体生成错误'))
+              return
+            }
+          } catch {
+            /* 忽略无法解析的分片 */
+          }
+        }
+      }
+      onDone?.()
+    })
+    .catch((err) => {
+      if (err?.name === 'AbortError') return
+      onError?.(err instanceof Error ? err : new Error(String(err)))
+    })
+
+  return controller
+}

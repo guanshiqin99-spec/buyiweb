@@ -67,7 +67,7 @@ async function bootstrap() {
   );
   
   app.use(
-    ['/api/miniapp/agent/ask'],
+    ['/api/miniapp/agent/ask', '/api/miniapp/agent/generate'],
     createRateLimitMiddleware({
       limit: 10,
       windowMs: 60 * 1000,
