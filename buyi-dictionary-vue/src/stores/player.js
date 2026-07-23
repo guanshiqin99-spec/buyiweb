@@ -25,6 +25,7 @@ export const usePlayerStore = defineStore('player', () => {
   let mediaSource = null
   let hasTriedFallback = false
   let shouldResumeAfterLoad = false
+  const audioCachePromises = new Map()
 
   const progress = computed(() => duration.value ? Math.min(100, (currentTime.value / duration.value) * 100) : 0)
   const formattedCurrentTime = computed(() => formatTime(currentTime.value))
@@ -51,6 +52,7 @@ export const usePlayerStore = defineStore('player', () => {
     isPlaying.value = true
     status.value = 'playing'
     message.value = sourceMode.value === 'fallback' ? '正在播放本地演示音源' : ''
+    void cacheAudio(audioElement.value?.currentSrc || audioElement.value?.src)
   }
 
   function onPause() {
@@ -196,6 +198,46 @@ export const usePlayerStore = defineStore('player', () => {
   function expand() { isExpanded.value = true }
   function collapse() { isExpanded.value = false }
 
+  async function cacheAudio(url) {
+    if (!url || typeof window === 'undefined' || typeof caches === 'undefined') return false
+
+    let resolvedUrl
+    try {
+      resolvedUrl = new URL(url, window.location.href)
+    } catch {
+      return false
+    }
+    if (!['http:', 'https:'].includes(resolvedUrl.protocol)) return false
+
+    const cacheKey = resolvedUrl.toString()
+    if (audioCachePromises.has(cacheKey)) return audioCachePromises.get(cacheKey)
+
+    const cachePromise = (async () => {
+      try {
+        const request = new Request(cacheKey, {
+          mode: resolvedUrl.origin === window.location.origin ? 'same-origin' : 'cors',
+          credentials: resolvedUrl.origin === window.location.origin ? 'same-origin' : 'omit'
+        })
+        const cache = await caches.open('buyi-audio-v1')
+        if (await cache.match(request)) return true
+
+        const response = await fetch(request)
+        if (!response.ok) return false
+        await cache.put(request, response)
+        return true
+      } catch {
+        return false
+      }
+    })()
+
+    audioCachePromises.set(cacheKey, cachePromise)
+    try {
+      return await cachePromise
+    } finally {
+      audioCachePromises.delete(cacheKey)
+    }
+  }
+
   async function resumeAudioContext() {
     if (audioContext?.state === 'suspended') await audioContext.resume()
   }
@@ -256,6 +298,6 @@ export const usePlayerStore = defineStore('player', () => {
     currentSong, isPlaying, currentTime, duration, isExpanded, status, message, sourceMode, progress,
     formattedCurrentTime, formattedDuration, isLoading,
     attachAudioElement, detachAudioElement, playSong, play, pause, togglePlay, seekTo, beginSeek, endSeek,
-    toggleExpand, expand, collapse, getAnalyser, stop, destroy
+    toggleExpand, expand, collapse, cacheAudio, getAnalyser, stop, destroy
   }
 })
