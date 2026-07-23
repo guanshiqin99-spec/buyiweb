@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import imgBg from '@/assets/images/generated/profile-learning-journal.png'
 import BarChart from '@/components/specific/BarChart.vue'
+import ShareCard from '@/components/specific/ShareCard.vue'
 import { useAuthStore } from '@/stores/auth'
 import { meApi, recordsApi, badgesApi } from '@/utils/api'
 import IconHeartFilled from '@/components/icons/IconHeartFilled.vue'
@@ -22,6 +23,9 @@ const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
 // 学习统计仪表盘：今日/总数/连续天数/各类型计数
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
 const badges = ref([])
+const shareCardRef = ref(null)
+const isExportingAchievement = ref(false)
+const exportMessage = ref('')
 let refreshPromise = null
 let refreshTimer = null
 let refreshQueued = false
@@ -51,6 +55,29 @@ const handleLogout = () => {
 const isBadgeUnlocked = (badge) => badge?.isUnlocked || badge?.unlocked || badge?.locked === false
 // 已解锁徽章数
 const unlockedCount = computed(() => badges.value.filter(isBadgeUnlocked).length)
+
+async function exportAchievement() {
+  if (isExportingAchievement.value) return
+  isExportingAchievement.value = true
+  exportMessage.value = ''
+  try {
+    const result = await shareCardRef.value?.share({
+      title: '我的布依语学习报告',
+      stats: [
+        { label: '累计学习', value: learnStats.value.totalCount ?? 0, unit: '条' },
+        { label: '连续打卡', value: learnStats.value.streakDays ?? 0, unit: '天' },
+        { label: '解锁徽章', value: unlockedCount.value, unit: '枚' }
+      ],
+      filename: '我的布依语学习报告.png'
+    })
+    if (result?.action === 'shared') exportMessage.value = '已打开系统分享。'
+    if (result?.action === 'downloaded') exportMessage.value = '学习报告已下载。'
+  } catch {
+    exportMessage.value = '学习报告生成失败，请稍后重试。'
+  } finally {
+    isExportingAchievement.value = false
+  }
+}
 
 // 徽章不使用奖杯、星级等游戏化符号；根据服务端标识、名称和描述映射为布依族纹样。
 // 新增的后端徽章若尚未配置关键词，会回退到蜡染旋花，保持视觉一致性。
@@ -190,6 +217,17 @@ onUnmounted(() => {
           </div>
         </div>
 
+        <div class="achievement-export liquid-glass liquid-glass-content">
+          <div>
+            <strong>分享学习成就</strong>
+            <span>生成包含学习次数、连续天数和徽章数的图片</span>
+          </div>
+          <button type="button" :disabled="isExportingAchievement" @click="exportAchievement">
+            {{ isExportingAchievement ? '生成中…' : '导出成就卡片' }}
+          </button>
+          <p v-if="exportMessage" role="status">{{ exportMessage }}</p>
+        </div>
+
         <!-- 徽章墙 -->
         <div v-if="badges.length" class="badge-wall">
           <div class="badge-wall-header">
@@ -252,6 +290,7 @@ onUnmounted(() => {
         <p class="app-version">v1.0.0</p>
         <p class="app-copyright">© 2026 少数民族语言数字化保护</p>
       </section>
+      <ShareCard ref="shareCardRef" />
     </div>
   </ToolPageShell>
 </template>
@@ -311,6 +350,61 @@ onUnmounted(() => {
   font-size: 11px;
   color: var(--c-text-50);
   margin-top: 4px;
+}
+
+.achievement-export {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  align-items: center;
+  padding: 18px 20px;
+}
+
+.achievement-export > div {
+  display: grid;
+  gap: 4px;
+}
+
+.achievement-export strong {
+  color: var(--c-text);
+  font-size: 14px;
+}
+
+.achievement-export span,
+.achievement-export p {
+  color: var(--c-text-60);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.achievement-export button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--c-brand-foreground);
+  background: var(--c-brand);
+  cursor: pointer;
+  font: 600 13px var(--font-sans);
+}
+
+.achievement-export button:hover {
+  background: var(--c-brand-dark);
+}
+
+.achievement-export button:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+.achievement-export button:disabled {
+  cursor: wait;
+  opacity: .58;
+}
+
+.achievement-export p {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
 }
 
 /* 徽章墙 */
@@ -398,6 +492,16 @@ onUnmounted(() => {
 
 .chart-card :deep(.chart-title) {
   margin-top: 0;
+}
+
+@media (max-width: 420px) {
+  .achievement-export {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-export button {
+    width: 100%;
+  }
 }
 
 /* 头像区域 */

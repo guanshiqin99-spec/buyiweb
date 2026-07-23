@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SearchBar from '@/components/common/SearchBar.vue'
 import SourceBadge from '@/components/common/SourceBadge.vue'
+import ShareCard from '@/components/specific/ShareCard.vue'
 import { healthApi, searchApi, recordsApi } from '@/utils/api'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useAuthStore } from '@/stores/auth'
@@ -29,6 +30,8 @@ const actionMsg = ref('')
 const cacheNotice = ref('')
 const bgParallax = ref(0)
 const playingId = ref(null)
+const shareCardRef = ref(null)
+const isSharing = ref(false)
 let debounceTimer = null
 let requestSequence = 0
 let scrollHandler = null
@@ -266,6 +269,24 @@ function handleAskAgent(item) {
   agentStore.ask(`请解释“${item.bouyei || item.chinese || ''}”这个词`, '/dictionary')
 }
 
+async function handleShare(item) {
+  if (!item || isSharing.value) return
+  isSharing.value = true
+  try {
+    const result = await shareCardRef.value?.share({
+      word: item.bouyei,
+      translation: item.chinese,
+      filename: `${item.bouyei || item.chinese || '布依语'}-分享卡片.png`
+    })
+    if (result?.action === 'shared') notify('已打开系统分享。')
+    if (result?.action === 'downloaded') notify('分享卡片已下载。')
+  } catch {
+    notify('分享卡片生成失败，请稍后重试。')
+  } finally {
+    isSharing.value = false
+  }
+}
+
 function notify(message) {
   actionMsg.value = message
   window.setTimeout(() => { actionMsg.value = '' }, 2600)
@@ -387,6 +408,7 @@ onUnmounted(() => {
               @click="handlePlay(selectedItem)"
             ><IconVolume :size="16" />{{ playingId === selectedItem.id ? '停止播放' : '播放发音' }}</button>
             <button v-pointer-glow="{ tone: 'accent', size: 'sm' }" type="button" :aria-pressed="isFavoriteSelected" :aria-label="isFavoriteSelected ? '取消收藏' : '收藏词条'" @click="handleFavorite(selectedItem)"><IconHeart :size="16" :filled="isFavoriteSelected" />{{ isFavoriteSelected ? '已收藏' : '收藏词条' }}</button>
+            <button type="button" :disabled="isSharing" @click="handleShare(selectedItem)">{{ isSharing ? '生成中…' : '分享卡片' }}</button>
             <button type="button" @click="handleLearn(selectedItem)">加入学习</button>
             <button type="button" @click="handleAskAgent(selectedItem)">请求解释</button>
           </div>
@@ -417,6 +439,7 @@ onUnmounted(() => {
         <p v-if="actionMsg" class="action-message" aria-live="polite">{{ actionMsg }}</p>
       </aside>
     </section>
+    <ShareCard ref="shareCardRef" />
   </main>
 </template>
 
@@ -432,6 +455,7 @@ onUnmounted(() => {
 .dictionary-results { display: grid; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr); gap: 32px; align-items: start; margin-top: 28px; }.result-list { min-height: 420px; padding: 4px 8px 12px; }.result-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; width: 100%; padding: 18px 14px; border: 0; border-bottom: 1px solid var(--c-divider); color: inherit; background: transparent; cursor: pointer; text-align: left; }.result-row:hover { background: var(--c-brand-06); }.result-row.selected { background: var(--c-brand-08); box-shadow: inset 3px 0 0 var(--c-brand); }.result-row__type { grid-row: span 2; align-self: start; padding: 4px 7px; border-radius: 999px; color: var(--c-brand); background: var(--c-brand-08); font-size: .6875rem; font-weight: 700; }.result-row strong { overflow: hidden; color: var(--c-text); font-size: 1.0625rem; text-overflow: ellipsis; white-space: nowrap; }.result-row > span:not(.result-row__type) { overflow: hidden; color: var(--c-text-70); font-size: .875rem; text-overflow: ellipsis; white-space: nowrap; }.result-row small { grid-column: 2; color: var(--c-accent); font-size: .75rem; }
 .entry-detail { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px) + 20px); min-height: 420px; padding: clamp(24px, 4vw, 46px); }.entry-detail__topline { display: flex; justify-content: space-between; gap: 16px; color: var(--c-text-60); font-size: .75rem; }.entry-detail__topline span:first-child { color: var(--c-accent); font-weight: 700; }.entry-detail h2 { margin: 26px 0 6px; font: 600 3rem / 1.1 var(--font-serif); letter-spacing: -.025em; }.entry-detail__meaning { margin: 0; color: var(--c-text); font-size: 1.25rem; font-weight: 600; }.entry-detail__note { max-width: 55ch; margin: 28px 0; padding-left: 16px; border-left: 1px solid var(--c-brand-40); color: var(--c-text-70); line-height: 1.8; }.entry-actions { display: flex; flex-wrap: wrap; gap: 8px; }.entry-actions button { min-height: 40px; padding: 0 14px; border: 1px solid var(--c-brand-25); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.entry-actions button:hover { color: var(--c-white); background: var(--c-brand); }
 .entry-actions button.is-playing { color: var(--c-white); background: var(--c-brand); }
+.entry-actions button:disabled { cursor: wait; opacity: .58; }
 .entry-detail__source { margin-top: 28px; }
 .culture-links { display: grid; gap: 10px; margin-top: 38px; padding-top: 28px; border-top: 1px solid var(--c-divider); }.culture-links h3 { margin: 0 0 4px; font: 600 1.5rem var(--font-serif); }.culture-links a { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 15px 0; border-bottom: 1px solid var(--c-divider); color: inherit; text-decoration: none; }.culture-links a:hover strong { color: var(--c-brand); }.culture-links a span { color: var(--c-text-60); font-size: .75rem; }.culture-links a strong { color: var(--c-text); font-size: 1rem; }.culture-links a b { grid-row: span 2; align-self: center; color: var(--c-accent); }
 .state-panel { max-width: 34rem; margin: 40px auto; padding: 28px; border: 1px solid var(--c-divider); border-radius: var(--radius-md); background: var(--c-bg-silver); }.state-panel strong { color: var(--c-text); }.state-panel p { margin: 8px 0 20px; color: var(--c-text-70); line-height: 1.7; }.state-panel button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 600 .875rem var(--font-sans); }.state-panel--error { background: var(--c-danger-08); border-color: color-mix(in srgb, var(--c-danger) 28%, transparent); }.state-copy { margin: 16px 0; color: var(--c-text-60); font-size: .875rem; }.result-skeleton { display: grid; grid-template-columns: 50px 1fr; gap: 10px; padding: 20px 14px; border-bottom: 1px solid var(--c-divider); }.result-skeleton i, .result-skeleton b, .result-skeleton span { display: block; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-06), var(--c-brand-08), var(--c-brand-06)); animation: shimmer 1.4s ease-in-out infinite; }.result-skeleton i { grid-row: span 2; height: 22px; }.result-skeleton b { height: 17px; width: 44%; }.result-skeleton span { height: 12px; width: 64%; }.entry-detail__empty { display: grid; min-height: 340px; place-content: center; gap: 14px; color: var(--c-text-60); text-align: center; }.entry-detail__empty span { color: var(--c-accent); font: 3rem var(--font-serif); }.entry-detail__empty p { max-width: 25ch; margin: 0; line-height: 1.8; }.action-message { position: absolute; right: 24px; bottom: 18px; left: 24px; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--c-text); background: var(--c-accent-10); font-size: .8125rem; }

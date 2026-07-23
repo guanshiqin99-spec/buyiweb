@@ -5,6 +5,7 @@ import { contentApi, recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
 import AudioSpectrum from '@/components/specific/AudioSpectrum.vue'
+import ShareCard from '@/components/specific/ShareCard.vue'
 import { fallbackSongs, formatDuration, normalizePlayableSongs } from '@/data/playableSongs'
 import imgAmbient from '@/assets/images/music-ambient.jpg'
 import imgBg from '@/assets/images/folk-song-bg.jpg'
@@ -19,6 +20,9 @@ const isLoading = ref(false)
 const sourceNotice = ref('')
 const songsPageRef = ref(null)
 const heroParallax = ref(0)
+const shareCardRef = ref(null)
+const sharingSongId = ref(null)
+const shareNotice = ref('')
 let revealObserver = null
 let scrollHandler = null
 const recordedSongIds = new Set()
@@ -45,6 +49,25 @@ async function loadSongs() {
 
 function playSong(song) {
   playerStore.playSong(song)
+}
+
+async function handleShareSong(song) {
+  if (!song || sharingSongId.value !== null) return
+  sharingSongId.value = song.id
+  shareNotice.value = ''
+  try {
+    const result = await shareCardRef.value?.share({
+      word: song.title,
+      translation: song.artist,
+      filename: `${song.title || '布依民歌'}-分享卡片.png`
+    })
+    if (result?.action === 'shared') shareNotice.value = '已打开系统分享。'
+    if (result?.action === 'downloaded') shareNotice.value = '民歌分享卡片已下载。'
+  } catch {
+    shareNotice.value = '分享卡片生成失败，请稍后重试。'
+  } finally {
+    sharingSongId.value = null
+  }
 }
 
 async function recordSongPlay(song) {
@@ -113,10 +136,17 @@ onUnmounted(() => {
     <section class="songs-hero" data-nav-tone="dark" :style="{ '--hero-image': `url(${imgBg})`, '--hero-parallax': `${heroParallax}px` }">
       <div class="songs-hero__cover hero-cover-anim" :class="{ 'is-playing': isHeroPlaying }">
         <img :src="heroCover" :alt="heroSong ? `${heroSong.title}封面` : '布依民歌封面'" width="360" height="360" fetchpriority="high" />
-        <button v-if="heroSong" v-pointer-glow="{ tone: 'brand', size: 'lg' }" type="button" :aria-label="isHeroPlaying ? '暂停播放' : '播放民歌'" @click="playSong(heroSong)">
+        <button v-if="heroSong" v-pointer-glow="{ tone: 'brand', size: 'lg' }" class="songs-hero__play" type="button" :aria-label="isHeroPlaying ? '暂停播放' : '播放民歌'" @click="playSong(heroSong)">
           <IconPause v-if="isHeroPlaying" :size="28" />
           <IconPlay v-else :size="28" />
         </button>
+        <button
+          v-if="heroSong"
+          class="songs-hero__share"
+          type="button"
+          :disabled="sharingSongId !== null"
+          @click.stop="handleShareSong(heroSong)"
+        >{{ sharingSongId === heroSong.id ? '生成中…' : '分享卡片' }}</button>
       </div>
       <div class="songs-hero__copy">
         <p class="hero-kicker-anim">民歌声场</p>
@@ -124,6 +154,7 @@ onUnmounted(() => {
         <span class="hero-subtitle-anim">{{ heroSong?.artist || '正在准备民歌实录' }}</span>
         <AudioSpectrum :active="isHeroPlaying" class="hero-spectrum-anim" />
         <p v-if="playerStore.message" class="songs-hero__status hero-status-anim" role="status">{{ playerStore.message }}</p>
+        <p v-if="shareNotice" class="songs-hero__status" role="status">{{ shareNotice }}</p>
       </div>
     </section>
 
@@ -182,6 +213,7 @@ onUnmounted(() => {
         </li>
       </ul>
     </section>
+    <ShareCard ref="shareCardRef" />
   </main>
 </template>
 
@@ -210,10 +242,14 @@ onUnmounted(() => {
 .songs-hero__cover { width: min(100%, 360px); aspect-ratio: 1; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.34); }
 .songs-hero__cover img { width: 100%; height: 100%; object-fit: cover; }
 .songs-hero__cover::after { position: absolute; inset: 0; border: 1px solid rgba(255,255,255,.35); content: ''; pointer-events: none; }
-.songs-hero__cover button { position: absolute; inset: 0; display: grid; place-items: center; border: 0; color: var(--c-white); background: rgba(12, 31, 48, .28); cursor: pointer; opacity: 0; transition: opacity 180ms ease; }
-.songs-hero__cover:hover button, .songs-hero__cover:focus-within button, .songs-hero__cover.is-playing button { opacity: 1; }
-.songs-hero__cover button::before { position: absolute; width: 68px; height: 68px; border: 1px solid rgba(255,255,255,.82); border-radius: 50%; background: rgba(27, 58, 92, .72); content: ''; }
-.songs-hero__cover button svg { position: relative; z-index: 1; }
+.songs-hero__play { position: absolute; inset: 0; display: grid; place-items: center; border: 0; color: var(--c-white); background: rgba(12, 31, 48, .28); cursor: pointer; opacity: 0; transition: opacity 180ms ease; }
+.songs-hero__cover:hover .songs-hero__play, .songs-hero__cover:focus-within .songs-hero__play, .songs-hero__cover.is-playing .songs-hero__play { opacity: 1; }
+.songs-hero__play::before { position: absolute; width: 68px; height: 68px; border: 1px solid rgba(255,255,255,.82); border-radius: 50%; background: rgba(27, 58, 92, .72); content: ''; }
+.songs-hero__play svg { position: relative; z-index: 1; }
+.songs-hero__share { position: absolute; right: 16px; bottom: 16px; z-index: 2; min-height: 40px; padding: 0 16px; border: 1px solid rgba(255,255,255,.55); border-radius: 999px; color: var(--c-white); background: rgba(13, 37, 56, .84); cursor: pointer; font: 600 13px var(--font-sans); }
+.songs-hero__share:hover { background: rgba(27, 58, 92, .96); }
+.songs-hero__share:focus-visible { outline: 2px solid var(--page-accent); outline-offset: 3px; }
+.songs-hero__share:disabled { cursor: wait; opacity: .62; }
 .songs-hero__copy > p, .song-library__heading p, .song-note p:first-child, .song-provenance p { margin: 0; color: var(--page-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
 .songs-hero__copy h1 { max-width: 650px; margin: 10px 0 14px; font: 600 clamp(44px, 7vw, 82px) / .98 var(--font-serif); letter-spacing: -.03em; text-wrap: balance; }
 .songs-hero__copy > span { color: var(--c-white-78); font-size: 16px; }.songs-hero__status { max-width: 42ch; margin: 14px 0 0; color: var(--c-white-78); font-size: 13px; line-height: 1.6; }
@@ -369,7 +405,7 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .songs-hero__cover button, .song-row { transition: none; }
+  .songs-hero__play, .song-row { transition: none; }
   .songs-hero::before { transform: none !important; }
   .hero-cover-anim, .hero-kicker-anim, .hero-title-anim,
   .hero-subtitle-anim, .hero-spectrum-anim, .hero-status-anim {
