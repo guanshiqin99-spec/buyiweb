@@ -7,7 +7,7 @@ export class AdminJwtGuard extends JwtAuthGuard {
     const allowed = await super.canActivate(context);
     const request = context.switchToHttp().getRequest<{ user?: { tokenType?: string } }>();
     if (request.user?.tokenType !== 'admin') {
-      throw new UnauthorizedException('\u9700\u8981\u7ba1\u7406\u5458\u8eab\u4efd');
+      throw new UnauthorizedException('需要管理员身份');
     }
     return allowed;
   }

@@ -25,7 +25,6 @@ export function validateEnvironmentOrThrow(env: EnvMap = process.env) {
   }
 
   const errors: string[] = [];
-  // 安全实践：生产环境默认关闭 Swagger
   if (env.ENABLE_SWAGGER === 'true') {
     console.warn('⚠️ 生产环境开启了 Swagger，建议关闭');
   }

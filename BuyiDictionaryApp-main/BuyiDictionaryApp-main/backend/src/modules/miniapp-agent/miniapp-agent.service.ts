@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { AppConfig } from '../../config/app.config';
 import { AgentCache } from '../../entities/agent-cache.entity';
 
-// 布依文化相关关键词白名单（硬约束：命中任一关键词才放行调用模型）
 const PROJECT_KEYWORDS = [
   '布依', '布依族', '布依语', '词典', '方言', '声调', '舒声', '促声',
   '民歌', '谚语', '短语', '词汇', '例句', '语法', '音节', '元音', '辅音', '拼音', '汉字',
@@ -45,7 +44,6 @@ export class MiniappAgentService {
     private readonly cacheRepo: Repository<AgentCache>,
   ) {}
 
-  /** 硬约束：关键词预检，命中任一关键词才放行 */
   isProjectRelated(question: string): boolean {
     const q = (question || '').toLowerCase();
     return PROJECT_KEYWORDS.some((kw) => q.includes(kw.toLowerCase()));
@@ -57,15 +55,11 @@ export class MiniappAgentService {
     return Boolean(apiKey && apiKey.trim());
   }
 
-  /** 问题归一化：去首尾空格 + 小写，作为缓存匹配键 */
+  /** 问题归一化：去首尾空格 + 小写 */
   private normalizeKey(question: string): string {
     return (question || '').trim().toLowerCase().slice(0, 500);
   }
 
-  /**
-   * 流式问答：先查高频缓存，命中直接返回（不调 API）；未命中调 DeepSeek 并回写缓存。
-   * 通过 onDelta/onDone/onError 回调逐块回传内容。
-   */
   async streamChat(
     question: string,
     history: ChatMessage[],
@@ -73,17 +67,15 @@ export class MiniappAgentService {
     onDone: () => void,
     onError: (err: Error) => void,
   ): Promise<void> {
-    // 1. 先查缓存（仅当无历史上下文时，避免上下文不同却命中同一答案）
+    // 1. 先查缓存
     const useCache = !history || history.length === 0;
     if (useCache) {
       const key = this.normalizeKey(question);
       try {
         const cached = await this.cacheRepo.findOne({ where: { questionKey: key } });
         if (cached && cached.answer) {
-          // 命中缓存：分块回传（模拟流式打字效果），hitCount + 1
           await this.cacheRepo.increment({ id: cached.id }, 'hitCount', 1);
           this.logger.log(`缓存命中: "${question.slice(0, 30)}..." (hitCount=${cached.hitCount + 1})`);
-          // 按标点/长度切分，每块 8~20 字，保持打字感
           const chunks = this.splitToChunks(cached.answer, 12);
           for (const chunk of chunks) {
             onDelta(chunk);
@@ -157,7 +149,6 @@ export class MiniappAgentService {
           if (!trimmed || !trimmed.startsWith('data:')) continue;
           const data = trimmed.slice(5).trim();
           if (data === '[DONE]') {
-            // 流结束，回写缓存
             await this.saveCache(question, fullAnswer);
             onDone();
             return;
@@ -174,7 +165,6 @@ export class MiniappAgentService {
           }
         }
       }
-      // 流正常结束但未收到 [DONE]，仍回写缓存
       await this.saveCache(question, fullAnswer);
       onDone();
     } catch (err) {
@@ -183,10 +173,7 @@ export class MiniappAgentService {
     }
   }
 
-  /**
-   * 生成布依语例句、五题文化挑战或关联词推荐。
-   * 独立使用生成提示词，避免改动现有问答的 system prompt 与缓存逻辑。
-   */
+  /** 生成布依语例句、五题文化挑战或关联词推荐。 */
   async streamGenerate(
     type: 'sentence' | 'quiz' | 'related',
     word: string,
@@ -202,7 +189,6 @@ export class MiniappAgentService {
     };
     const prompt = prompts[type];
 
-    // 与问答端点共用同一关键词白名单，生成任务也必须限定在项目主题内。
     if (!prompt || !this.isProjectRelated(prompt)) {
       onError(new Error('生成任务不在布依文化范围内'));
       return;
@@ -218,7 +204,7 @@ export class MiniappAgentService {
 
     const generationSystemPrompt = [
       '你是「布依文化导览员」的内容生成模块，只生成与布依语和布依族文化有关的学习内容。',
-      '不得编造无法确认的权威来源；题目与推荐中的 source 固定写为“AI生成”。',
+      '不得编造无法确认的权威来源；题目与推荐中的 source 固定写为"AI生成"。',
       '用户要求 JSON 时必须只输出合法 JSON，不要使用 Markdown 代码围栏或补充说明。',
       '使用简体中文，布依语内容应简洁并明确标注其为学习辅助内容。',
     ].join('\n');
@@ -281,7 +267,6 @@ export class MiniappAgentService {
     }
   }
 
-  /** 回写缓存：upsert，避免并发重复写入 */
   private async saveCache(question: string, answer: string): Promise<void> {
     const trimmedAnswer = (answer || '').trim();
     if (!trimmedAnswer) return;
@@ -290,7 +275,6 @@ export class MiniappAgentService {
     try {
       const existing = await this.cacheRepo.findOne({ where: { questionKey: key } });
       if (existing) {
-        // 已存在则不覆盖（保留首次答案，保证稳定性）
         return;
       }
       const cache = this.cacheRepo.create({
@@ -302,7 +286,6 @@ export class MiniappAgentService {
       await this.cacheRepo.save(cache);
       this.logger.log(`缓存已写入: "${question.slice(0, 30)}..."`);
     } catch (err) {
-      // 缓存写入失败不影响主流程
       this.logger.warn(`缓存写入失败: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
@@ -313,7 +296,6 @@ export class MiniappAgentService {
     const chunks: string[] = [];
     let i = 0;
     while (i < text.length) {
-      // 优先在标点处切分，保持语义完整
       let end = Math.min(i + size, text.length);
       if (end < text.length) {
         const punct = '，。；！？、,.!?; \n';

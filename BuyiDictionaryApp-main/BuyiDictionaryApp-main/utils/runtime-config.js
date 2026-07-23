@@ -120,11 +120,11 @@ function resetApiConfig() {
 function getEnvLabel(envVersion) {
   switch (envVersion) {
     case 'release':
-      return '\u6B63\u5F0F\u7248';
+      return '正式版';
     case 'trial':
-      return '\u4F53\u9A8C\u7248';
+      return '体验版';
     default:
-      return '\u5F00\u53D1\u7248';
+      return '开发版';
   }
 }
 

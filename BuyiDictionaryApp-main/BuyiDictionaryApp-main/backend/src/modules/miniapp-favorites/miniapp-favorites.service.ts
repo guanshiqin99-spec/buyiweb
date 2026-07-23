@@ -70,7 +70,7 @@ export class MiniappFavoritesService {
     return {
       success: true,
       deletedCount: result.affected ?? 0,
-      message: '\u5df2\u6e05\u7a7a\u6536\u85cf',
+      message: '已清空收藏',
     };
   }
 

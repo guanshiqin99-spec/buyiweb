@@ -28,7 +28,7 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request & { user?: unknown }>();
     const authHeader = request.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('\u7f3a\u5c11\u767b\u5f55\u4ee4\u724c');
+      throw new UnauthorizedException('缺少登录令牌');
     }
 
     const token = authHeader.slice('Bearer '.length);
@@ -45,11 +45,11 @@ export class JwtAuthGuard implements CanActivate {
       });
 
       if (payload.tokenKind !== 'access') {
-        throw new UnauthorizedException('\u767b\u5f55\u4ee4\u724c\u7c7b\u578b\u65e0\u6548');
+        throw new UnauthorizedException('登录令牌类型无效');
       }
 
       if (!payload.sid || !payload.tokenType) {
-        throw new UnauthorizedException('\u767b\u5f55\u4f1a\u8bdd\u4e0d\u5b58\u5728');
+        throw new UnauthorizedException('登录会话不存在');
       }
 
       const sessionIsActive = await this.authSessionsService.validateAccessSession({
@@ -58,13 +58,13 @@ export class JwtAuthGuard implements CanActivate {
         userId: payload.sub,
       });
       if (!sessionIsActive) {
-        throw new UnauthorizedException('\u5f53\u524d\u4f1a\u8bdd\u5df2\u5931\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55');
+        throw new UnauthorizedException('当前会话已失效，请重新登录');
       }
 
       request.user = payload;
       return true;
     } catch {
-      throw new UnauthorizedException('\u767b\u5f55\u5df2\u5931\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55');
+      throw new UnauthorizedException('登录已失效，请重新登录');
     }
   }
 }

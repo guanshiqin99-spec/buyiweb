@@ -69,7 +69,7 @@ export class MiniappLearningRecordsService {
     return {
       success: true,
       deletedCount: result.affected ?? 0,
-      message: '\u5df2\u6e05\u7a7a\u5b66\u4e60\u8bb0\u5f55',
+      message: '已清空学习记录',
     };
   }
 

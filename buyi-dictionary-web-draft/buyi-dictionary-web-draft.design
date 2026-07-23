@@ -686,7 +686,7 @@
       "id": "dl_builtin_apple",
       "version": null,
       "scope": "built-in-global",
-      "path": "c:\\Users\\taoyanshabi\\.trae-cn/design_libraries/dl_builtin_apple",
+      "path": "design_libraries/dl_builtin_apple",
       "versionSource": "selected-context"
     }
   }

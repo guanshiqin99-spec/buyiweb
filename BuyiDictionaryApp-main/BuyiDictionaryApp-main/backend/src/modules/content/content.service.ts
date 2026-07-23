@@ -80,7 +80,7 @@ export class ContentService {
       case ContentType.SONG:
         return this.songRepository;
       default:
-        throw new NotFoundException('\u4e0d\u652f\u6301\u7684\u5185\u5bb9\u7c7b\u578b');
+        throw new NotFoundException('不支持的内容类型');
     }
   }
 
@@ -222,7 +222,7 @@ export class ContentService {
       where: { id, isPublished: true } as FindOptionsWhere<ContentEntity>,
     });
     if (!item) {
-      throw new NotFoundException('\u5185\u5bb9\u4e0d\u5b58\u5728');
+      throw new NotFoundException('内容不存在');
     }
     return item;
   }
@@ -258,7 +258,7 @@ export class ContentService {
   async updateDictionary(id: number, payload: UpdateDictionaryAdminDto) {
     const item = await this.dictionaryRepository.findOne({ where: { id } });
     if (!item) {
-      throw new NotFoundException('\u8bcd\u6761\u4e0d\u5b58\u5728');
+      throw new NotFoundException('词条不存在');
     }
 
     Object.assign(item, payload, {
@@ -276,7 +276,7 @@ export class ContentService {
     const repository = this.getRepository(type);
     const item = await repository.findOne({ where: { id } as FindOptionsWhere<ContentEntity> });
     if (!item) {
-      throw new NotFoundException('\u5185\u5bb9\u4e0d\u5b58\u5728');
+      throw new NotFoundException('内容不存在');
     }
 
     Object.assign(item, payload, {
@@ -292,7 +292,7 @@ export class ContentService {
   async updateSong(id: number, payload: UpdateSongAdminDto) {
     const item = await this.songRepository.findOne({ where: { id } });
     if (!item) {
-      throw new NotFoundException('\u6c11\u6b4c\u4e0d\u5b58\u5728');
+      throw new NotFoundException('民歌不存在');
     }
 
     Object.assign(item, payload, {
@@ -305,7 +305,7 @@ export class ContentService {
     const repository = this.getRepository(type);
     const item = await repository.findOne({ where: { id } as FindOptionsWhere<ContentEntity> });
     if (!item) {
-      throw new NotFoundException('\u5185\u5bb9\u4e0d\u5b58\u5728');
+      throw new NotFoundException('内容不存在');
     }
 
     await repository.remove(item);
@@ -342,7 +342,7 @@ export class ContentService {
         await this.executePlan(this.songRepository, plan as ImportPlan<Song>);
         break;
       default:
-        throw new NotFoundException('\u4e0d\u652f\u6301\u7684\u5185\u5bb9\u7c7b\u578b');
+        throw new NotFoundException('不支持的内容类型');
     }
 
     return this.serializeImportPlan(plan);
@@ -576,7 +576,7 @@ export class ContentService {
       case ContentType.SONG:
         return this.buildSongPlan(normalized as SongAdminDto[], mode, skipDuplicates);
       default:
-        throw new NotFoundException('\u4e0d\u652f\u6301\u7684\u5185\u5bb9\u7c7b\u578b');
+        throw new NotFoundException('不支持的内容类型');
     }
   }
 
@@ -598,7 +598,7 @@ export class ContentService {
         this.pushSkipped(plan, {
           rowNumber: index + 2,
           status: 'skip',
-          reason: '\u540c\u4e00\u6587\u4ef6\u5185\u5b58\u5728\u91cd\u590d\u952e\uff0c\u5df2\u4fdd\u7559\u9996\u6761',
+          reason: '同一文件内存在重复键，已保留首条',
           ...preview,
         });
         continue;
@@ -638,7 +638,7 @@ export class ContentService {
         this.pushSkipped(plan, {
           rowNumber: index + 2,
           status: 'skip',
-          reason: '\u540c\u4e00\u6587\u4ef6\u5185\u5b58\u5728\u91cd\u590d\u952e\uff0c\u5df2\u4fdd\u7559\u9996\u6761',
+          reason: '同一文件内存在重复键，已保留首条',
           ...preview,
         });
         continue;
@@ -673,7 +673,7 @@ export class ContentService {
         this.pushSkipped(plan, {
           rowNumber: index + 2,
           status: 'skip',
-          reason: '\u540c\u4e00\u6587\u4ef6\u5185\u5b58\u5728\u91cd\u590d\u952e\uff0c\u5df2\u4fdd\u7559\u9996\u6761',
+          reason: '同一文件内存在重复键，已保留首条',
           ...preview,
         });
         continue;
@@ -741,7 +741,7 @@ export class ContentService {
         plan.rows.push({
           ...row,
           status: 'update',
-          reason: '\u5df2\u5339\u914d\u5230\u73b0\u6709\u5185\u5bb9\uff0c\u5c06\u8986\u76d6\u66f4\u65b0',
+          reason: '已匹配到现有内容，将覆盖更新',
         });
         plan.operations.push({
           action: 'update',
@@ -756,7 +756,7 @@ export class ContentService {
       plan.rows.push({
         ...row,
         status: 'create',
-        reason: '\u6570\u636e\u5e93\u4e2d\u4e0d\u5b58\u5728\uff0c\u5c06\u65b0\u589e',
+        reason: '数据库中不存在，将新增',
       });
       plan.operations.push({
         action: 'create',
@@ -770,7 +770,7 @@ export class ContentService {
       this.pushSkipped(plan, {
         ...row,
         status: 'skip',
-        reason: '\u5df2\u68c0\u6d4b\u5230\u91cd\u590d\u5185\u5bb9\uff0c\u672c\u6b21\u5bfc\u5165\u5df2\u8df3\u8fc7',
+        reason: '已检测到重复内容，本次导入已跳过',
       });
       return;
     }
@@ -781,7 +781,7 @@ export class ContentService {
       this.pushSkipped(plan, {
         ...row,
         status: 'skip',
-        reason: '\u5df2\u68c0\u6d4b\u5230\u91cd\u590d\u5185\u5bb9\uff0c\u672c\u6b21\u5bfc\u5165\u5df2\u8df3\u8fc7',
+        reason: '已检测到重复内容，本次导入已跳过',
       });
       return;
     }
@@ -790,7 +790,7 @@ export class ContentService {
     plan.rows.push({
       ...row,
       status: 'create',
-      reason: '\u6570\u636e\u5e93\u4e2d\u4e0d\u5b58\u5728\uff0c\u5c06\u65b0\u589e',
+      reason: '数据库中不存在，将新增',
     });
     plan.operations.push({
       action: 'create',

@@ -63,7 +63,7 @@ export class MiniappAuthService {
     });
 
     if (!session) {
-      throw new UnauthorizedException('\u5237\u65b0\u4ee4\u724c\u5df2\u5931\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55');
+      throw new UnauthorizedException('刷新令牌已失效，请重新登录');
     }
 
     const user = await this.usersService.findById(payload.sub);
@@ -97,7 +97,7 @@ export class MiniappAuthService {
     await this.authSessionsService.deactivateSession(sessionId, 'miniapp');
     return {
       success: true,
-      message: '\u5df2\u9000\u51fa\u767b\u5f55',
+      message: '已退出登录',
     };
   }
 
@@ -242,19 +242,19 @@ export class MiniappAuthService {
       });
 
       if (payload.tokenType !== 'miniapp' || payload.tokenKind !== 'refresh') {
-        throw new UnauthorizedException('\u5237\u65b0\u4ee4\u724c\u4e0d\u53ef\u7528');
+        throw new UnauthorizedException('刷新令牌不可用');
       }
 
       return payload;
     } catch {
-      throw new UnauthorizedException('\u5237\u65b0\u4ee4\u724c\u5df2\u5931\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55');
+      throw new UnauthorizedException('刷新令牌已失效，请重新登录');
     }
   }
 
   private getTokenExpiry(token: string) {
     const payload = this.jwtService.decode(token) as { exp?: number } | null;
     if (!payload?.exp) {
-      throw new UnauthorizedException('\u65e0\u6cd5\u89e3\u6790\u5237\u65b0\u4ee4\u724c\u8fc7\u671f\u65f6\u95f4');
+      throw new UnauthorizedException('无法解析刷新令牌过期时间');
     }
     return new Date(payload.exp * 1000);
   }

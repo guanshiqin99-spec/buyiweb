@@ -29,14 +29,14 @@ export class AdminAuthService {
     if (!admin?.isActive) {
       // 账号不存在或未激活：同样计入失败，防止用户名枚举
       this.loginLockoutService.recordFailure(payload.username, ip);
-      throw new UnauthorizedException('\u7ba1\u7406\u5458\u8d26\u53f7\u6216\u5bc6\u7801\u9519\u8bef');
+      throw new UnauthorizedException('管理员账号或密码错误');
     }
 
     const isValid = await bcrypt.compare(payload.password, admin.passwordHash);
     if (!isValid) {
       // 密码校验失败：累加失败计数
       this.loginLockoutService.recordFailure(payload.username, ip);
-      throw new UnauthorizedException('\u7ba1\u7406\u5458\u8d26\u53f7\u6216\u5bc6\u7801\u9519\u8bef');
+      throw new UnauthorizedException('管理员账号或密码错误');
     }
 
     // 登录成功：清零计数
@@ -64,14 +64,14 @@ export class AdminAuthService {
     });
 
     if (!session) {
-      throw new UnauthorizedException('\u5237\u65b0\u4ee4\u724c\u5df2\u5931\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55');
+      throw new UnauthorizedException('刷新令牌已失效，请重新登录');
     }
 
     const admin = await this.adminRepository.findOne({
       where: { id: payload.sub, isActive: true },
     });
     if (!admin) {
-      throw new UnauthorizedException('\u7ba1\u7406\u5458\u8d26\u53f7\u4e0d\u53ef\u7528');
+      throw new UnauthorizedException('管理员账号不可用');
     }
 
     const tokens = await this.issueTokens(admin, session.sessionId, false);
@@ -95,7 +95,7 @@ export class AdminAuthService {
     await this.authSessionsService.deactivateSession(sessionId, 'admin');
     return {
       success: true,
-      message: '\u5df2\u9000\u51fa\u767b\u5f55',
+      message: '已退出登录',
     };
   }
 
@@ -158,19 +158,19 @@ export class AdminAuthService {
       });
 
       if (payload.tokenType !== 'admin' || payload.tokenKind !== 'refresh') {
-        throw new UnauthorizedException('\u5237\u65b0\u4ee4\u724c\u4e0d\u53ef\u7528');
+        throw new UnauthorizedException('刷新令牌不可用');
       }
 
       return payload;
     } catch {
-      throw new UnauthorizedException('\u5237\u65b0\u4ee4\u724c\u5df2\u5931\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55');
+      throw new UnauthorizedException('刷新令牌已失效，请重新登录');
     }
   }
 
   private getTokenExpiry(token: string) {
     const payload = this.jwtService.decode(token) as { exp?: number } | null;
     if (!payload?.exp) {
-      throw new UnauthorizedException('\u65e0\u6cd5\u89e3\u6790\u5237\u65b0\u4ee4\u724c\u8fc7\u671f\u65f6\u95f4');
+      throw new UnauthorizedException('无法解析刷新令牌过期时间');
     }
     return new Date(payload.exp * 1000);
   }

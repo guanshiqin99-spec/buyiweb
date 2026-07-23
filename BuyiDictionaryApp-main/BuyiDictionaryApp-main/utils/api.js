@@ -49,7 +49,7 @@ function extractMessage(payload) {
     return payload;
   }
   if (Array.isArray(payload.message)) {
-    return payload.message.join('\uFF1B');
+    return payload.message.join('；');
   }
   if (payload.message && typeof payload.message === 'object') {
     return extractMessage(payload.message);
@@ -127,12 +127,12 @@ async function request(options = {}) {
 
   if (needAuth && !token) {
     if (showError) {
-      wx.showToast({ title: '\u8BF7\u5148\u767B\u5F55', icon: 'none' });
+      wx.showToast({ title: '请先登录', icon: 'none' });
     }
     if (redirectOn401) {
       redirectToLogin();
     }
-    throw new Error('\u8BF7\u5148\u767B\u5F55');
+    throw new Error('请先登录');
   }
 
   try {
@@ -147,7 +147,7 @@ async function request(options = {}) {
       return res.data;
     }
 
-    const message = extractMessage(res.data) || '\u8BF7\u6C42\u5931\u8D25';
+    const message = extractMessage(res.data) || '请求失败';
     if (res.statusCode === 401 && allowRefresh && !_retried && app && typeof app.refreshAccessToken === 'function') {
       try {
         await app.refreshAccessToken();
@@ -155,7 +155,7 @@ async function request(options = {}) {
       } catch (error) {
         handleUnauthorized({ redirectOn401 });
         if (showError) {
-          wx.showToast({ title: extractMessage(error) || '\u767B\u5F55\u5DF2\u5931\u6548', icon: 'none' });
+          wx.showToast({ title: extractMessage(error) || '登录已失效', icon: 'none' });
         }
         throw error instanceof Error ? error : new Error(message);
       }
@@ -170,7 +170,7 @@ async function request(options = {}) {
     throw new Error(message);
   } catch (error) {
     if (error && error.errMsg) {
-      const message = '\u7F51\u7EDC\u8FDE\u63A5\u5931\u8D25\uFF0C\u8BF7\u786E\u8BA4\u540E\u7AEF\u670D\u52A1\u5DF2\u542F\u52A8';
+      const message = '网络连接失败，请确认后端服务已启动';
       if (showError) {
         wx.showToast({ title: message, icon: 'none' });
       }

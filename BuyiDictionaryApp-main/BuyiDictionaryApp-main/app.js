@@ -75,7 +75,6 @@ App({
     }
     try {
       wx.cloud.init({ env: cloudContainer.envId, traceUser: true });
-      console.log('[CloudBase] wx.cloud.init 成功，env:', cloudContainer.envId);
     } catch (error) {
       console.error('[CloudBase] wx.cloud.init 失败:', error);
     }

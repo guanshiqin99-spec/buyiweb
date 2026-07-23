@@ -100,12 +100,10 @@ Page({
       });
 
       // Step 3: call backend
-      console.log('[Login] calling authApi.loginWithWechat...');
       const payload = await authApi.loginWithWechat(loginResult.code, {
         nickname: nickname,
         avatarUrl: cloudAvatarUrl || avatarUrl,
       });
-      console.log('[Login] backend response success, user:', payload.user ? payload.user.id : 'NO_USER');
 
       // 更新全局状态管理
       const app = getApp();

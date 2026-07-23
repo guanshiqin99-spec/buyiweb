@@ -6,17 +6,7 @@ interface LockEntry {
   lastAttempt: number;
 }
 
-/**
- * 登录失败锁定服务（账号 + IP 双维度）
- * 规范依据：安全项1「登录接口增加错误次数限制，多次失败锁定账号/IP」
- *
- * 策略：
- *   - 连续失败达阈值（默认 5 次）→ 锁定该账号 + 该 IP 各 15 分钟
- *   - 锁定期间任何登录尝试直接拒绝（不校验密码，避免继续爆破）
- *   - 登录成功后清零计数
- *
- * 说明：内存实现，单实例足够；多实例部署应替换为 Redis 实现（接口不变）。
- */
+/** 登录失败锁定服务（账号 + IP 双维度） */
 @Injectable()
 export class LoginLockoutService {
   private readonly logger = new Logger(LoginLockoutService.name);
