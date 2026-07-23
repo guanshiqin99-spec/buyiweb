@@ -9,6 +9,18 @@ echo.
 
 set "PROJECT_DIR=%~dp0BuyiDictionaryApp-main\BuyiDictionaryApp-main\backend"
 set "SOURCE_DB=%~dp0buyi_dictionary.db"
+set "RUNTIME_DB=%PROJECT_DIR%\buyi-runtime.sqlite"
+
+rem Local development defaults. Existing environment variables always take precedence.
+if not defined NODE_ENV set "NODE_ENV=development"
+if not defined DB_TYPE set "DB_TYPE=sqljs"
+if not defined DB_NAME set "DB_NAME=%RUNTIME_DB%"
+if not defined DB_SYNCHRONIZE set "DB_SYNCHRONIZE=true"
+if not defined DB_LOGGING set "DB_LOGGING=false"
+if not defined SEED_ON_BOOT set "SEED_ON_BOOT=true"
+if not defined WECHAT_MOCK_MODE set "WECHAT_MOCK_MODE=true"
+if not defined CORS_ORIGIN set "CORS_ORIGIN=http://127.0.0.1:5173,http://localhost:5173"
+if not defined JWT_SECRET set "JWT_SECRET=buyi-local-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%"
 
 echo Project directory: %PROJECT_DIR%
 echo.
@@ -48,6 +60,19 @@ if not exist "buyi-local.sqlite" (
 ) else (
     echo buyi-local.sqlite already exists. Using existing database.
     echo To force re-copy from %SOURCE_DB%, delete buyi-local.sqlite first.
+)
+if not exist "%RUNTIME_DB%" (
+    if exist "buyi-local.sqlite" (
+        echo Preparing writable runtime database...
+        copy /Y "buyi-local.sqlite" "%RUNTIME_DB%" >nul
+        if errorlevel 1 (
+            echo ERROR: Failed to prepare runtime database.
+            pause
+            exit /b 1
+        )
+    ) else (
+        echo No seed database found. Backend will create %RUNTIME_DB%.
+    )
 )
 echo.
 
