@@ -18,6 +18,7 @@ import {
   USER_PROGRESS_STORAGE_KEY,
   USER_PROGRESS_UPDATED_EVENT
 } from '@/utils/userProgress'
+import { generateSuggestions } from '@/utils/learningSuggestion'
 
 const authStore = useAuthStore()
 const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
@@ -39,6 +40,7 @@ const typeChartData = computed(() => {
     .filter(([, v]) => v > 0)
     .map(([k, v]) => ({ category: getContentLabel(k), count: v }))
 })
+const suggestions = computed(() => generateSuggestions(learnStats.value))
 
 // 菜单项统一使用线性 SVG 图标，避免 emoji 跨平台渲染差异与读屏朗读
 const menuItems = [
@@ -218,6 +220,22 @@ onUnmounted(() => {
           </div>
         </div>
 
+        <section v-if="suggestions.length" class="suggestion-card liquid-glass liquid-glass-content">
+          <div class="suggestion-card__intro">
+            <p>下一步</p>
+            <h3>为你推荐</h3>
+          </div>
+          <ul>
+            <li v-for="suggestion in suggestions" :key="`${suggestion.link}-${suggestion.text}`">
+              <RouterLink :to="suggestion.link">
+                <span class="suggestion-card__icon" aria-hidden="true">{{ suggestion.icon }}</span>
+                <span>{{ suggestion.text }}</span>
+                <span class="suggestion-card__arrow" aria-hidden="true">→</span>
+              </RouterLink>
+            </li>
+          </ul>
+        </section>
+
         <div class="achievement-export liquid-glass liquid-glass-content">
           <div>
             <strong>分享学习成就</strong>
@@ -354,6 +372,73 @@ onUnmounted(() => {
   font-size: 11px;
   color: var(--c-text-50);
   margin-top: 4px;
+}
+
+.suggestion-card {
+  display: grid;
+  grid-template-columns: minmax(92px, .38fr) minmax(0, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+
+.suggestion-card__intro p,
+.suggestion-card__intro h3 {
+  margin: 0;
+}
+
+.suggestion-card__intro p {
+  color: var(--c-accent-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.suggestion-card__intro h3 {
+  margin-top: 4px;
+  color: var(--c-text);
+  font: 600 17px var(--font-serif);
+}
+
+.suggestion-card ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suggestion-card a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  color: var(--c-text-80);
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.suggestion-card a:hover {
+  background: var(--c-brand-08);
+  color: var(--c-brand);
+}
+
+.suggestion-card a:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.suggestion-card__icon {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.suggestion-card__arrow {
+  color: var(--c-accent-text);
+  font-size: 16px;
 }
 
 .achievement-export {
@@ -505,6 +590,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 420px) {
+  .suggestion-card {
+    grid-template-columns: 1fr;
+  }
+
   .profile-visualizations {
     grid-template-columns: 1fr;
   }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import SourceBadge from '@/components/common/SourceBadge.vue'
@@ -9,6 +9,7 @@ import imgBg from '@/assets/images/generated/record-learning-tracker.png'
 import { recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { getContentLabel } from '@/utils/contentTypes'
+import { generateSuggestions } from '@/utils/learningSuggestion'
 
 const authStore = useAuthStore()
 const createEmptyStats = () => ({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
@@ -17,6 +18,7 @@ const records = ref([])
 const isLoading = ref(true)
 const isClearing = ref(false)
 const toast = ref(null)
+const suggestions = computed(() => generateSuggestions(stats.value))
 let toastTimer
 
 onMounted(async () => {
@@ -110,6 +112,22 @@ function formatDate(dateStr) {
         <RadarChart class="liquid-glass liquid-glass-content" :data="stats.typeCounts || {}" />
       </section>
 
+      <section v-if="suggestions.length" class="suggestion-card liquid-glass liquid-glass-content">
+        <div class="suggestion-card__intro">
+          <p>下一步</p>
+          <h2>为你推荐</h2>
+        </div>
+        <ul>
+          <li v-for="suggestion in suggestions" :key="`${suggestion.link}-${suggestion.text}`">
+            <RouterLink :to="suggestion.link">
+              <span class="suggestion-card__icon" aria-hidden="true">{{ suggestion.icon }}</span>
+              <span>{{ suggestion.text }}</span>
+              <span class="suggestion-card__arrow" aria-hidden="true">→</span>
+            </RouterLink>
+          </li>
+        </ul>
+      </section>
+
       <!-- 危险操作置于统计卡片下方，避免干扰学习数据浏览。 -->
       <div class="record-actions">
         <button
@@ -195,6 +213,73 @@ function formatDate(dateStr) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.suggestion-card {
+  display: grid;
+  grid-template-columns: minmax(100px, .42fr) minmax(0, 1fr);
+  gap: 20px;
+  padding: 22px;
+}
+
+.suggestion-card__intro p,
+.suggestion-card__intro h2 {
+  margin: 0;
+}
+
+.suggestion-card__intro p {
+  color: var(--c-accent-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.suggestion-card__intro h2 {
+  margin-top: 4px;
+  color: var(--c-text);
+  font: 600 18px var(--font-serif);
+}
+
+.suggestion-card ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suggestion-card a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--c-text-80);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.suggestion-card a:hover {
+  background: var(--c-brand-08);
+  color: var(--c-brand);
+}
+
+.suggestion-card a:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.suggestion-card__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.suggestion-card__arrow {
+  color: var(--c-accent-text);
+  font-size: 17px;
 }
 
 .record-actions {
@@ -432,6 +517,10 @@ function formatDate(dateStr) {
   }
 
   .learning-visualizations {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestion-card {
     grid-template-columns: 1fr;
   }
 
