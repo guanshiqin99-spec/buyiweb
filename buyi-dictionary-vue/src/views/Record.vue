@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
+import SourceBadge from '@/components/common/SourceBadge.vue'
 import imgBg from '@/assets/images/generated/record-learning-tracker.png'
 import { recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
@@ -147,6 +148,7 @@ function formatDate(dateStr) {
           <div class="record-info">
             <p class="record-title">{{ record.title || record.buyiText || `#${record.contentId}` }}</p>
             <p class="record-time">{{ formatDate(record.createdAt || record.learnedAt) }}</p>
+            <SourceBadge class="record-source" source="布依词典数据库" />
           </div>
         </article>
       </section>
@@ -370,6 +372,10 @@ function formatDate(dateStr) {
   color: var(--c-text-50);
   margin: 2px 0 0 0;
   font-family: var(--font-mono);
+}
+
+.record-source {
+  margin-top: 8px;
 }
 
 .record-toast {

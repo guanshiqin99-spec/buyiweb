@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
+import SourceBadge from '@/components/common/SourceBadge.vue'
 import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
 import { settingsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
@@ -113,6 +114,26 @@ watch(() => settings.value.theme, (mode) => {
           </div>
         </section>
 
+        <!-- 数据来源与离线能力说明 -->
+        <section class="settings-group data-notes liquid-glass-quiet" aria-labelledby="data-notes-title">
+          <h2 id="data-notes-title" class="group-title">数据说明</h2>
+          <div class="data-note">
+            <SourceBadge
+              source="中国非物质文化遗产网"
+              source-url="https://www.ihchina.cn/"
+              verified
+            />
+            <p>文化与非遗答题资料依据公开权威信息整理，并标记为已核验来源。</p>
+          </div>
+          <div class="data-note">
+            <SourceBadge source="布依词典数据库" />
+            <p>词典词条、学习记录及馆内数字内容为项目整理数据，持续接受校订。</p>
+          </div>
+          <p class="offline-note">
+            离线时可使用随前端打包的题库和本地回退资源；此前成功查询的词典结果可能从本地缓存展示。实时检索、账户同步与 AI 服务仍需连接本地或远程后端。
+          </p>
+        </section>
+
         <!-- 账户操作 -->
         <section class="settings-group liquid-glass-quiet">
           <h2 class="group-title">账户</h2>
@@ -198,6 +219,31 @@ watch(() => settings.value.theme, (mode) => {
   font-size: 12px;
   color: var(--c-text-60);
   margin: 2px 0 0 0;
+}
+
+.data-notes {
+  display: grid;
+  gap: 16px;
+}
+
+.data-note {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--c-divider);
+}
+
+.data-note p,
+.offline-note {
+  margin: 0;
+  color: var(--c-text-60);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.offline-note {
+  padding: 12px 14px;
+  border-left: 3px solid var(--c-brand);
 }
 
 .setting-select {
