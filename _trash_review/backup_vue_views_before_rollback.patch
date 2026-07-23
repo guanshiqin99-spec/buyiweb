@@ -1,0 +1,1555 @@
+﻿diff --git a/buyi-dictionary-vue/src/views/Culture.vue b/buyi-dictionary-vue/src/views/Culture.vue
+index 8d8c779e..23f40ed2 100644
+--- a/buyi-dictionary-vue/src/views/Culture.vue
++++ b/buyi-dictionary-vue/src/views/Culture.vue
+@@ -237,7 +237,7 @@ onUnmounted(() => {
+   --page-ink: #f4fbfb;
+   --page-muted: #d2e4e7;
+   --page-muted-strong: #afcbd3;
+-  --page-accent: #f2bd70;
++  /* 使用全局 --c-accent，不自定义页面级强调色 */
+   --page-border: rgba(183, 220, 227, .28);
+   --page-bg-silver: #0b3b4b;
+ 
+@@ -262,7 +262,7 @@ onUnmounted(() => {
+ .pattern-exhibit header p,
+ .linked-exhibit header p {
+   margin: 0;
+-  color: var(--page-accent);
++  color: var(--c-accent);
+   font-size: 12px;
+   font-weight: 700;
+   letter-spacing: .1em;
+@@ -311,7 +311,7 @@ onUnmounted(() => {
+   padding-top: 16px;
+   border-top: 1px solid var(--page-border);
+ }
+-.linked-exhibit li > span { color: var(--page-accent); font: 13px var(--font-mono); }
++.linked-exhibit li > span { color: var(--c-accent); font: 13px var(--font-mono); }
+ .linked-exhibit li strong { color: var(--page-ink); font: 600 18px var(--font-serif); }
+ .linked-exhibit li p { margin: 8px 0 0; color: var(--page-muted); font-size: 13px; line-height: 1.75; }
+ .linked-exhibit__tone {
+@@ -353,7 +353,7 @@ onUnmounted(() => {
+ .feature-card b { display: inline-flex; gap: 8px; margin-top: auto; padding-top: 18px; color: #a8dfe7; font-size: 13px; }
+ .feature-card b i { font-style: normal; }
+ .feature-card:hover { background: rgba(77, 139, 153, .24); }
+-.feature-card:focus-visible { outline: 2px solid var(--page-accent); outline-offset: -2px; }
++.feature-card:focus-visible { outline: 2px solid var(--c-accent); outline-offset: -2px; }
+ 
+ .tone-exhibit,
+ .pattern-exhibit { display: grid; gap: 38px; }
+@@ -397,9 +397,9 @@ onUnmounted(() => {
+   transition: transform 200ms var(--ease-out-quart), border-color 200ms ease, background 200ms ease;
+ }
+ .pattern-card:hover { border-color: rgba(169, 223, 231, .7); background: linear-gradient(180deg, rgba(18, 69, 85, .96), rgba(4, 30, 46, .94)); transform: translateY(-2px); }
+-.pattern-card:focus-visible { outline: 2px solid var(--page-accent); outline-offset: 3px; }
++.pattern-card:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+ .pattern-card__art { display: grid; width: 132px; height: 132px; margin-bottom: 28px; place-items: center; color: #9fdde6; }
+-.pattern-card__label { color: var(--page-accent); font-size: 12px; font-weight: 700; }
++.pattern-card__label { color: var(--c-accent); font-size: 12px; font-weight: 700; }
+ .pattern-card strong { margin-top: 8px; color: var(--page-ink); font: 600 24px var(--font-serif); }
+ .pattern-card__summary { margin-top: 12px; color: var(--page-muted); font-size: 13px; line-height: 1.75; }
+ .pattern-card__action { display: inline-flex; gap: 8px; margin-top: auto; padding-top: 20px; color: #a8dfe7; font-size: 13px; font-weight: 700; }
+@@ -414,13 +414,13 @@ onUnmounted(() => {
+ .pattern-dialog article { position: relative; }
+ .pattern-dialog img { display: block; width: 100%; max-height: 410px; object-fit: cover; }
+ .pattern-dialog__body { padding: clamp(24px, 5vw, 44px); }
+-.pattern-dialog__body > p:first-child { margin: 0; color: var(--page-accent); font-size: 12px; font-weight: 700; }
++.pattern-dialog__body > p:first-child { margin: 0; color: var(--c-accent); font-size: 12px; font-weight: 700; }
+ .pattern-dialog__body h2 { margin: 8px 0 14px; color: var(--page-ink); font: 600 clamp(30px, 4vw, 46px) / 1.1 var(--font-serif); }
+ .pattern-dialog__body > p:nth-child(3) { margin: 0; color: var(--page-muted); line-height: 1.85; }
+ .pattern-dialog__body a { display: inline-block; margin-top: 22px; color: #a8dfe7; font-size: 13px; font-weight: 700; text-decoration: none; }
+ .pattern-dialog__body a:focus-visible, .pattern-dialog__body a:hover { color: var(--page-ink); text-decoration: underline; }
+ .pattern-dialog__close { position: absolute; z-index: 1; top: 14px; right: 14px; display: grid; width: 36px; height: 36px; place-items: center; border: 0; border-radius: 50%; color: #062131; background: rgba(244, 251, 251, .94); cursor: pointer; font-size: 24px; line-height: 1; }
+-.pattern-dialog__close:focus-visible { outline: 2px solid var(--page-accent); outline-offset: 2px; }
++.pattern-dialog__close:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+ 
+ @media (max-width: 780px) {
+   .culture-page { gap: 68px; }
+diff --git a/buyi-dictionary-vue/src/views/Dictionary.vue b/buyi-dictionary-vue/src/views/Dictionary.vue
+index d468e7c1..81ef49f4 100644
+--- a/buyi-dictionary-vue/src/views/Dictionary.vue
++++ b/buyi-dictionary-vue/src/views/Dictionary.vue
+@@ -22,6 +22,9 @@ const activeFilter = ref(String(route.query.type || 'all'))
+ const allResults = ref([])
+ const selectedId = ref(null)
+ const requestState = ref('idle')
++const isLoadingMore = ref(false)
++const page = ref(1)
++const totalPages = ref(1)
+ const requestError = ref('')
+ const serviceState = ref('unknown')
+ const actionMsg = ref('')
+@@ -99,36 +102,49 @@ function saveCachedSearch(keyword, data) {
+   }
+ }
+ 
+-async function runSearch() {
++async function runSearch(nextPage = 1) {
++  const targetPage = Number.isInteger(nextPage) ? nextPage : 1
+   clearTimeout(debounceTimer)
+-  router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined } })
++  if (targetPage === 1) router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined } })
+   const sequence = ++requestSequence
+-  requestState.value = 'loading'
++  if (targetPage === 1) requestState.value = 'loading'
++  else isLoadingMore.value = true
+   requestError.value = ''
+   cacheNotice.value = ''
+   try {
+-    const data = await searchApi.search({ keyword: searchQuery.value.trim() })
++    const data = await searchApi.search({ keyword: searchQuery.value.trim(), page: targetPage, pageSize: 20 })
+     if (sequence !== requestSequence) return
+-    saveCachedSearch(searchQuery.value, data)
+-    allResults.value = mapResults(data)
+-    selectedId.value = filteredResults.value[0]?.id || null
++    if (targetPage === 1) saveCachedSearch(searchQuery.value, data)
++    const mapped = mapResults(data)
++    allResults.value = targetPage === 1
++      ? mapped
++      : [...allResults.value, ...mapped.filter((item) => !allResults.value.some((current) => current.id === item.id))]
++    page.value = Number(data.pagination?.page || targetPage)
++    totalPages.value = Number(data.pagination?.totalPages || 1)
++    if (targetPage === 1) selectedId.value = filteredResults.value[0]?.id || null
+     requestState.value = allResults.value.length ? 'ready' : 'empty'
+     serviceState.value = 'ready'
+   } catch {
+     if (sequence !== requestSequence) return
+-    const cachedData = readCachedSearch(searchQuery.value)
++    const cachedData = targetPage === 1 ? readCachedSearch(searchQuery.value) : null
+     if (cachedData) {
+       allResults.value = mapResults(cachedData)
+       selectedId.value = filteredResults.value[0]?.id || null
+       requestState.value = allResults.value.length ? 'ready' : 'empty'
+       cacheNotice.value = '词典服务暂不可用，当前展示此前成功加载的本地缓存词条。'
+     } else {
+-      allResults.value = []
+-      selectedId.value = null
+-      requestState.value = 'error'
+-      requestError.value = '暂时无法连接词典服务。请确认服务已启动后重试。'
++      if (targetPage === 1) {
++        allResults.value = []
++        selectedId.value = null
++        requestState.value = 'error'
++        requestError.value = '暂时无法连接词典服务。请确认服务已启动后重试。'
++      } else {
++        notify('更多搜索结果加载失败，请稍后重试。')
++      }
+     }
+     checkService()
++  } finally {
++    isLoadingMore.value = false
+   }
+ }
+ 
+@@ -289,7 +305,7 @@ onUnmounted(() => {
+     <header class="dictionary-hero">
+       <div>
+         <p class="dict-hero-kicker">布依语词典</p>
+-        <h1 class="dict-hero-title">从一个词，找到下一段文化线索。</h1>
++        <h1 class="dict-hero-title">布依语词典</h1>
+         <span class="dict-hero-subtitle">支持布依语、汉字与拼音查询；每个关联展项都保留资料出处。</span>
+       </div>
+     </header>
+@@ -332,21 +348,25 @@ onUnmounted(() => {
+           <strong>这个分类暂时没有匹配词条</strong>
+           <p>可切换到“全部”，或使用其他关键词继续查询。</p>
+         </div>
+-        <button
+-          v-else
+-          v-for="result in filteredResults"
+-          :key="result.id"
+-          type="button"
+-          class="result-row"
+-          :class="{ selected: result.id === selectedId }"
+-          :aria-pressed="result.id === selectedId"
+-          @click="selectItem(result)"
+-        >
+-          <span class="result-row__type">{{ getContentLabel(result.type) }}</span>
+-          <strong>{{ result.bouyei }}</strong>
+-          <span>{{ result.chinese }}</span>
+-          <small v-if="result.relatedExhibits.length">关联 {{ result.relatedExhibits.length }} 个文化展项</small>
+-        </button>
++        <template v-else>
++          <button
++            v-for="result in filteredResults"
++            :key="result.id"
++            type="button"
++            class="result-row"
++            :class="{ selected: result.id === selectedId }"
++            :aria-pressed="result.id === selectedId"
++            @click="selectItem(result)"
++          >
++            <span class="result-row__type">{{ getContentLabel(result.type) }}</span>
++            <strong>{{ result.bouyei }}</strong>
++            <span>{{ result.chinese }}</span>
++            <small v-if="result.relatedExhibits.length">关联 {{ result.relatedExhibits.length }} 个文化展项</small>
++          </button>
++          <button v-if="page < totalPages" class="result-more" type="button" :disabled="isLoadingMore" @click="runSearch(page + 1)">
++            {{ isLoadingMore ? '正在加载…' : `加载更多（${page} / ${totalPages}）` }}
++          </button>
++        </template>
+       </div>
+ 
+       <aside class="entry-detail liquid-glass liquid-glass-content" aria-label="词条详情">
+@@ -400,13 +420,16 @@ onUnmounted(() => {
+ @keyframes dictBgReveal { to { transform: scale(1); } }
+ @media (prefers-reduced-motion: reduce) { .dictionary-bg, .dictionary-bg img { animation: none !important; transform: none !important; } }
+ .dictionary-hero { padding: 8px 0 22px; }.dictionary-hero p, .culture-links > p { margin: 0; color: var(--c-accent); font-size: .75rem; font-weight: 700; letter-spacing: .08em; }.dictionary-hero h1 { max-width: 18ch; margin: 6px 0 8px; color: var(--c-text); font: 600 clamp(1.85rem, 3.4vw, 2.85rem) / 1.08 var(--font-serif); letter-spacing: -.025em; text-shadow: 0 2px 16px rgba(255, 255, 255, .78); text-wrap: balance; }.dictionary-hero > div > span { display: block; max-width: 48ch; color: var(--c-text-70); font-size: 1rem; line-height: 1.75; text-shadow: 0 1px 10px rgba(255, 255, 255, .82); }
+-/* 搜索区：hero 玻璃外壳。内部 SearchBar 自带 content 玻璃会被下面 :deep 抹平，避免双层玻璃叠糊。 */
+-.dictionary-search { padding: 24px; }.dictionary-search :deep(.search-bar) { border-color: transparent; background: var(--c-glass); box-shadow: none; }.dictionary-search :deep(.search-bar:focus-within) { box-shadow: 0 0 0 4px var(--c-brand-08); }.dictionary-search__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }.dictionary-search__meta p { margin: 0; color: var(--c-text-60); font-size: .875rem; }.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }.filter-pills button { min-height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; color: var(--c-text-70); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.filter-pills button:hover { color: var(--c-text); background: var(--c-brand-06); }.filter-pills button.active { color: var(--c-white); background: var(--c-brand); }.filter-pills button:focus-visible, .entry-actions button:focus-visible, .state-panel button:focus-visible, .result-row:focus-visible, .culture-links a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
++/* 搜索区：简洁输入条样式（实色底 + 边框） */
++.dictionary-search { padding: 24px; overflow: visible; }.dictionary-search__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }.dictionary-search__meta p { margin: 0; color: var(--c-text-60); font-size: .875rem; }.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }.filter-pills button { min-height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; color: var(--c-text-70); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.filter-pills button:hover { color: var(--c-text); background: var(--c-brand-06); }.filter-pills button.active { color: var(--c-white); background: var(--c-brand); }.filter-pills button:focus-visible, .entry-actions button:focus-visible, .state-panel button:focus-visible, .result-row:focus-visible, .culture-links a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
+ .dictionary-results { display: grid; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr); gap: 32px; align-items: start; margin-top: 28px; }.result-list { min-height: 420px; padding: 4px 8px 12px; }.result-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; width: 100%; padding: 18px 14px; border: 0; border-bottom: 1px solid var(--c-divider); color: inherit; background: transparent; cursor: pointer; text-align: left; }.result-row:hover { background: var(--c-brand-06); }.result-row.selected { background: var(--c-brand-08); box-shadow: inset 3px 0 0 var(--c-brand); }.result-row__type { grid-row: span 2; align-self: start; padding: 4px 7px; border-radius: 999px; color: var(--c-brand); background: var(--c-brand-08); font-size: .6875rem; font-weight: 700; }.result-row strong { overflow: hidden; color: var(--c-text); font-size: 1.0625rem; text-overflow: ellipsis; white-space: nowrap; }.result-row > span:not(.result-row__type) { overflow: hidden; color: var(--c-text-70); font-size: .875rem; text-overflow: ellipsis; white-space: nowrap; }.result-row small { grid-column: 2; color: var(--c-accent); font-size: .75rem; }
+ .entry-detail { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px) + 20px); min-height: 420px; padding: clamp(24px, 4vw, 46px); }.entry-detail__topline { display: flex; justify-content: space-between; gap: 16px; color: var(--c-text-60); font-size: .75rem; }.entry-detail__topline span:first-child { color: var(--c-accent); font-weight: 700; }.entry-detail h2 { margin: 26px 0 6px; font: 600 3rem / 1.1 var(--font-serif); letter-spacing: -.025em; }.entry-detail__meaning { margin: 0; color: var(--c-text); font-size: 1.25rem; font-weight: 600; }.entry-detail__note { max-width: 55ch; margin: 28px 0; padding-left: 16px; border-left: 1px solid var(--c-brand-40); color: var(--c-text-70); line-height: 1.8; }.entry-actions { display: flex; flex-wrap: wrap; gap: 8px; }.entry-actions button { min-height: 40px; padding: 0 14px; border: 1px solid var(--c-brand-25); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.entry-actions button:hover { color: var(--c-white); background: var(--c-brand); }
+ .entry-actions button.is-playing { color: var(--c-white); background: var(--c-brand); }
+ .culture-links { display: grid; gap: 10px; margin-top: 38px; padding-top: 28px; border-top: 1px solid var(--c-divider); }.culture-links h3 { margin: 0 0 4px; font: 600 1.5rem var(--font-serif); }.culture-links a { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 15px 0; border-bottom: 1px solid var(--c-divider); color: inherit; text-decoration: none; }.culture-links a:hover strong { color: var(--c-brand); }.culture-links a span { color: var(--c-text-60); font-size: .75rem; }.culture-links a strong { color: var(--c-text); font-size: 1rem; }.culture-links a b { grid-row: span 2; align-self: center; color: var(--c-accent); }
+ .state-panel { max-width: 34rem; margin: 40px auto; padding: 28px; border: 1px solid var(--c-divider); border-radius: var(--radius-md); background: var(--c-bg-silver); }.state-panel strong { color: var(--c-text); }.state-panel p { margin: 8px 0 20px; color: var(--c-text-70); line-height: 1.7; }.state-panel button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 600 .875rem var(--font-sans); }.state-panel--error { background: var(--c-danger-08); border-color: color-mix(in srgb, var(--c-danger) 28%, transparent); }.state-copy { margin: 16px 0; color: var(--c-text-60); font-size: .875rem; }.result-skeleton { display: grid; grid-template-columns: 50px 1fr; gap: 10px; padding: 20px 14px; border-bottom: 1px solid var(--c-divider); }.result-skeleton i, .result-skeleton b, .result-skeleton span { display: block; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-06), var(--c-brand-08), var(--c-brand-06)); animation: shimmer 1.4s ease-in-out infinite; }.result-skeleton i { grid-row: span 2; height: 22px; }.result-skeleton b { height: 17px; width: 44%; }.result-skeleton span { height: 12px; width: 64%; }.entry-detail__empty { display: grid; min-height: 340px; place-content: center; gap: 14px; color: var(--c-text-60); text-align: center; }.entry-detail__empty span { color: var(--c-accent); font: 3rem var(--font-serif); }.entry-detail__empty p { max-width: 25ch; margin: 0; line-height: 1.8; }.action-message { position: absolute; right: 24px; bottom: 18px; left: 24px; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--c-text); background: var(--c-accent-10); font-size: .8125rem; }
++.result-more { display: block; min-height: 40px; margin: 16px auto 4px; padding: 8px 18px; border: 1px solid var(--c-brand-25); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }
++.result-more:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
++.result-more:disabled { cursor: wait; opacity: .65; }
+ .service-status { display: block; margin: -8px 0 20px; color: var(--c-text-60); font-size: .75rem; }.service-status--ready { color: var(--c-brand); }.service-status--degraded, .service-status--offline { color: var(--c-danger); }
+ @keyframes shimmer { 50% { opacity: .45; } }
+ @media (max-width: 860px) { .dictionary-workspace { padding-top: 92px; }.dictionary-results { grid-template-columns: 1fr; }.entry-detail { position: static; }.result-list { min-height: 0; }.dictionary-search__meta { align-items: flex-start; flex-direction: column; } }
+@@ -518,4 +541,71 @@ onUnmounted(() => {
+   .dictionary-workspace .dictionary-search :deep(.search-btn) { min-width: 68px; padding-inline: 9px; font-size: .8125rem; }
+   .dictionary-workspace .filter-pills button { padding-inline: 11px; }
+ }
++
++[data-theme="dark"] .dictionary-workspace .dictionary-search,
++[data-theme="dark"] .dictionary-workspace .result-list,
++[data-theme="dark"] .dictionary-workspace .entry-detail {
++  /* A photo is deliberately retained in dark mode, so a translucent white
++     surface makes both content and the background compete for attention.
++     Use a dark, high-opacity surface instead of the global light glass token. */
++  background: rgba(13, 20, 28, .88);
++  border-color: rgba(181, 211, 226, .22);
++  box-shadow: 0 18px 44px rgba(0, 0, 0, .28);
++  backdrop-filter: blur(18px) saturate(.8);
++  -webkit-backdrop-filter: blur(18px) saturate(.8);
++}
++
++/* Retain the liquid material in light mode, but keep dark surfaces calm and
++   contrast-first instead of layering bright specular highlights on them. */
++[data-theme="dark"] .dictionary-workspace .dictionary-search::before,
++[data-theme="dark"] .dictionary-workspace .result-list::before,
++[data-theme="dark"] .dictionary-workspace .entry-detail::before,
++[data-theme="dark"] .dictionary-workspace .dictionary-search::after,
++[data-theme="dark"] .dictionary-workspace .result-list::after,
++[data-theme="dark"] .dictionary-workspace .entry-detail::after {
++  opacity: 0;
++}
++
++[data-theme="dark"] .dictionary-workspace::before {
++  content: '';
++  position: fixed;
++  inset: 0;
++  z-index: -1;
++  pointer-events: none;
++  background:
++    linear-gradient(180deg, rgba(7, 13, 19, .80) 0%, rgba(7, 13, 19, .66) 42%, rgba(7, 13, 19, .84) 100%),
++    radial-gradient(circle at 18% 12%, rgba(58, 107, 140, .22), transparent 42%);
++}
++
++[data-theme="dark"] .dictionary-workspace .dictionary-bg img {
++  filter: brightness(.58) saturate(.72) contrast(1.04);
++}
++
++[data-theme="dark"] .dictionary-workspace .dictionary-hero h1 {
++  color: var(--c-text);
++  text-shadow: 0 2px 18px rgba(0, 0, 0, .72);
++}
++
++[data-theme="dark"] .dictionary-workspace .dictionary-hero > div > span {
++  color: var(--c-text-70);
++  text-shadow: 0 1px 10px rgba(0, 0, 0, .70);
++}
++
++[data-theme="dark"] .dictionary-workspace .result-row:hover,
++[data-theme="dark"] .dictionary-workspace .result-row.selected {
++  background: rgba(107, 163, 190, .16);
++}
++
++[data-theme="dark"] .dictionary-workspace .entry-actions button,
++[data-theme="dark"] .dictionary-workspace .result-more {
++  background: rgba(107, 163, 190, .10);
++  border-color: rgba(143, 189, 210, .38);
++}
++
++[data-theme="dark"] .dictionary-workspace .entry-actions button:hover,
++[data-theme="dark"] .dictionary-workspace .entry-actions button.is-playing {
++  color: var(--c-brand-foreground);
++  background: var(--c-brand);
++  border-color: var(--c-brand);
++}
+ </style>
+diff --git a/buyi-dictionary-vue/src/views/Favorites.vue b/buyi-dictionary-vue/src/views/Favorites.vue
+index b95efb56..de12a1f2 100644
+--- a/buyi-dictionary-vue/src/views/Favorites.vue
++++ b/buyi-dictionary-vue/src/views/Favorites.vue
+@@ -35,9 +35,9 @@ async function removeFavorite(item) {
+ </script>
+ 
+ <template>
+-  <ToolPageShell title="我的收藏" subtitle="珍藏的布依语词汇与文化内容" :bg-image="imgBg" :show-overlay="false" image-tone="light">
++  <ToolPageShell title="我的收藏" subtitle="收藏夹" :bg-image="imgBg" :show-overlay="false" image-tone="light">
+     <div class="favorites-content">
+-      <section class="fav-summary liquid-glass liquid-glass-content">
++      <section class="fav-summary">
+         <p class="summary-count">{{ favorites.length }}</p>
+         <p class="summary-label">个收藏内容</p>
+       </section>
+@@ -57,7 +57,7 @@ async function removeFavorite(item) {
+         <article
+           v-for="item in favorites"
+           :key="`${item.contentType}-${item.contentId}`"
+-          class="fav-item liquid-glass-quiet"
++          class="fav-item"
+         >
+           <RouterLink class="fav-item-body" :to="getContentRoute(item.contentType)">
+             <span class="fav-type-tag">{{ getContentLabel(item.contentType) }}</span>
+@@ -96,6 +96,9 @@ async function removeFavorite(item) {
+   flex-direction: column;
+   align-items: center;
+   padding: 32px 24px;
++  border: 1px solid var(--c-divider);
++  border-radius: var(--radius-md);
++  background: var(--c-white-78);
+ }
+ 
+ .summary-count {
+@@ -172,7 +175,7 @@ async function removeFavorite(item) {
+ .fav-list {
+   display: flex;
+   flex-direction: column;
+-  gap: 12px;
++  gap: 0;
+ }
+ 
+ .fav-item {
+@@ -180,6 +183,11 @@ async function removeFavorite(item) {
+   align-items: center;
+   padding: 16px 20px;
+   gap: 16px;
++  border-bottom: 1px solid var(--c-divider);
++}
++
++.fav-item:last-child {
++  border-bottom: none;
+ }
+ 
+ .fav-item-body {
+@@ -260,4 +268,9 @@ async function removeFavorite(item) {
+   outline: 2px solid var(--c-focus);
+   outline-offset: 2px;
+ }
++
++[data-theme="dark"] .fav-summary {
++  background: var(--c-glass);
++  backdrop-filter: blur(12px);
++}
+ </style>
+diff --git a/buyi-dictionary-vue/src/views/Learn.vue b/buyi-dictionary-vue/src/views/Learn.vue
+index 338ddbe5..0d2853d5 100644
+--- a/buyi-dictionary-vue/src/views/Learn.vue
++++ b/buyi-dictionary-vue/src/views/Learn.vue
+@@ -12,6 +12,11 @@ const authStore = useAuthStore()
+ const favoritesStore = useFavoritesStore()
+ const words = ref([])
+ const isLoading = ref(false)
++const isLoadingMore = ref(false)
++const page = ref(1)
++const totalPages = ref(1)
++const totalWords = ref(0)
++const isPronouncing = ref(false)
+ const currentIndex = ref(0)
+ const isFlipped = ref(false)
+ const learnedCount = ref(0)
+@@ -19,6 +24,7 @@ const actionMsg = ref('')
+ const bgParallax = ref(0)
+ let msgTimer = null
+ let scrollHandler = null
++let pronunciationAudio = null
+ let currentVisitId = 0
+ const recordedVisitIds = new Set()
+ const recordingVisitIds = new Set()
+@@ -28,7 +34,7 @@ const recordedReviewIds = new Set()
+ const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
+ 
+ const currentWord = computed(() => words.value[currentIndex.value] || {
+-  bouyei: '', chinese: '', english: '', phonetic: ''
++  bouyei: '', chinese: '', english: '', phonetic: '', audioUrl: ''
+ })
+ 
+ const flipCard = () => {
+@@ -41,9 +47,63 @@ function showMsg(text) {
+   msgTimer = setTimeout(() => { actionMsg.value = '' }, 2200)
+ }
+ 
+-// 发音（占位：后端暂无 TTS）
+-function handlePlay() {
+-  showMsg('发音功能即将上线')
++function stopPronunciation() {
++  pronunciationAudio?.pause()
++  pronunciationAudio = null
++  window.speechSynthesis?.cancel()
++  isPronouncing.value = false
++}
++
++function speakWithBrowser() {
++  if (!('speechSynthesis' in window) || !currentWord.value.bouyei) {
++    showMsg('该词条暂无可用发音')
++    return
++  }
++  window.speechSynthesis.cancel()
++  const utterance = new SpeechSynthesisUtterance(currentWord.value.bouyei)
++  utterance.lang = 'zh-CN'
++  utterance.rate = 0.82
++  utterance.onstart = () => {
++    isPronouncing.value = true
++    showMsg('正在播放合成发音，仅供参考')
++  }
++  utterance.onend = () => { isPronouncing.value = false }
++  utterance.onerror = () => {
++    isPronouncing.value = false
++    showMsg('发音播放失败，请稍后重试')
++  }
++  window.speechSynthesis.speak(utterance)
++}
++
++async function handlePlay() {
++  if (isPronouncing.value) return
++  const word = currentWord.value
++  if (!word?.id) return
++  if (!word.audioUrl) {
++    speakWithBrowser()
++    return
++  }
++
++  stopPronunciation()
++  pronunciationAudio = new Audio(word.audioUrl)
++  pronunciationAudio.onplay = () => {
++    isPronouncing.value = true
++    showMsg('正在播放原声发音')
++  }
++  pronunciationAudio.onended = () => { isPronouncing.value = false }
++  pronunciationAudio.onerror = () => {
++    isPronouncing.value = false
++    speakWithBrowser()
++  }
++  try {
++    await pronunciationAudio.play()
++    if (authStore.isLoggedIn) {
++      recordsApi.create({ contentType: 'dictionary', contentId: word.id, actionType: 'play' }).catch(() => {})
++    }
++  } catch {
++    isPronouncing.value = false
++    speakWithBrowser()
++  }
+ }
+ 
+ // 收藏切换
+@@ -110,12 +170,44 @@ async function handleReview() {
+   }
+ }
+ 
+-const nextWord = () => {
++async function loadWords(nextPage = 1) {
++  if (nextPage > 1) isLoadingMore.value = true
++  try {
++    const res = await contentApi.list('dictionary', { page: nextPage, pageSize: 20 })
++    const mapped = (res.items || []).map(item => ({
++      id: item.id,
++      bouyei: item.buyiText || '',
++      chinese: item.zhText || '',
++      english: item.enText || '',
++      phonetic: item.description || '',
++      audioUrl: item.audioUrl || ''
++    }))
++    words.value = nextPage === 1 ? mapped : [...words.value, ...mapped.filter((word) => !words.value.some((current) => current.id === word.id))]
++    page.value = Number(res.page || nextPage)
++    totalWords.value = Number(res.total || words.value.length)
++    totalPages.value = Number(res.totalPages || Math.max(1, Math.ceil(totalWords.value / 20)))
++    return true
++  } catch (error) {
++    console.error('词汇加载失败', error)
++    if (nextPage === 1) words.value = []
++    else showMsg('更多词汇加载失败，请重试')
++    return false
++  } finally {
++    isLoadingMore.value = false
++  }
++}
++
++const nextWord = async () => {
++  stopPronunciation()
+   isFlipped.value = false
+   if (words.value.length > 0) {
+     // 先记录当前词，再切换索引，避免把“下一词”写入学习记录
+     const previousVisitId = currentVisitId
+     recordCurrentView().catch(() => { /* 记录失败静默忽略 */ })
++    if (currentIndex.value === words.value.length - 1 && page.value < totalPages.value) {
++      const loaded = await loadWords(page.value + 1)
++      if (!loaded) return
++    }
+     currentIndex.value = (currentIndex.value + 1) % words.value.length
+     currentVisitId += 1
+     recordedVisitIds.delete(previousVisitId)
+@@ -128,18 +220,7 @@ onMounted(async () => {
+   isLoading.value = true
+   // 并行：加载词汇 + 拉取学习统计（登录态）
+   const tasks = [
+-    contentApi.list('dictionary', { page: 1, pageSize: 50 }).then(res => {
+-      words.value = (res.items || []).map(item => ({
+-        id: item.id,
+-        bouyei: item.buyiText || '',
+-        chinese: item.zhText || '',
+-        english: item.enText || '',
+-        phonetic: item.description || ''
+-      }))
+-    }).catch(e => {
+-      console.error('词汇加载失败', e)
+-      words.value = []
+-    }),
++    loadWords(1),
+     authStore.isLoggedIn ? recordsApi.stats().then(res => {
+       learnStats.value = res || learnStats.value
+     }).catch(() => {}) : Promise.resolve()
+@@ -159,6 +240,7 @@ onMounted(async () => {
+ 
+ onUnmounted(() => {
+   if (msgTimer) clearTimeout(msgTimer)
++  stopPronunciation()
+   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
+ })
+ </script>
+@@ -172,7 +254,7 @@ onUnmounted(() => {
+         <h1>翻转卡片，记住每一个词</h1>
+       </header>
+       <!-- 学习统计条（登录态显示） -->
+-      <div v-if="authStore.isLoggedIn" class="learn-stats liquid-glass-content" aria-live="polite" aria-atomic="false">
++      <div v-if="authStore.isLoggedIn" class="learn-stats" aria-live="polite" aria-atomic="false">
+         <div class="learn-stat">
+           <span class="learn-stat-value">{{ learnStats.streakDays ?? 0 }}</span>
+           <span class="learn-stat-label">连续天数</span>
+@@ -192,9 +274,9 @@ onUnmounted(() => {
+       <p v-if="isLoading" class="loading-hint">加载中…</p>
+       <p v-else-if="words.length === 0" class="loading-hint">暂无词汇</p>
+       <template v-else>
+-      <div class="progress liquid-glass-quiet">
++      <div class="progress">
+         <span>已学习: {{ learnedCount }} 词</span>
+-        <span>进度: {{ currentIndex + 1 }} / {{ words.length }}</span>
++        <span>进度: {{ currentIndex + 1 }} / {{ totalWords || words.length }}</span>
+       </div>
+       
+       <button
+@@ -204,12 +286,12 @@ onUnmounted(() => {
+         @click="flipCard"
+       >
+         <div class="card" :class="{ flipped: isFlipped }">
+-          <div class="card-front liquid-glass liquid-glass-hero">
++          <div class="card-front">
+             <span class="phonetic">{{ currentWord.phonetic }}</span>
+             <h2 class="word">{{ currentWord.bouyei }}</h2>
+             <p class="hint">点击翻转</p>
+           </div>
+-          <div class="card-back liquid-glass liquid-glass-hero">
++          <div class="card-back">
+             <h2>{{ currentWord.chinese }}</h2>
+             <p class="english">{{ currentWord.english }}</p>
+             <p class="phonetic">{{ currentWord.phonetic }}</p>
+@@ -220,7 +302,7 @@ onUnmounted(() => {
+       <p v-if="actionMsg" class="action-msg" aria-live="polite">{{ actionMsg }}</p>
+ 
+       <div class="action-bar" role="group" aria-label="学习动作">
+-        <button v-pointer-glow="{ tone: 'brand', size: 'sm' }" class="action-btn" type="button" aria-label="播放发音" @click="handlePlay">
++        <button v-pointer-glow="{ tone: 'brand', size: 'sm' }" class="action-btn" type="button" aria-label="播放发音" :disabled="isPronouncing" @click="handlePlay">
+           <IconPlay :size="20" />
+           <span>发音</span>
+         </button>
+@@ -240,6 +322,15 @@ onUnmounted(() => {
+           <span>下一词</span>
+         </button>
+       </div>
++      <button
++        v-if="page < totalPages"
++        class="load-more-btn"
++        type="button"
++        :disabled="isLoadingMore"
++        @click="loadWords(page + 1)"
++      >
++        {{ isLoadingMore ? '正在加载…' : `加载更多词汇（${page} / ${totalPages}）` }}
++      </button>
+       </template>
+     </div>
+   </main>
+@@ -289,6 +380,9 @@ onUnmounted(() => {
+   justify-content: space-around;
+   width: 100%;
+   padding: 16px 24px;
++  border: 1px solid var(--c-divider);
++  border-radius: var(--radius-md);
++  background: var(--c-white-78);
+ }
+ 
+ .learn-stat {
+@@ -323,6 +417,9 @@ onUnmounted(() => {
+   padding: 16px 24px;
+   font-size: 14px;
+   color: var(--c-text-70);
++  border: 1px solid var(--c-divider);
++  border-radius: var(--radius-md);
++  background: var(--c-white-78);
+ }
+ 
+ .card-container {
+@@ -377,14 +474,13 @@ onUnmounted(() => {
+ }
+ 
+ .card-front {
+-  --lg-radius: var(--radius);
+-  --lg-tint-a: 0.55;
++  background: var(--c-white);
++  border: 1px solid var(--c-divider);
+ }
+ 
+ .card-back {
+-  --lg-radius: var(--radius);
+-  --lg-tint: 27, 58, 92;
+-  --lg-tint-a: 0.88;
++  background: var(--c-brand-dark);
++  border: 1px solid var(--c-brand-dark);
+   transform: rotateY(180deg);
+   color: white;
+ }
+@@ -470,6 +566,28 @@ onUnmounted(() => {
+   transform: translateY(0);
+ }
+ 
++.action-btn:disabled,
++.load-more-btn:disabled {
++  cursor: wait;
++  opacity: .65;
++}
++
++.load-more-btn {
++  min-height: 40px;
++  padding: 8px 20px;
++  border: 1px solid var(--c-white-50);
++  border-radius: 999px;
++  background: var(--c-white-78);
++  color: var(--c-brand);
++  font: 600 13px var(--font-sans);
++  cursor: pointer;
++}
++
++.load-more-btn:focus-visible {
++  outline: 2px solid var(--c-focus);
++  outline-offset: 2px;
++}
++
+ .action-btn-primary {
+   background: var(--c-brand);
+   color: var(--c-brand-foreground);
+@@ -489,4 +607,20 @@ onUnmounted(() => {
+     transition: none !important;
+   }
+ }
++
++[data-theme="dark"] .learn-stats,
++[data-theme="dark"] .progress,
++[data-theme="dark"] .action-btn,
++[data-theme="dark"] .load-more-btn {
++  background: var(--c-glass);
++  backdrop-filter: blur(12px);
++  border-color: var(--c-divider);
++}
++
++[data-theme="dark"] .card-front,
++[data-theme="dark"] .card-back {
++  background: var(--c-glass-nav);
++  backdrop-filter: blur(16px);
++  border-color: var(--c-divider);
++}
+ </style>
+diff --git a/buyi-dictionary-vue/src/views/Login.vue b/buyi-dictionary-vue/src/views/Login.vue
+index 34bfb97a..869fbfb0 100644
+--- a/buyi-dictionary-vue/src/views/Login.vue
++++ b/buyi-dictionary-vue/src/views/Login.vue
+@@ -99,9 +99,9 @@ function switchMode() {
+     </div>
+     <div class="login-scrim"></div>
+ 
+-    <div class="login-card liquid-glass liquid-glass-hero">
++    <div class="login-panel">
+       <h1 class="login-title">{{ mode === 'login' ? '登录' : '注册' }}</h1>
+-      <p class="login-subtitle">布依族词典 · 传承语言之美</p>
++      <p class="login-subtitle">登录以收藏词条与记录学习</p>
+ 
+       <form class="login-form" @submit.prevent="handleSubmit">
+         <div class="form-field">
+@@ -178,8 +178,14 @@ function switchMode() {
+   min-height: 100vh;
+   display: flex;
+   align-items: center;
+-  justify-content: center;
+-  padding: 24px;
++  justify-content: flex-start;
++  padding: 32px;
++}
++
++@media (min-width: 768px) {
++  .login-page {
++    padding: 48px 8vw;
++  }
+ }
+ 
+ .login-bg {
+@@ -201,13 +207,16 @@ function switchMode() {
+   background: linear-gradient(135deg, var(--c-overlay-deep-1), var(--c-overlay-deep-2));
+ }
+ 
+-.login-card {
++.login-panel {
+   width: 100%;
+   max-width: 400px;
+   padding: 40px 32px;
+   display: flex;
+   flex-direction: column;
+-  align-items: center;
++  align-items: stretch;
++  /* subtle semi-transparent background for readability over the image,
++     NOT a glass/card effect: no border, no shadow, no blur, no radius */
++  background: rgba(0, 0, 0, 0.35);
+ }
+ 
+ .login-title {
+@@ -311,7 +320,7 @@ function switchMode() {
+   margin: 24px 0 0 0;
+   font-size: 13px;
+   color: var(--c-text-60);
+-  text-align: center;
++  text-align: left;
+ }
+ 
+ .switch-mode a,
+diff --git a/buyi-dictionary-vue/src/views/NotFound.vue b/buyi-dictionary-vue/src/views/NotFound.vue
+index 07057ba0..f05d4fd2 100644
+--- a/buyi-dictionary-vue/src/views/NotFound.vue
++++ b/buyi-dictionary-vue/src/views/NotFound.vue
+@@ -4,14 +4,9 @@ import { RouterLink } from 'vue-router'
+ 
+ <template>
+   <main id="main" class="not-found">
+-    <div class="not-found-card liquid-glass">
+-      <p class="not-found-code">404</p>
+-      <h1 class="not-found-title">页面未找到</h1>
+-      <p class="not-found-desc">
+-        你访问的页面不存在或已被移除，请检查链接或返回首页继续浏览。
+-      </p>
+-      <RouterLink class="not-found-link" to="/">返回首页</RouterLink>
+-    </div>
++    <p class="not-found-code">404</p>
++    <p class="not-found-desc">页面不存在</p>
++    <RouterLink class="not-found-link" to="/">返回首页</RouterLink>
+   </main>
+ </template>
+ 
+@@ -19,38 +14,28 @@ import { RouterLink } from 'vue-router'
+ .not-found {
+   min-height: 70vh;
+   display: flex;
+-  align-items: center;
++  flex-direction: column;
+   justify-content: center;
++  align-items: flex-start;
++  max-width: 32rem;
++  margin: 0 auto;
+   padding: 4rem 1.5rem;
+ }
+ 
+-.not-found-card {
+-  max-width: 28rem;
+-  width: 100%;
+-  padding: 3rem 2rem;
+-  border-radius: 20px;
+-  text-align: center;
+-}
+-
+ .not-found-code {
+-  font-size: 4rem;
++  font-size: 8rem;
+   font-weight: 700;
+-  line-height: 1;
++  line-height: 0.9;
++  letter-spacing: -0.02em;
+   color: var(--c-brand);
+-  margin: 0 0 0.75rem;
+-}
+-
+-.not-found-title {
+-  font-size: 1.5rem;
+-  font-weight: 600;
+-  margin: 0 0 0.75rem;
+-  color: var(--c-text);
++  margin: 0 0 1rem;
+ }
+ 
+ .not-found-desc {
+-  margin: 0 0 1.75rem;
++  margin: 0 0 2rem;
++  font-size: 1.125rem;
+   color: var(--c-text-70);
+-  line-height: 1.7;
++  line-height: 1.6;
+ }
+ 
+ .not-found-link {
+diff --git a/buyi-dictionary-vue/src/views/Profile.vue b/buyi-dictionary-vue/src/views/Profile.vue
+index 0a0da707..002929aa 100644
+--- a/buyi-dictionary-vue/src/views/Profile.vue
++++ b/buyi-dictionary-vue/src/views/Profile.vue
+@@ -75,7 +75,7 @@ onMounted(async () => {
+   <ToolPageShell title="个人中心" subtitle="管理你的学习进度与收藏" :bg-image="imgBg" :show-overlay="false" image-tone="light">
+     <div class="profile-content">
+       <!-- 头像区域 -->
+-      <section class="avatar-section liquid-glass liquid-glass-content">
++      <section class="avatar-section">
+         <div class="avatar-wrapper">
+           <div class="avatar">
+             <img v-if="authStore.userInfo?.avatarUrl" :src="authStore.userInfo.avatarUrl" alt="头像" width="80" height="80" class="avatar-img" />
+@@ -92,23 +92,23 @@ onMounted(async () => {
+       <!-- 学习统计仪表盘（仅登录态显示） -->
+       <section v-if="authStore.isLoggedIn" class="stats-dashboard">
+         <h2 class="dashboard-title">学习概览</h2>
+-        <div class="stats-grid">
+-          <div class="stat-card liquid-glass liquid-glass-content">
++        <div class="stats-row">
++          <div class="stat-cell">
+             <span class="stat-label">今日学习</span>
+             <span class="stat-value">{{ learnStats.todayCount ?? 0 }}</span>
+             <span class="stat-unit">条</span>
+           </div>
+-          <div class="stat-card liquid-glass liquid-glass-content">
++          <div class="stat-cell">
+             <span class="stat-label">累计学习</span>
+             <span class="stat-value">{{ learnStats.totalCount ?? 0 }}</span>
+             <span class="stat-unit">条</span>
+           </div>
+-          <div class="stat-card liquid-glass liquid-glass-content">
++          <div class="stat-cell">
+             <span class="stat-label">连续打卡</span>
+             <span class="stat-value">{{ learnStats.streakDays ?? 0 }}</span>
+             <span class="stat-unit">天</span>
+           </div>
+-          <div class="stat-card liquid-glass liquid-glass-content">
++          <div class="stat-cell">
+             <span class="stat-label">收藏词汇</span>
+             <span class="stat-value">{{ userStats.favoriteCount ?? 0 }}</span>
+             <span class="stat-unit">个</span>
+@@ -138,7 +138,7 @@ onMounted(async () => {
+         </div>
+ 
+         <!-- 学习类型分布图 -->
+-        <div v-if="typeChartData.length" class="chart-card liquid-glass liquid-glass-content">
++        <div v-if="typeChartData.length" class="chart-card">
+           <BarChart :data="typeChartData" title="学习类型分布" :height="220" />
+         </div>
+       </section>
+@@ -175,7 +175,7 @@ onMounted(async () => {
+         </div>
+         <p class="app-name">布依族词典</p>
+         <p class="app-version">v1.0.0</p>
+-        <p class="app-copyright">© 2026 少数民族语言数字化保护</p>
++        <p class="app-copyright">© 2026 布依族词典</p>
+       </section>
+     </div>
+   </ToolPageShell>
+@@ -205,20 +205,26 @@ onMounted(async () => {
+   text-align: center;
+ }
+ 
+-.stats-grid {
+-  display: grid;
+-  grid-template-columns: repeat(2, 1fr);
+-  gap: 12px;
++.stats-row {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 0;
+ }
+ 
+-.stat-card {
++.stat-cell {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+-  padding: 20px 12px;
++  flex: 1;
++  padding: 4px 8px;
+   text-align: center;
+ }
+ 
++.stat-cell + .stat-cell {
++  border-left: 1px solid var(--c-divider);
++}
++
+ .stat-label {
+   font-size: 12px;
+   color: var(--c-text-60);
+@@ -315,6 +321,9 @@ onMounted(async () => {
+ /* 学习类型分布图 */
+ .chart-card {
+   padding: 8px 0;
++  border: 1px solid var(--c-divider);
++  border-radius: var(--radius-md);
++  background: var(--c-white-78);
+ }
+ 
+ .chart-card :deep(.chart-container) {
+@@ -332,6 +341,9 @@ onMounted(async () => {
+   align-items: center;
+   padding: 40px 32px;
+   text-align: center;
++  border: 1px solid var(--c-divider);
++  border-radius: var(--radius-md);
++  background: var(--c-white-78);
+ }
+ 
+ .avatar-wrapper {
+@@ -490,4 +502,10 @@ onMounted(async () => {
+     padding: 32px 24px;
+   }
+ }
++
++[data-theme="dark"] .chart-card,
++[data-theme="dark"] .avatar-section {
++  background: var(--c-glass);
++  backdrop-filter: blur(12px);
++}
+ </style>
+diff --git a/buyi-dictionary-vue/src/views/Record.vue b/buyi-dictionary-vue/src/views/Record.vue
+index c59196bb..f50f04f0 100644
+--- a/buyi-dictionary-vue/src/views/Record.vue
++++ b/buyi-dictionary-vue/src/views/Record.vue
+@@ -13,9 +13,25 @@ const stats = ref(createEmptyStats())
+ const records = ref([])
+ const isLoading = ref(true)
+ const isClearing = ref(false)
++const isLoadingMore = ref(false)
++const page = ref(1)
++const totalPages = ref(1)
+ const toast = ref(null)
+ let toastTimer
+ 
++async function loadRecords(nextPage = 1) {
++  if (nextPage > 1) isLoadingMore.value = true
++  try {
++    const response = await recordsApi.list({ page: nextPage, pageSize: 20 })
++    const items = response?.items || []
++    records.value = nextPage === 1 ? items : [...records.value, ...items.filter((item) => !records.value.some((current) => current.id === item.id))]
++    page.value = Number(response?.page || nextPage)
++    totalPages.value = Number(response?.totalPages || Math.max(1, Math.ceil(Number(response?.total || 0) / 20)))
++  } finally {
++    isLoadingMore.value = false
++  }
++}
++
+ onMounted(async () => {
+   if (!authStore.isLoggedIn) {
+     isLoading.value = false
+@@ -23,12 +39,11 @@ onMounted(async () => {
+   }
+ 
+   try {
+-    const [statsRes, recordsRes] = await Promise.all([
++    const [statsRes] = await Promise.all([
+       recordsApi.stats().catch(() => null),
+-      recordsApi.list({ page: 1, pageSize: 50 }).catch(() => ({ items: [] }))
++      loadRecords(1)
+     ])
+     if (statsRes) stats.value = statsRes
+-    records.value = recordsRes?.items || recordsRes || []
+   } catch (e) {
+     console.error('加载学习记录失败', e)
+   } finally {
+@@ -58,6 +73,8 @@ async function clearRecords() {
+     await recordsApi.clear()
+     // 接口成功后同步本地数据，立即保留统计骨架并切换为空状态。
+     records.value = []
++    page.value = 1
++    totalPages.value = 1
+     stats.value = createEmptyStats()
+     showToast('学习记录已全部清空')
+   } catch (error) {
+@@ -84,19 +101,19 @@ function formatDate(dateStr) {
+ </script>
+ 
+ <template>
+-  <ToolPageShell title="学习记录" subtitle="你的布依语学习足迹" :bg-image="imgBg" :show-overlay="false" image-tone="light">
++  <ToolPageShell title="学习记录" subtitle="学习记录" :bg-image="imgBg" :show-overlay="false" image-tone="light">
+     <div class="record-content">
+       <!-- 统计概览 -->
+-      <section class="stats-grid">
+-        <div class="stat-card liquid-glass liquid-glass-content">
++      <section class="stats-row">
++        <div class="stat-cell">
+           <p class="stat-num">{{ stats.todayCount || 0 }}</p>
+           <p class="stat-label">今日已学</p>
+         </div>
+-        <div class="stat-card liquid-glass liquid-glass-content">
++        <div class="stat-cell">
+           <p class="stat-num">{{ stats.streakDays || 0 }}</p>
+           <p class="stat-label">连续天数</p>
+         </div>
+-        <div class="stat-card liquid-glass liquid-glass-content">
++        <div class="stat-cell">
+           <p class="stat-num">{{ stats.totalCount || 0 }}</p>
+           <p class="stat-label">累计学习</p>
+         </div>
+@@ -115,7 +132,7 @@ function formatDate(dateStr) {
+       </div>
+ 
+       <!-- 类型分布 -->
+-      <section v-if="stats.typeCounts && Object.keys(stats.typeCounts).length" class="type-breakdown liquid-glass-quiet">
++      <section v-if="stats.typeCounts && Object.keys(stats.typeCounts).length" class="type-breakdown">
+         <h2 class="section-title">类型分布</h2>
+         <div class="type-list">
+           <div v-for="(count, type) in stats.typeCounts" :key="type" class="type-row">
+@@ -141,7 +158,7 @@ function formatDate(dateStr) {
+         <article
+           v-for="record in records"
+           :key="record.id"
+-          class="record-item liquid-glass-quiet"
++          class="record-item"
+         >
+           <span class="record-type-tag">{{ getContentLabel(record.contentType) }}</span>
+           <div class="record-info">
+@@ -149,6 +166,15 @@ function formatDate(dateStr) {
+             <p class="record-time">{{ formatDate(record.createdAt || record.learnedAt) }}</p>
+           </div>
+         </article>
++        <button
++          v-if="page < totalPages"
++          class="load-more-btn"
++          type="button"
++          :disabled="isLoadingMore"
++          @click="loadRecords(page + 1)"
++        >
++          {{ isLoadingMore ? '正在加载…' : `加载更多（${page} / ${totalPages}）` }}
++        </button>
+       </section>
+ 
+       <Transition name="toast">
+@@ -176,10 +202,11 @@ function formatDate(dateStr) {
+   gap: 24px;
+ }
+ 
+-.stats-grid {
+-  display: grid;
+-  grid-template-columns: repeat(3, 1fr);
+-  gap: 12px;
++.stats-row {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 0;
+ }
+ 
+ .record-actions {
+@@ -214,11 +241,16 @@ function formatDate(dateStr) {
+   opacity: 0.65;
+ }
+ 
+-.stat-card {
++.stat-cell {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+-  padding: 24px 12px;
++  flex: 1;
++  padding: 16px 12px;
++}
++
++.stat-cell + .stat-cell {
++  border-left: 1px solid var(--c-divider);
+ }
+ 
+ .stat-num {
+@@ -236,6 +268,9 @@ function formatDate(dateStr) {
+ 
+ .type-breakdown {
+   padding: 24px 20px;
++  border: 1px solid var(--c-divider);
++  border-radius: var(--radius-md);
++  background: var(--c-white-78);
+ }
+ 
+ .section-title {
+@@ -329,7 +364,7 @@ function formatDate(dateStr) {
+ .record-list {
+   display: flex;
+   flex-direction: column;
+-  gap: 12px;
++  gap: 0;
+ }
+ 
+ .record-item {
+@@ -337,6 +372,33 @@ function formatDate(dateStr) {
+   align-items: center;
+   gap: 12px;
+   padding: 14px 20px;
++  border-bottom: 1px solid var(--c-divider);
++}
++
++.load-more-btn {
++  align-self: center;
++  min-height: 40px;
++  padding: 8px 20px;
++  border: 1px solid var(--c-brand-25);
++  border-radius: 999px;
++  background: var(--c-glass);
++  color: var(--c-brand);
++  font: 600 13px var(--font-sans);
++  cursor: pointer;
++}
++
++.load-more-btn:focus-visible {
++  outline: 2px solid var(--c-focus);
++  outline-offset: 2px;
++}
++
++.load-more-btn:disabled {
++  cursor: wait;
++  opacity: .65;
++}
++
++.record-item:last-child {
++  border-bottom: none;
+ }
+ 
+ .record-type-tag {
+@@ -408,10 +470,6 @@ function formatDate(dateStr) {
+ }
+ 
+ @media (max-width: 640px) {
+-  .stats-grid {
+-    grid-template-columns: 1fr;
+-  }
+-
+   .record-actions {
+     justify-content: stretch;
+   }
+@@ -428,4 +486,9 @@ function formatDate(dateStr) {
+     transition: none;
+   }
+ }
++
++[data-theme="dark"] .type-breakdown {
++  background: var(--c-glass);
++  backdrop-filter: blur(12px);
++}
+ </style>
+diff --git a/buyi-dictionary-vue/src/views/Settings.vue b/buyi-dictionary-vue/src/views/Settings.vue
+index 6f0ee7d9..5d090555 100644
+--- a/buyi-dictionary-vue/src/views/Settings.vue
++++ b/buyi-dictionary-vue/src/views/Settings.vue
+@@ -5,23 +5,37 @@ import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
+ import { settingsApi } from '@/utils/api'
+ import { useAuthStore } from '@/stores/auth'
+ import { useThemeStore } from '@/stores/theme'
++import { configureLearningReminder } from '@/utils/learningReminder'
+ 
+ const authStore = useAuthStore()
+ const themeStore = useThemeStore()
+ const settings = ref({
+   theme: themeStore.mode,
+-  notifications: true,
++  notifications: false,
+   autoplay: false,
+   language: 'zh-CN'
+ })
+ const isLoading = ref(true)
+ const isSaving = ref(false)
+ const saveMsg = ref('')
++const saveStatus = ref('success')
+ 
+ onMounted(async () => {
+   try {
+     const data = await settingsApi.get()
+-    if (data) settings.value = { ...settings.value, ...data }
++    if (data) {
++      settings.value = { ...settings.value, ...data }
++      localStorage.setItem('buyi_autoplay_enabled', String(settings.value.autoplay))
++      if (settings.value.notifications) {
++        try {
++          await configureLearningReminder(true)
++        } catch {
++          settings.value.notifications = false
++          saveStatus.value = 'error'
++          saveMsg.value = '请重新开启学习提醒并允许浏览器通知权限'
++        }
++      }
++    }
+   } catch (e) {
+     // 后端未实现时使用默认值
+     console.error('加载设置失败', e)
+@@ -35,8 +49,12 @@ async function handleSave() {
+   saveMsg.value = ''
+   try {
+     await settingsApi.update(settings.value)
++    localStorage.setItem('buyi_autoplay_enabled', String(settings.value.autoplay))
++    await configureLearningReminder(settings.value.notifications)
++    saveStatus.value = 'success'
+     saveMsg.value = '设置已保存'
+   } catch (e) {
++    saveStatus.value = 'error'
+     saveMsg.value = '保存失败，请重试'
+     console.error('保存设置失败', e)
+   } finally {
+@@ -45,6 +63,20 @@ async function handleSave() {
+   }
+ }
+ 
++async function handleNotificationsChange() {
++  if (!settings.value.notifications) {
++    await configureLearningReminder(false)
++    return
++  }
++  try {
++    await configureLearningReminder(true, { requestPermission: true })
++  } catch (error) {
++    settings.value.notifications = false
++    saveStatus.value = 'error'
++    saveMsg.value = error?.message || '无法开启学习提醒'
++  }
++}
++
+ function handleLogout() {
+   if (window.confirm('确定要退出当前账号吗？')) {
+     authStore.logout()
+@@ -58,76 +90,78 @@ watch(() => settings.value.theme, (mode) => {
+ </script>
+ 
+ <template>
+-  <ToolPageShell title="设置" subtitle="个性化你的使用体验" :bg-image="imgBg" :show-overlay="false" image-tone="light">
++  <ToolPageShell title="设置" subtitle="外观、数据与账户" :bg-image="imgBg" :show-overlay="false" image-tone="light">
+     <div class="settings-content">
+       <section v-if="isLoading" class="settings-loading" aria-live="polite">
+         <p>加载中…</p>
+       </section>
+ 
+       <template v-else>
+-        <!-- 外观设置 -->
+-        <section class="settings-group liquid-glass liquid-glass-content">
+-          <h2 class="group-title">外观</h2>
+-          <div class="setting-row">
+-            <div class="setting-label">
+-              <p class="setting-name">主题模式</p>
+-              <p class="setting-desc">选择浅色或深色界面</p>
++        <section class="settings-panel">
++          <!-- 外观设置 -->
++          <div class="settings-group">
++            <h2 class="group-title">外观</h2>
++            <div class="setting-row">
++              <div class="setting-label">
++                <p class="setting-name">主题模式</p>
++                <p class="setting-desc">选择浅色或深色界面</p>
++              </div>
++              <select v-model="settings.theme" class="setting-select" aria-label="主题模式">
++                <option value="light">浅色</option>
++                <option value="dark">深色</option>
++                <option value="auto">跟随系统</option>
++              </select>
+             </div>
+-            <select v-model="settings.theme" class="setting-select" aria-label="主题模式">
+-              <option value="light">浅色</option>
+-              <option value="dark">深色</option>
+-              <option value="auto">跟随系统</option>
+-            </select>
+           </div>
+-        </section>
+ 
+-        <!-- 播放设置 -->
+-        <section class="settings-group liquid-glass-quiet">
+-          <h2 class="group-title">播放</h2>
+-          <div class="setting-row">
+-            <div class="setting-label">
+-              <p class="setting-name">自动播放</p>
+-              <p class="setting-desc">进入民歌页时自动播放</p>
++          <!-- 播放设置 -->
++          <div class="settings-group">
++            <h2 class="group-title">播放</h2>
++            <div class="setting-row">
++              <div class="setting-label">
++                <p class="setting-name">自动播放</p>
++                <p class="setting-desc">进入民歌页时自动播放</p>
++              </div>
++              <label class="toggle">
++                <input type="checkbox" v-model="settings.autoplay" />
++                <span class="toggle-slider" aria-hidden="true"></span>
++                <span class="sr-only">自动播放</span>
++              </label>
+             </div>
+-            <label class="toggle">
+-              <input type="checkbox" v-model="settings.autoplay" />
+-              <span class="toggle-slider" aria-hidden="true"></span>
+-              <span class="sr-only">自动播放</span>
+-            </label>
+           </div>
+-        </section>
+ 
+-        <!-- 通知设置 -->
+-        <section class="settings-group liquid-glass-quiet">
+-          <h2 class="group-title">通知</h2>
+-          <div class="setting-row">
+-            <div class="setting-label">
+-              <p class="setting-name">学习提醒</p>
+-              <p class="setting-desc">每日提醒你坚持学习</p>
++          <!-- 通知设置 -->
++          <div class="settings-group">
++            <h2 class="group-title">通知</h2>
++            <div class="setting-row">
++              <div class="setting-label">
++                <p class="setting-name">学习提醒</p>
++                <p class="setting-desc">每日提醒你坚持学习</p>
++              </div>
++              <label class="toggle">
++                <input type="checkbox" v-model="settings.notifications" />
++                <span class="toggle-slider" aria-hidden="true"></span>
++                <span class="sr-only">学习提醒</span>
++              </label>
+             </div>
+-            <label class="toggle">
+-              <input type="checkbox" v-model="settings.notifications" />
+-              <span class="toggle-slider" aria-hidden="true"></span>
+-              <span class="sr-only">学习提醒</span>
+-            </label>
+           </div>
+-        </section>
+ 
+-        <!-- 账户操作 -->
+-        <section class="settings-group liquid-glass-quiet">
+-          <h2 class="group-title">账户</h2>
+-          <div class="setting-row">
+-            <div class="setting-label">
+-              <p class="setting-name">退出登录</p>
+-              <p class="setting-desc">退出当前账号</p>
++          <!-- 账户操作 -->
++          <div class="settings-group">
++            <h2 class="group-title">账户</h2>
++            <div class="setting-row">
++              <div class="setting-label">
++                <p class="setting-name">退出登录</p>
++                <p class="setting-desc">退出当前账号</p>
++              </div>
++              <button class="danger-btn" type="button" @click="handleLogout">退出</button>
+             </div>
+-            <button class="danger-btn" type="button" @click="handleLogout">退出</button>
+           </div>
+         </section>
+ 
+         <!-- 保存按钮 -->
+         <div class="save-bar">
+-          <p v-if="saveMsg" class="save-msg" aria-live="polite">{{ saveMsg }}</p>
++          <p v-if="saveMsg" class="save-msg" :class="{ 'save-msg--error': saveStatus === 'error' }" aria-live="polite">{{ saveMsg }}</p>
+           <button
+             class="save-btn"
+             type="button"
+@@ -158,10 +192,26 @@ watch(() => settings.value.theme, (mode) => {
+   color: var(--c-text-50);
+ }
+ 
++.settings-panel {
++  border: 1px solid var(--c-divider);
++  border-radius: var(--radius-md);
++  background: var(--c-white-78);
++  overflow: hidden;
++}
++
++[data-theme="dark"] .settings-panel {
++  background: var(--c-glass);
++  backdrop-filter: blur(12px);
++}
++
+ .settings-group {
+   padding: 24px 24px 20px;
+ }
+ 
++.settings-group + .settings-group {
++  border-top: 1px solid var(--c-divider);
++}
++
+ .group-title {
+   font-family: var(--font-serif);
+   font-size: 16px;
+@@ -320,6 +370,10 @@ watch(() => settings.value.theme, (mode) => {
+   margin: 0;
+ }
+ 
++.save-msg--error {
++  color: var(--c-danger);
++}
++
+ .save-btn {
+   padding: 12px 32px;
+   border: none;
+diff --git a/buyi-dictionary-vue/src/views/Songs.vue b/buyi-dictionary-vue/src/views/Songs.vue
+index e6156696..96795a40 100644
+--- a/buyi-dictionary-vue/src/views/Songs.vue
++++ b/buyi-dictionary-vue/src/views/Songs.vue
+@@ -1,7 +1,7 @@
+ <script setup>
+ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+ import { useRoute } from 'vue-router'
+-import { contentApi } from '@/utils/api'
++import { contentApi, settingsApi } from '@/utils/api'
+ import { usePlayerStore } from '@/stores/player'
+ import AudioSpectrum from '@/components/specific/AudioSpectrum.vue'
+ import { fallbackSongs, normalizePlayableSongs } from '@/data/playableSongs'
+@@ -14,6 +14,9 @@ const playerStore = usePlayerStore()
+ const route = useRoute()
+ const songs = ref(fallbackSongs)
+ const isLoading = ref(false)
++const isLoadingMore = ref(false)
++const page = ref(1)
++const totalPages = ref(1)
+ const sourceNotice = ref('')
+ const songsPageRef = ref(null)
+ const heroParallax = ref(0)
+@@ -25,23 +28,49 @@ const heroSong = computed(() => playerStore.currentSong || requestedSong.value |
+ const heroCover = computed(() => heroSong.value?.coverUrl || imgAmbient)
+ const isHeroPlaying = computed(() => Boolean(heroSong.value && playerStore.currentSong?.id === heroSong.value.id && playerStore.isPlaying))
+ 
+-async function loadSongs() {
+-  isLoading.value = true
++async function loadSongs(nextPage = 1) {
++  if (nextPage > 1) isLoadingMore.value = true
++  else isLoading.value = true
+   try {
+-    const response = await contentApi.list('song', { page: 1, pageSize: 50 })
++    const response = await contentApi.list('song', { page: nextPage, pageSize: 20 })
+     const playable = normalizePlayableSongs(response.items || [])
+-    songs.value = playable.length ? playable : fallbackSongs
+-    if (!playable.length) sourceNotice.value = '线上曲库暂不可用，正在使用随包音源；每首曲目的来源与授权状态均已标注。'
++    if (nextPage === 1) songs.value = playable.length ? playable : fallbackSongs
++    else songs.value = [...songs.value, ...playable.filter((song) => !songs.value.some((current) => current.id === song.id))]
++    page.value = Number(response.page || nextPage)
++    totalPages.value = Number(response.totalPages || Math.max(1, Math.ceil(Number(response.total || 0) / 20)))
++    if (nextPage === 1 && !playable.length) {
++      totalPages.value = 1
++      sourceNotice.value = '线上曲库暂不可用，正在使用随包音源；每首曲目的来源与授权状态均已标注。'
++    }
+   } catch {
+-    songs.value = fallbackSongs
+-    sourceNotice.value = '线上曲库暂不可用，正在使用随包音源；每首曲目的来源与授权状态均已标注。'
++    if (nextPage === 1) {
++      songs.value = fallbackSongs
++      totalPages.value = 1
++      sourceNotice.value = '线上曲库暂不可用，正在使用随包音源；每首曲目的来源与授权状态均已标注。'
++    } else {
++      sourceNotice.value = '更多曲目加载失败，请稍后重试。'
++    }
+   } finally {
+     isLoading.value = false
++    isLoadingMore.value = false
+   }
+ }
+ 
+ function playSong(song) {
+-  playerStore.playSong(song)
++  playerStore.playSong(song, true)
++}
++
++async function loadAutoplayPreference() {
++  let enabled = localStorage.getItem('buyi_autoplay_enabled') === 'true'
++  if (localStorage.getItem('token')) {
++    try {
++      const settings = await settingsApi.get()
++      enabled = settings?.autoplay === true
++      localStorage.setItem('buyi_autoplay_enabled', String(enabled))
++    } catch {}
++  }
++  const target = playerStore.currentSong || requestedSong.value || songs.value[0]
++  if (enabled && target && !playerStore.isPlaying) await playerStore.playSong(target, true)
+ }
+ 
+ function initRevealObserver() {
+@@ -73,8 +102,9 @@ function initRevealObserver() {
+   })
+ }
+ 
+-onMounted(() => {
+-  loadSongs()
++onMounted(async () => {
++  await loadSongs()
++  await loadAutoplayPreference()
+   initRevealObserver()
+ })
+ 
+@@ -135,6 +165,15 @@ onUnmounted(() => {
+           </button>
+         </li>
+       </ul>
++      <button
++        v-if="page < totalPages"
++        class="song-library__more"
++        type="button"
++        :disabled="isLoadingMore"
++        @click="loadSongs(page + 1)"
++      >
++        {{ isLoadingMore ? '正在加载…' : `加载更多（${page} / ${totalPages}）` }}
++      </button>
+     </section>
+ 
+     <section class="song-note reveal-target" data-nav-tone="dark">
+@@ -170,9 +209,8 @@ onUnmounted(() => {
+   --page-ink: #f4f9fb;
+   --page-muted: #c5dbe2;
+   --page-muted-strong: #9bbfc9;
+-  --page-accent: #f2bd70;
++  /* 使用全局 --c-accent，不自定义页面级强调色 */
+   --page-border: rgba(183, 220, 227, .22);
+-  --page-brand-light: #8ac7d3;
+   min-height: 100vh;
+   padding-bottom: 140px;
+   /* 页面背景渐变：直接设置 background，不通过 token */
+@@ -190,7 +228,7 @@ onUnmounted(() => {
+ .songs-hero__cover:hover button, .songs-hero__cover:focus-within button, .songs-hero__cover.is-playing button { opacity: 1; }
+ .songs-hero__cover button::before { position: absolute; width: 68px; height: 68px; border: 1px solid rgba(255,255,255,.82); border-radius: 50%; background: rgba(27, 58, 92, .72); content: ''; }
+ .songs-hero__cover button svg { position: relative; z-index: 1; }
+-.songs-hero__copy > p, .song-library__heading p, .song-note p:first-child, .song-provenance p { margin: 0; color: var(--page-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
++.songs-hero__copy > p, .song-library__heading p, .song-note p:first-child, .song-provenance p { margin: 0; color: var(--c-accent); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
+ .songs-hero__copy h1 { max-width: 650px; margin: 10px 0 14px; font: 600 clamp(44px, 7vw, 82px) / .98 var(--font-serif); letter-spacing: -.03em; text-wrap: balance; }
+ .songs-hero__copy > span { color: var(--c-white-78); font-size: 16px; }.songs-hero__status { max-width: 42ch; margin: 14px 0 0; color: var(--c-white-78); font-size: 13px; line-height: 1.6; }
+ 
+@@ -212,19 +250,23 @@ onUnmounted(() => {
+ .song-list { margin: 0; padding: 0; list-style: none; position: relative; z-index: 1; }
+ .song-list li { border-bottom: 1px solid var(--page-border); }
+ .song-list li:last-child { border-bottom: 0; }
++.song-library__more { display: block; min-height: 42px; margin: 22px auto 0; padding: 9px 22px; border: 1px solid var(--page-border); border-radius: 999px; color: var(--page-ink); background: var(--page-surface-soft); cursor: pointer; font: 600 13px var(--font-sans); }
++.song-library__more:hover:not(:disabled) { border-color: var(--c-accent); }
++.song-library__more:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
++.song-library__more:disabled { cursor: wait; opacity: .65; }
+ .song-row { display: grid; grid-template-columns: 44px 64px minmax(0, 1fr) auto 34px; align-items: center; gap: 18px; width: 100%; padding: 16px 4px; border: 0; color: inherit; background: transparent; cursor: pointer; text-align: left; transition: background 180ms ease, padding 180ms ease; }
+ .song-row:hover, .song-list li.is-playing .song-row { padding-right: 14px; padding-left: 14px; background: rgba(107, 163, 190, .12); }
+-.song-row:focus-visible { outline: 2px solid var(--page-accent); outline-offset: -2px; }
++.song-row:focus-visible { outline: 2px solid var(--c-accent); outline-offset: -2px; }
+ .song-row__index { color: var(--page-muted-strong); font: 13px var(--font-mono); }
+-.song-row__cover { display: grid; width: 64px; height: 64px; place-items: center; overflow: hidden; color: var(--page-brand-light); background: rgba(107, 163, 190, .14); }
++.song-row__cover { display: grid; width: 64px; height: 64px; place-items: center; overflow: hidden; color: var(--c-brand-light); background: rgba(107, 163, 190, .14); }
+ .song-row__cover img { width: 100%; height: 100%; object-fit: cover; }
+ .song-row__copy { display: grid; min-width: 0; gap: 4px; }
+ .song-row__copy strong, .song-row__copy span, .song-row__copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .song-row__copy strong { color: var(--page-ink); font-size: 16px; }
+ .song-row__copy span { color: var(--page-muted); font-size: 13px; }
+-.song-row__copy small { color: var(--page-brand-light); font-size: 12px; }
++.song-row__copy small { color: var(--c-brand-light); font-size: 12px; }
+ .song-row__status { color: var(--page-muted-strong); font: 12px var(--font-mono); }
+-.song-row__action { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--page-brand-light); background: rgba(107, 163, 190, .18); }
++.song-row__action { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--c-brand-light); background: rgba(107, 163, 190, .18); }
+ 
+ .song-note {
+   display: grid;

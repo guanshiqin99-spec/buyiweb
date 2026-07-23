@@ -1,0 +1,83 @@
+{
+   "checksum": "2c5daa7995e3c71522bc9a82891fca17",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13428511499645947",
+            "date_last_used": "0",
+            "guid": "31e30553-ca9e-4561-b734-3678636ad5f5",
+            "id": "9",
+            "name": "百度一下，你就知道",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://www.baidu.com/index.php?tn=46092069_1_pg",
+            "visit_count": 0
+         }, {
+            "date_added": "13428511499645414",
+            "date_last_used": "0",
+            "guid": "e7c753fc-c385-4404-9e67-9f97db76b2a9",
+            "id": "8",
+            "name": "Booking.com",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://s3.amazonaws.com/amundsen/redirect/19q2/booking.html?utm_source=win32&utm_medium=favorite",
+            "visit_count": 0
+         }, {
+            "date_added": "13428511499644110",
+            "date_last_used": "0",
+            "guid": "9bba1df2-9e66-42ac-bc0f-d5eb67cf9d5d",
+            "id": "7",
+            "name": "hao123_上网从这里开始",
+            "show_icon": false,
+            "source": "oem_preload",
+            "type": "url",
+            "url": "https://www.hao123.com/?tn=66062291_1_hao_pg",
+            "visit_count": 0
+         } ],
+         "date_added": "13428511499532041",
+         "date_last_used": "0",
+         "date_modified": "13428511499645947",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "收藏夹栏",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13428511499532041",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "其他收藏夹",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13428511499532041",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "移动收藏夹",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "workspaces_v2": {
+         "children": [  ],
+         "date_added": "13428511499532041",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "75aa6670-344f-549d-b742-660f029506ab",
+         "id": "5",
+         "name": "工作区",
+         "source": "unknown",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}
