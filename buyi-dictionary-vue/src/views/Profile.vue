@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import imgBg from '@/assets/images/generated/profile-learning-journal.png'
 import BarChart from '@/components/specific/BarChart.vue'
+import RadarChart from '@/components/specific/RadarChart.vue'
 import ShareCard from '@/components/specific/ShareCard.vue'
 import { useAuthStore } from '@/stores/auth'
 import { meApi, recordsApi, badgesApi } from '@/utils/api'
@@ -251,8 +252,11 @@ onUnmounted(() => {
         </div>
 
         <!-- 学习类型分布图 -->
-        <div v-if="typeChartData.length" class="chart-card liquid-glass liquid-glass-content">
-          <BarChart :data="typeChartData" title="学习类型分布" :height="220" />
+        <div class="profile-visualizations">
+          <div v-if="typeChartData.length" class="chart-card liquid-glass liquid-glass-content">
+            <BarChart :data="typeChartData" title="学习类型分布" :height="220" />
+          </div>
+          <RadarChart class="radar-card liquid-glass liquid-glass-content" :data="learnStats.typeCounts || {}" />
         </div>
       </section>
 
@@ -482,6 +486,12 @@ onUnmounted(() => {
 }
 
 /* 学习类型分布图 */
+.profile-visualizations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .chart-card {
   padding: 8px 0;
 }
@@ -495,6 +505,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 420px) {
+  .profile-visualizations {
+    grid-template-columns: 1fr;
+  }
+
   .achievement-export {
     grid-template-columns: 1fr;
   }

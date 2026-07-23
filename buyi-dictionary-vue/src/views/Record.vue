@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import SourceBadge from '@/components/common/SourceBadge.vue'
+import HeatMap from '@/components/specific/HeatMap.vue'
+import RadarChart from '@/components/specific/RadarChart.vue'
 import imgBg from '@/assets/images/generated/record-learning-tracker.png'
 import { recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
@@ -103,6 +105,11 @@ function formatDate(dateStr) {
         </div>
       </section>
 
+      <section class="learning-visualizations" aria-label="学习数据可视化">
+        <HeatMap class="liquid-glass liquid-glass-content" :records="records" />
+        <RadarChart class="liquid-glass liquid-glass-content" :data="stats.typeCounts || {}" />
+      </section>
+
       <!-- 危险操作置于统计卡片下方，避免干扰学习数据浏览。 -->
       <div class="record-actions">
         <button
@@ -181,6 +188,12 @@ function formatDate(dateStr) {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.learning-visualizations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -415,6 +428,10 @@ function formatDate(dateStr) {
 
 @media (max-width: 640px) {
   .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .learning-visualizations {
     grid-template-columns: 1fr;
   }
 
