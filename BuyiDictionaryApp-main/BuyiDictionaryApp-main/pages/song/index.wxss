@@ -164,29 +164,6 @@
   color: #EDF5FF;
 }
 
-/* Banner指示点 */
-.hero-dots {
-  position: absolute;
-  bottom: 12rpx;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 8rpx;
-}
-
-.dot {
-  width: 8rpx;
-  height: 8rpx;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 4rpx;
-}
-
-.dot.active {
-  width: 24rpx;
-  background: #fff;
-}
-
 /* 共享标题样式 */
 .section-title-wrap {
   display: flex;
@@ -310,27 +287,22 @@
 
 /* 青花/玉佩印章感收藏 */
 .seal-fav-btn {
-  width: 64rpx;
-  height: 64rpx;
+  width: 88rpx;
+  height: 88rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-left: 20rpx;
 }
 
 .seal-fav-icon {
-  font-size: 32rpx;
-  color: rgba(94, 143, 206, 0.4);
+  font-size: 40rpx;
+  color: var(--color-text-secondary);
   transition: all 0.3s ease;
 }
 
 .seal-fav-btn.active .seal-fav-icon {
-  color: #1664D9;
+  color: var(--color-primary);
   text-shadow: 0 0 12rpx rgba(22, 100, 217, 0.4);
-}
-
-.page.dark .seal-fav-btn.active .seal-fav-icon {
-  color: #5AA9FF;
 }
 
 /* 状态卡片 */

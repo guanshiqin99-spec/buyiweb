@@ -1,4 +1,16 @@
 .quiz-page { padding-bottom: 96rpx; }
+.abandon-bar {
+  padding: 16rpx 32rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+.abandon-btn {
+  padding: 12rpx 32rpx;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-capsule);
+}
 .quiz-intro, .quiz-result { display: flex; flex-direction: column; align-items: flex-start; gap: 24rpx; padding: 48rpx 36rpx; }
 .quiz-intro .text-sub { line-height: 1.8; }
 .quiz-intro .last-attempt { color: var(--color-primary-dark); font-weight: 600; }
@@ -8,7 +20,7 @@
 .question-card { padding: 36rpx 28rpx; }
 .question-card > .text-h2 { display: block; margin-bottom: 30rpx; line-height: 1.5; }
 .quiz-options { display: flex; flex-direction: column; gap: 18rpx; }
-.option-btn { width: 100%; min-height: 88rpx; margin: 0; padding: 20rpx 24rpx; border: 2rpx solid rgba(92, 134, 197, .2); border-radius: 18rpx; color: var(--color-text); background: var(--color-card); font-size: 30rpx; text-align: left; }
+.option-btn { width: 100%; min-height: 88rpx; margin: 0; padding: 20rpx 24rpx; border: 2rpx solid rgba(92, 134, 197, .2); border-radius: 18rpx; color: var(--color-text-primary); background: var(--color-card-bg); font-size: 30rpx; text-align: left; }
 .option-btn.correct { border-color: #2f8f57; color: #176238; background: #e8f6ed; }
 .option-btn.wrong { border-color: #c65b5b; color: #8b2f2f; background: #faeaea; }
 .feedback { display: flex; flex-direction: column; gap: 16rpx; margin-top: 30rpx; padding-top: 28rpx; border-top: 2rpx solid rgba(92, 134, 197, .14); }

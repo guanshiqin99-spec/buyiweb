@@ -78,4 +78,7 @@
     </view>
   </block>
 
+  <!-- AI 导览员悬浮入口 -->
+  <agent-panel context="favorite" />
+
 </view>

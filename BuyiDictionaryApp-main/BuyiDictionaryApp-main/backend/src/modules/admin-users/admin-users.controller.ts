@@ -21,7 +21,9 @@ export class AdminUsersController {
   async list(@Query() query: PaginationQueryDto) {
     const page = Number(query.page ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
+    // 安全：显式 select 白名单字段，避免泄露 passwordHash / phoneNumber 等敏感列
     const [items, total] = await this.userRepository.findAndCount({
+      select: ['id', 'username', 'nickname', 'avatarUrl', 'isActive', 'lastLoginTime', 'createdAt'],
       order: { id: 'DESC' },
       skip: (page - 1) * pageSize,
       take: pageSize,

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import imgBg from '@/assets/images/generated/profile-learning-journal.png'
@@ -7,16 +7,19 @@ import BarChart from '@/components/specific/BarChart.vue'
 import RadarChart from '@/components/specific/RadarChart.vue'
 import ShareCard from '@/components/specific/ShareCard.vue'
 import { useAuthStore } from '@/stores/auth'
-import { meApi, recordsApi, badgesApi, quizApi } from '@/utils/api'
+import { meApi, recordsApi, badgesApi } from '@/utils/api'
 import IconHeartFilled from '@/components/icons/IconHeartFilled.vue'
 import IconBook from '@/components/icons/IconBook.vue'
 import IconSettings from '@/components/icons/IconSettings.vue'
 import IconUser from '@/components/icons/IconUser.vue'
 import IconAchievementBadge from '@/components/icons/IconAchievementBadge.vue'
+import IconClose from '@/components/icons/IconClose.vue'
 import { getContentLabel } from '../utils/contentTypes'
 import {
   USER_PROGRESS_STORAGE_KEY,
-  USER_PROGRESS_UPDATED_EVENT
+  USER_PROGRESS_UPDATED_EVENT,
+  getTodayTypeCounts,
+  getTodayDateKey
 } from '@/utils/userProgress'
 import { generateSuggestions } from '@/utils/learningSuggestion'
 import { getDailyTasks } from '@/utils/dailyTasks'
@@ -25,7 +28,8 @@ const authStore = useAuthStore()
 const userStats = ref({ favoriteCount: 0, learningRecordCount: 0 })
 // 学习统计仪表盘：今日/总数/连续天数/各类型计数
 const learnStats = ref({ todayCount: 0, totalCount: 0, streakDays: 0, typeCounts: {} })
-const quizAttemptCount = ref(0)
+// 本地每日类型计数：跨天自动重置，用于"学习任务"当日进度
+const todayTypeCounts = ref({})
 const badges = ref([])
 const shareCardRef = ref(null)
 const isExportingAchievement = ref(false)
@@ -34,6 +38,9 @@ let refreshPromise = null
 let refreshTimer = null
 let refreshQueued = false
 let isProgressActive = false
+// 跨天检测：记录上次检测的日期 key，变更时立即归零今日计数
+let lastDateKey = ''
+let dateCheckTimer = null
 
 // 将 typeCounts 对象映射为 BarChart 数据
 const typeChartData = computed(() => {
@@ -42,14 +49,17 @@ const typeChartData = computed(() => {
     .filter(([, v]) => v > 0)
     .map(([k, v]) => ({ category: getContentLabel(k), count: v }))
 })
-const suggestions = computed(() => generateSuggestions(learnStats.value))
+const suggestions = computed(() => generateSuggestions({
+  ...learnStats.value,
+  todayTypeCounts: todayTypeCounts.value
+}))
 const dailyTasks = computed(() => getDailyTasks({
   ...learnStats.value,
-  typeCounts: {
-    ...(learnStats.value.typeCounts || {}),
-    quiz: quizAttemptCount.value
-  }
+  todayTypeCounts: todayTypeCounts.value
 }))
+const allDailyTasksCompleted = computed(() => (
+  dailyTasks.value.length > 0 && dailyTasks.value.every((task) => task.completed)
+))
 
 function taskProgress(task) {
   if (!task.target) return 0
@@ -72,6 +82,31 @@ const handleLogout = () => {
 const isBadgeUnlocked = (badge) => badge?.isUnlocked || badge?.unlocked || badge?.locked === false
 // 已解锁徽章数
 const unlockedCount = computed(() => badges.value.filter(isBadgeUnlocked).length)
+
+// 徽章详情弹窗：点击徽章后展示名称、描述与解锁状态
+const selectedBadge = ref(null)
+let lastFocusedElement = null
+
+function openBadge(badge) {
+  lastFocusedElement = document.activeElement
+  selectedBadge.value = badge
+}
+
+function closeBadge() {
+  selectedBadge.value = null
+  // 关闭后把焦点还给触发按钮，方便键盘用户继续浏览
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    nextTick(() => lastFocusedElement.focus())
+  }
+}
+
+function formatUnlockedDate(raw) {
+  if (!raw) return ''
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) return ''
+  // 用中文年月日格式展示解锁时间
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
 
 async function exportAchievement() {
   if (isExportingAchievement.value) return
@@ -119,13 +154,15 @@ async function refreshProfileProgress() {
     return refreshPromise
   }
 
+  // 同步本地每日类型计数（学习任务当日进度），跨天会自动归零
+  todayTypeCounts.value = getTodayTypeCounts()
+
   // 并行拉取用户信息 + 学习统计 + 徽章
   refreshPromise = Promise.allSettled([
     meApi.get(),
     recordsApi.stats(),
-    badgesApi.list(),
-    quizApi.list({ page: 1, pageSize: 1 })
-  ]).then(([profileResult, statsResult, badgesResult, quizResult]) => {
+    badgesApi.list()
+  ]).then(([profileResult, statsResult, badgesResult]) => {
     if (profileResult.status === 'fulfilled') {
       userStats.value = profileResult.value?.stats || userStats.value
     } else {
@@ -147,11 +184,6 @@ async function refreshProfileProgress() {
     } else {
       console.error('获取徽章失败', badgesResult.reason)
     }
-
-    if (quizResult.status === 'fulfilled') {
-      const total = Number(quizResult.value?.total ?? quizResult.value?.items?.length ?? 0)
-      quizAttemptCount.value = Number.isFinite(total) && total > 0 ? Math.floor(total) : 0
-    }
   }).finally(() => {
     refreshPromise = null
     if (refreshQueued && isProgressActive) {
@@ -171,18 +203,39 @@ function handleStorageChange(event) {
   if (event.key === USER_PROGRESS_STORAGE_KEY) refreshProfileProgress()
 }
 
+// ESC 关闭徽章详情弹窗
+function handleBadgeModalKeydown(event) {
+  if (event.key === 'Escape' && selectedBadge.value) {
+    event.preventDefault()
+    closeBadge()
+  }
+}
+
 onMounted(() => {
   isProgressActive = true
+  lastDateKey = getTodayDateKey()
   refreshProfileProgress()
   window.addEventListener(USER_PROGRESS_UPDATED_EVENT, refreshProfileProgress)
   window.addEventListener('focus', refreshProfileProgress)
   window.addEventListener('storage', handleStorageChange)
   document.addEventListener('visibilitychange', handleVisibilityChange)
+  document.addEventListener('keydown', handleBadgeModalKeydown)
 
   // 同步来自其他客户端的变化；标签页隐藏时不产生额外请求。
   refreshTimer = window.setInterval(() => {
     if (document.visibilityState === 'visible') refreshProfileProgress()
   }, 30000)
+
+  // 跨天检测：每 5 秒比较日期 key，跨夜时立即归零今日计数（无需网络请求）
+  dateCheckTimer = window.setInterval(() => {
+    const currentKey = getTodayDateKey()
+    if (currentKey !== lastDateKey) {
+      lastDateKey = currentKey
+      todayTypeCounts.value = {}
+      // 触发一次完整刷新以同步服务端今日统计
+      refreshProfileProgress()
+    }
+  }, 5000)
 })
 
 onUnmounted(() => {
@@ -192,7 +245,9 @@ onUnmounted(() => {
   window.removeEventListener('focus', refreshProfileProgress)
   window.removeEventListener('storage', handleStorageChange)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  document.removeEventListener('keydown', handleBadgeModalKeydown)
   if (refreshTimer) window.clearInterval(refreshTimer)
+  if (dateCheckTimer) window.clearInterval(dateCheckTimer)
 })
 </script>
 
@@ -264,6 +319,10 @@ onUnmounted(() => {
             </div>
             <span>{{ dailyTasks.filter((task) => task.completed).length }} / {{ dailyTasks.length }} 已完成</span>
           </div>
+          <div v-if="allDailyTasksCompleted" class="daily-tasks__complete-banner" role="status">
+            <span class="daily-tasks__complete-icon" aria-hidden="true">🎉</span>
+            <span>今日任务已全部完成，明日继续加油！</span>
+          </div>
           <ul>
             <li v-for="task in dailyTasks" :key="task.title" :class="{ 'is-complete': task.completed }">
               <div class="daily-tasks__row">
@@ -303,19 +362,50 @@ onUnmounted(() => {
             <span class="badge-wall-count" aria-live="polite">已解锁 {{ unlockedCount }} / {{ badges.length }}</span>
           </div>
           <div class="badge-grid">
-            <div
+            <button
               v-for="badge in badges"
               :key="badge.id || badge.code || badge.name"
+              type="button"
               class="badge-item"
               :class="{ 'badge-locked': !isBadgeUnlocked(badge), 'badge-unlocked': isBadgeUnlocked(badge) }"
-              :title="badge.description || badge.name"
+              :aria-label="`查看徽章详情：${badge.name}`"
+              @click="openBadge(badge)"
             >
               <div class="badge-icon" :class="`badge-icon--${badgeMotif(badge)}`" aria-hidden="true">
                 <IconAchievementBadge :motif="badgeMotif(badge)" :size="44" />
               </div>
               <span class="badge-name">{{ badge.name }}</span>
               <span class="badge-status">{{ isBadgeUnlocked(badge) ? '已解锁' : '未解锁' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 徽章详情弹窗 -->
+        <div
+          v-if="selectedBadge"
+          class="badge-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="selectedBadge.name + ' 徽章详情'"
+          @click.self="closeBadge"
+        >
+          <div class="badge-modal liquid-glass liquid-glass-content">
+            <button type="button" class="badge-modal-close" aria-label="关闭" @click="closeBadge">
+              <IconClose :size="20" />
+            </button>
+            <div
+              class="badge-modal-icon"
+              :class="[`badge-icon--${badgeMotif(selectedBadge)}`, { 'is-locked': !isBadgeUnlocked(selectedBadge) }]"
+              aria-hidden="true"
+            >
+              <IconAchievementBadge :motif="badgeMotif(selectedBadge)" :size="72" />
             </div>
+            <h3 class="badge-modal-name">{{ selectedBadge.name }}</h3>
+            <p class="badge-modal-desc">{{ selectedBadge.description || '暂无描述' }}</p>
+            <p v-if="isBadgeUnlocked(selectedBadge) && formatUnlockedDate(selectedBadge.unlockedAt)" class="badge-modal-time">
+              解锁于 {{ formatUnlockedDate(selectedBadge.unlockedAt) }}
+            </p>
+            <p v-else class="badge-modal-time badge-modal-time--locked">继续学习以解锁此徽章</p>
           </div>
         </div>
 
@@ -501,6 +591,25 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+}
+
+/* 全部任务完成时的鼓励横幅 */
+.daily-tasks__complete-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--c-brand-08), var(--c-accent-10));
+  color: var(--c-brand);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.daily-tasks__complete-icon {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .daily-tasks__header p,
@@ -697,7 +806,23 @@ onUnmounted(() => {
   border-radius: 16px;
   background: var(--c-glass);
   text-align: center;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+  /* 重置 button 默认样式，保持与原 div 视觉一致 */
+  font: inherit;
+  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.badge-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--c-brand-40);
+}
+
+.badge-item:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
 }
 
 /* 已解锁徽章：品牌色描边 + 浅色光晕，强化“获得”的视觉权重 */
@@ -767,6 +892,110 @@ onUnmounted(() => {
 .badge-item.badge-locked .badge-status {
   color: var(--c-text-50);
   background: rgba(75, 102, 128, 0.08);
+}
+
+/* 徽章详情弹窗 */
+.badge-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 28, 38, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: badge-modal-fade 180ms ease;
+}
+
+.badge-modal {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 36px 28px 28px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(15, 28, 38, 0.28);
+  animation: badge-modal-pop 220ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.badge-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--c-text-60);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.badge-modal-close:hover {
+  background: var(--c-brand-08);
+  color: var(--c-brand);
+}
+
+.badge-modal-close:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.badge-modal-icon {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--c-brand-08), var(--c-glass));
+  color: var(--c-brand);
+}
+
+.badge-modal-icon.is-locked {
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--c-text-35);
+  filter: grayscale(1);
+}
+
+.badge-modal-name {
+  margin: 0 0 8px;
+  font: 600 18px var(--font-serif);
+  color: var(--c-text);
+}
+
+.badge-modal-desc {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--c-text-70);
+}
+
+.badge-modal-time {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.badge-modal-time--locked {
+  color: var(--c-text-50);
+}
+
+@keyframes badge-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes badge-modal-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* 学习类型分布图 */

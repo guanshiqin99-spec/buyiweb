@@ -42,13 +42,6 @@
           <text class="jade-play-icon">▶</text>
         </view>
       </view>
-      <!-- 指示点 -->
-      <view class="hero-dots">
-        <view class="dot active"></view>
-        <view class="dot"></view>
-        <view class="dot"></view>
-        <view class="dot"></view>
-      </view>
     </view>
 
     <!-- 唱片式列表系统 -->
@@ -57,7 +50,7 @@
         <text class="section-icon">❀</text>
         <text class="section-title">精选民歌</text>
       </view>
-      <text class="section-more">更多 ></text>
+      <text class="section-more" bindtap="onMoreSongs">更多 ></text>
     </view>
 
     <view wx:if="{{songs.length}}" class="song-record-list">
@@ -78,7 +71,7 @@
         </view>
         <!-- 青花印章感收藏按钮 -->
         <view class="seal-fav-btn {{item.fav ? 'active' : ''}}" data-index="{{index}}" catchtap="toggleFavorite">
-          <text class="seal-fav-icon">🪷</text>
+          <text class="seal-fav-icon">{{item.fav ? '♥' : '♡'}}</text>
         </view>
       </view>
     </view>
@@ -91,5 +84,8 @@
       {{loadingMore ? '正在加载' : '加载更多民歌'}}
     </button>
   </block>
+
+  <!-- AI 导览员悬浮入口 -->
+  <agent-panel context="song" />
 
 </view>

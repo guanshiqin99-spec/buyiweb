@@ -104,7 +104,8 @@ export const recordsApi = {
   },
   async create(data) {
     const response = await api.post('/miniapp/learning-records', data)
-    notifyUserProgressUpdated('learning-record')
+    // 携带 contentType 以便"学习任务"按当日类型累计进度
+    notifyUserProgressUpdated('learning-record', data?.contentType)
     return response
   },
   async clear() {
@@ -116,7 +117,12 @@ export const recordsApi = {
 
 export const quizApi = {
   list(params) { return api.get('/miniapp/quiz-attempts', { params }) },
-  create(data) { return api.post('/miniapp/quiz-attempts', data) }
+  async create(data) {
+    const response = await api.post('/miniapp/quiz-attempts', data)
+    // 答题归类为 quiz 类型，纳入"每日答题"任务计数
+    notifyUserProgressUpdated('quiz', 'quiz')
+    return response
+  }
 }
 
 export const badgesApi = {

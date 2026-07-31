@@ -106,6 +106,22 @@ Page({
     }
   },
 
+  onAbandon() {
+    wx.showModal({
+      title: '确认放弃',
+      content: '本场答题进度将不被保存，是否放弃？',
+      success: (res) => {
+        if (!res.confirm) return;
+        const pages = getCurrentPages();
+        if (pages.length > 1) {
+          wx.navigateBack();
+        } else {
+          wx.switchTab({ url: '/pages/home/index' });
+        }
+      }
+    });
+  },
+
   // 开始答题：AI 为主，先尝试 AI 五题挑战，失败时降级到经典十题库
   startQuiz() {
     if (this.data.generatingAI) return;

@@ -140,7 +140,6 @@
 }
 
 .user-nickname-text {
-  color: #1A3A69 !important; /* 深靛蓝文字 */
   text-shadow: none !important;
 }
 

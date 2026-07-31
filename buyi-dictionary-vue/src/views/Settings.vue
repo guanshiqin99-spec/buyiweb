@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import SourceBadge from '@/components/common/SourceBadge.vue'
 import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
@@ -9,6 +9,10 @@ import { useThemeStore } from '@/stores/theme'
 
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
+const fontSize = computed({
+  get: () => themeStore.fontSize,
+  set: (val) => themeStore.setFontSize(val)
+})
 const settings = ref({
   theme: themeStore.mode,
   notifications: true,
@@ -79,6 +83,31 @@ watch(() => settings.value.theme, (mode) => {
               <option value="dark">深色</option>
               <option value="auto">跟随系统</option>
             </select>
+          </div>
+        </section>
+
+        <!-- 字体大小 -->
+        <section class="settings-group liquid-glass-quiet">
+          <h2 class="group-title">字体大小</h2>
+          <div class="setting-row">
+            <div class="setting-label">
+              <p class="setting-name">界面字号</p>
+              <p class="setting-desc">调整全站文字大小</p>
+            </div>
+            <div class="font-size-group" role="radiogroup" aria-label="字体大小">
+              <label class="font-size-option" :class="{ 'is-active': fontSize === 'small' }">
+                <input type="radio" name="fontSize" value="small" v-model="fontSize" />
+                <span>小</span>
+              </label>
+              <label class="font-size-option" :class="{ 'is-active': fontSize === 'medium' }">
+                <input type="radio" name="fontSize" value="medium" v-model="fontSize" />
+                <span>中</span>
+              </label>
+              <label class="font-size-option" :class="{ 'is-active': fontSize === 'large' }">
+                <input type="radio" name="fontSize" value="large" v-model="fontSize" />
+                <span>大</span>
+              </label>
+            </div>
           </div>
         </section>
 
@@ -299,6 +328,55 @@ watch(() => settings.value.theme, (mode) => {
 .setting-select:focus-visible {
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
+}
+
+.font-size-group {
+  display: inline-flex;
+  border: 1px solid var(--c-brand-25);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.font-size-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 36px;
+  padding: 0 14px;
+  color: var(--c-text-60);
+  font: 400 14px var(--font-sans);
+  cursor: pointer;
+  background: var(--c-glass);
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.font-size-option:not(:last-child) {
+  border-right: 1px solid var(--c-brand-25);
+}
+
+.font-size-option input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.font-size-option.is-active {
+  background: var(--c-brand);
+  color: var(--c-brand-foreground);
+}
+
+.font-size-option:not(.is-active):hover {
+  background: var(--c-brand-08);
+}
+
+.font-size-option input:focus-visible + span {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .toggle {

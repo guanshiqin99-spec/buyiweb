@@ -1,0 +1,51 @@
+/* 自定义导航栏：保留 statusBarHeight 适配与返回按钮逻辑 */
+
+.custom-nav {
+  /* statusBarHeight 由 wxml 通过 CSS 变量动态注入 */
+  padding-top: var(--status-bar-height, 20px);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 100;
+}
+
+/* 导航标题 */
+.nav-title {
+  display: block;
+  font-size: 32rpx;
+  color: var(--color-text-primary);
+  text-align: center;
+  /* 限制最大宽度并居中，确保不与返回按钮重叠 */
+  max-width: 60%;
+  /* 左右留出空间，避免遮挡返回按钮 */
+  padding: 0 120rpx;
+  box-sizing: border-box;
+  /* 文本超长省略 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 返回按钮容器：点击区 ≥ 88rpx × 88rpx，不改图标尺寸 */
+.back-btn {
+  position: absolute;
+  left: 15px;
+  /* 垂直方向沿用父级 align-items: center 的静态定位，保持原有视觉位置 */
+  min-width: 88rpx;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+}
+
+/* 返回箭头：尺寸保持 12px × 12px 不变，颜色由 textColor 动态注入 */
+.back-arrow {
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid var(--nav-text-color, var(--color-primary-dark));
+  border-left: 2px solid var(--nav-text-color, var(--color-primary-dark));
+  transform: rotate(-45deg);
+}

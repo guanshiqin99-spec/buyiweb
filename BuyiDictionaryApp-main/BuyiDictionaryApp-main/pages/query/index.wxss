@@ -124,7 +124,11 @@
 .fav-icon {
   font-size: 40rpx;
   color: var(--color-text-secondary);
-  padding: 10rpx;
+  min-width: 88rpx;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .fav-icon.active {
   color: var(--color-primary);
@@ -148,7 +152,8 @@
 }
 
 .audio-btn {
-  padding: 10rpx;
+  min-width: 88rpx;
+  min-height: 88rpx;
   display: flex;
   align-items: center;
   justify-content: center;

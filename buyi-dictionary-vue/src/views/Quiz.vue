@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import SourceBadge from '@/components/common/SourceBadge.vue'
 import { createQuizRound, scoreAnswers } from '@/data/quiz'
 import { quizApi } from '@/utils/api'
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import imgBg from '@/assets/images/bouyei-nature.jpg'
 
 const phase = ref('intro')
+const route = useRoute()
 const authStore = useAuthStore()
 const round = ref([])
 const currentIndex = ref(0)
@@ -191,6 +192,10 @@ async function nextQuestion() {
 
 onMounted(() => {
   loadLastAttempt()
+  // 支持 ?start=1 自动开始答题（来自"为你推荐"等场景的精确跳转）
+  if (route.query.start === '1' || route.query.start === 'true') {
+    nextTick(() => startQuiz())
+  }
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const isMobile = window.matchMedia('(max-width: 768px)').matches
   const coefficient = isMobile ? 0.035 : 0.07

@@ -67,7 +67,11 @@ node_modules/
 # 此处保留各子项目的 dist 以便演示
 
 # ---------- 数据库运行时文件 ----------
-# 保留 buyi_dictionary.db 作为种子数据,但排除运行时临时库
+# 安全：所有 SQLite/数据库二进制文件一律不入库，避免泄露 schema 与敏感数据
+# 种子数据请通过 backend/scripts/init-admin.ts / seed.service.ts 生成
+*.db
+*.sqlite
+*.sqlite3
 *-test.sqlite
 migration-test.sqlite
 

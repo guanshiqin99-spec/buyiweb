@@ -96,15 +96,15 @@ CORS_ORIGIN=https://buyi-dictionary.pages.dev
 | 文件大小 | 最大 10MB |
 | 图片 MIME | jpeg / png / webp / gif |
 | 音频 MIME | mpeg / mp3 / wav / x-wav / mp4 / aac / ogg |
-| 文件名 | 服务端重命名为 UUID，不保留原始文件名 |
+| 文件名 | 扩展名必须匹配上传类型白名单（image: jpg/jpeg/png/webp/gif；audio: mp3/wav/m4a/aac/ogg），阻止 .html/.svg 等活动内容扩展名落盘 |
 
 ### 2.7 PII 数据脱敏
 
-`PiiMaskInterceptor` 自动对响应中的敏感字段脱敏：
+当前在控制器层对敏感字段做脱敏（非全局拦截器），已覆盖：
 
-- 手机号：保留前 3 后 4，中间 `****`
-- 身份证号：保留前 4 后 4
-- 邮箱：保留首字符与域名
+- `GET /api/miniapp/me`：手机号保留前 3 后 4，中间 `****`（不足 7 位全部脱敏为 `******`）
+
+待补：`GET /api/admin/users` 已通过 `select` 白名单不返回 `phoneNumber`；身份证号、邮箱字段目前无接口暴露，后续按需在对应控制器补充脱敏。
 
 ### 2.8 数据库安全
 

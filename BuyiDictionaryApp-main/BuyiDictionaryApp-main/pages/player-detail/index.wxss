@@ -86,7 +86,9 @@
 
 /* 简版歌词框 */
 .lyric-box {
-  height: 120rpx;
+  min-height: 120rpx;
+  max-height: 200rpx;
+  overflow-y: auto;
   text-align: center;
   margin-bottom: 60rpx;
 }

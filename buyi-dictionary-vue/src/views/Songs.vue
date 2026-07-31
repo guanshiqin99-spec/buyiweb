@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { contentApi, recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
+import { useFavoritesStore } from '@/stores/favorites'
 import AudioSpectrum from '@/components/specific/AudioSpectrum.vue'
 import ShareCard from '@/components/specific/ShareCard.vue'
 import { fallbackSongs, formatDuration, normalizePlayableSongs } from '@/data/playableSongs'
@@ -11,9 +12,12 @@ import imgAmbient from '@/assets/images/music-ambient.jpg'
 import imgBg from '@/assets/images/folk-song-bg.jpg'
 import IconPause from '@/components/icons/IconPause.vue'
 import IconPlay from '@/components/icons/IconPlay.vue'
+import IconHeart from '@/components/icons/IconHeart.vue'
+import IconHeartFilled from '@/components/icons/IconHeartFilled.vue'
 
 const playerStore = usePlayerStore()
 const authStore = useAuthStore()
+const favoritesStore = useFavoritesStore()
 const route = useRoute()
 const songs = ref(fallbackSongs)
 const isLoading = ref(false)
@@ -23,6 +27,7 @@ const heroParallax = ref(0)
 const shareCardRef = ref(null)
 const sharingSongId = ref(null)
 const shareNotice = ref('')
+const favNotice = ref('')
 let revealObserver = null
 let scrollHandler = null
 const recordedSongIds = new Set()
@@ -84,6 +89,24 @@ async function recordSongPlay(song) {
     recordedSongIds.delete(contentId)
     console.error('民歌播放记录保存失败', error)
   }
+}
+
+async function toggleSongFav(song) {
+  if (!authStore.isLoggedIn) return notifyFav('登录后可以把民歌加入收藏。')
+  try {
+    await favoritesStore.toggleFavorite('song', song.id, {
+      title: song.title,
+      subtitle: song.artist
+    })
+    notifyFav(favoritesStore.isFavorite('song', song.id) ? '已加入收藏。' : '已取消收藏。')
+  } catch {
+    notifyFav('收藏未完成，请稍后重试。')
+  }
+}
+
+function notifyFav(message) {
+  favNotice.value = message
+  window.setTimeout(() => { favNotice.value = '' }, 2600)
 }
 
 // 等到媒体真正进入播放态后再计入学习记录，避免把加载失败的点击算作聆听。
@@ -158,6 +181,7 @@ onUnmounted(() => {
         <AudioSpectrum :active="isHeroPlaying" class="hero-spectrum-anim" />
         <p v-if="playerStore.message" class="songs-hero__status hero-status-anim" role="status">{{ playerStore.message }}</p>
         <p v-if="shareNotice" class="songs-hero__status" role="status">{{ shareNotice }}</p>
+        <p v-if="favNotice" class="songs-hero__status" role="status">{{ favNotice }}</p>
         <RouterLink class="songs-hero__next" to="/quiz">去答题检验 <span aria-hidden="true">→</span></RouterLink>
       </div>
     </section>
@@ -191,6 +215,16 @@ onUnmounted(() => {
               <IconPause v-if="playerStore.currentSong?.id === song.id && playerStore.isPlaying" :size="14" />
               <IconPlay v-else :size="14" />
             </span>
+          </button>
+          <button
+            class="song-fav-btn"
+            type="button"
+            :class="{ 'is-favorited': favoritesStore.isFavorite('song', song.id) }"
+            :aria-label="favoritesStore.isFavorite('song', song.id) ? '取消收藏' : '收藏'"
+            @click.stop="toggleSongFav(song)"
+          >
+            <IconHeartFilled v-if="favoritesStore.isFavorite('song', song.id)" :size="18" />
+            <IconHeart v-else :size="18" />
           </button>
         </li>
       </ul>
@@ -277,9 +311,9 @@ onUnmounted(() => {
 .song-library__state, .song-library__notice { margin: 28px 0; color: var(--page-muted); position: relative; z-index: 1; }
 .song-library__notice { padding: 14px 16px; border: 1px solid rgba(242, 189, 112, .35); color: var(--page-ink); background: rgba(54, 37, 15, .55); }
 .song-list { margin: 0; padding: 0; list-style: none; position: relative; z-index: 1; }
-.song-list li { border-bottom: 1px solid var(--page-border); }
+.song-list li { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--page-border); }
 .song-list li:last-child { border-bottom: 0; }
-.song-row { display: grid; grid-template-columns: 44px 64px minmax(0, 1fr) auto 34px; align-items: center; gap: 18px; width: 100%; padding: 16px 4px; border: 0; color: inherit; background: transparent; cursor: pointer; text-align: left; transition: background 180ms ease, padding 180ms ease; }
+.song-row { display: grid; grid-template-columns: 44px 64px minmax(0, 1fr) auto 34px; align-items: center; gap: 18px; flex: 1; min-width: 0; padding: 16px 4px; border: 0; color: inherit; background: transparent; cursor: pointer; text-align: left; transition: background 180ms ease, padding 180ms ease; }
 .song-row:hover, .song-list li.is-playing .song-row { padding-right: 14px; padding-left: 14px; background: rgba(107, 163, 190, .12); }
 .song-row:focus-visible { outline: 2px solid var(--page-accent); outline-offset: -2px; }
 .song-row__index { color: var(--page-muted-strong); font: 13px var(--font-mono); }
@@ -292,6 +326,10 @@ onUnmounted(() => {
 .song-row__copy small { color: var(--page-brand-light); font-size: 12px; }
 .song-row__status { color: var(--page-muted-strong); font: 12px var(--font-mono); }
 .song-row__action { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--page-brand-light); background: rgba(107, 163, 190, .18); }
+.song-fav-btn { flex-shrink: 0; display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; color: var(--page-muted); background: transparent; cursor: pointer; transition: background 150ms ease, color 150ms ease; }
+.song-fav-btn.is-favorited { color: var(--page-accent); }
+.song-fav-btn:hover { color: var(--page-accent); background: rgba(242, 189, 112, .14); }
+.song-fav-btn:focus-visible { outline: 2px solid var(--page-accent); outline-offset: 2px; }
 
 .song-note {
   display: grid;

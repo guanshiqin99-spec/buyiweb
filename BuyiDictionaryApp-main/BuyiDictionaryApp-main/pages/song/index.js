@@ -54,6 +54,14 @@ Page({
     if (!this.data.loadingMore && this.data.page < this.data.totalPages) this.loadSongs(this.data.page + 1);
   },
 
+  onMoreSongs() {
+    if (this.data.page < this.data.totalPages) {
+      this.loadMore();
+    } else {
+      wx.showToast({ title: '暂无更多民歌', icon: 'none' });
+    }
+  },
+
   onReachBottom() {
     this.loadMore();
   },

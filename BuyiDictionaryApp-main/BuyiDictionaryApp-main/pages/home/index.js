@@ -17,7 +17,6 @@ Page({
 
   onLoad() {
     this.setData({ history: wx.getStorageSync('searchHistory') || [] });
-    this.loadHomeData();
   },
 
   onShow() {
@@ -25,6 +24,7 @@ Page({
       this.getTabBar().setData({ selected: 0 });
     }
     syncAppearance(this);
+    this.loadHomeData();
   },
 
   async loadHomeData() {
@@ -103,7 +103,8 @@ Page({
         if (payload.dictionary) items = items.concat(payload.dictionary);
         if (payload.phrases) items = items.concat(payload.phrases);
         if (payload.proverbs) items = items.concat(payload.proverbs);
-        
+        if (payload.songs) items = items.concat(payload.songs);
+
         items = items.slice(0, 8);
         this.setData({ suggestions: items, showSuggestions: items.length > 0 });
       } catch (error) {

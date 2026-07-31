@@ -72,7 +72,7 @@
   <view class="setting-group">
     <text class="text-sub group-title">关于</text>
     <view class="card glass-card">
-      <view class="setting-item arrow-item">
+      <view class="setting-item arrow-item" bindtap="onAbout">
         <text class="text-body">关于布依语言文化计划</text>
         <text class="arrow">></text>
       </view>

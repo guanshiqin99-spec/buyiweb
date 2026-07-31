@@ -388,7 +388,11 @@
 .guest-link {
   color: #8099ba;
   font-size: 26rpx;
-  padding: 12rpx 40rpx;
+  min-height: 88rpx;
+  padding: 32rpx 48rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   letter-spacing: 1rpx;
 }
 

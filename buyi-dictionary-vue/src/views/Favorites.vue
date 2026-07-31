@@ -6,7 +6,7 @@ import imgBg from '@/assets/images/generated/favorites-archive-shelf.png'
 import { useFavoritesStore } from '@/stores/favorites'
 import IconHeartFilled from '@/components/icons/IconHeartFilled.vue'
 import IconHeart from '@/components/icons/IconHeart.vue'
-import { getContentLabel, getContentRoute } from '../utils/contentTypes'
+import { getContentLabel } from '../utils/contentTypes'
 
 const favoritesStore = useFavoritesStore()
 const favorites = ref([])
@@ -31,6 +31,23 @@ async function removeFavorite(item) {
   } catch (e) {
     console.error('取消收藏失败', e)
   }
+}
+
+function getFavoriteRoute(item) {
+  if (item.contentType === 'song') {
+    return item.contentId != null
+      ? { path: '/songs', query: { song: String(item.contentId) } }
+      : { path: '/songs' }
+  }
+
+  const keyword = item.buyiText || item.zhText || item.title || ''
+  const query = {}
+  if (keyword) query.q = keyword
+  if (item.contentType === 'phrase' || item.contentType === 'proverb') {
+    query.type = item.contentType
+  }
+
+  return { path: '/dictionary', query }
 }
 </script>
 
@@ -59,7 +76,7 @@ async function removeFavorite(item) {
           :key="`${item.contentType}-${item.contentId}`"
           class="fav-item liquid-glass-quiet"
         >
-          <RouterLink class="fav-item-body" :to="getContentRoute(item.contentType)">
+          <RouterLink class="fav-item-body" :to="getFavoriteRoute(item)">
             <span class="fav-type-tag">{{ getContentLabel(item.contentType) }}</span>
             <div class="fav-item-info">
               <p class="fav-item-title">{{ item.title || item.buyiText || item.zhText || `#${item.contentId}` }}</p>

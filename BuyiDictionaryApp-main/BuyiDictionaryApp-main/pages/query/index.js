@@ -101,6 +101,7 @@ Page({
         if (payload.dictionary) items = items.concat(payload.dictionary);
         if (payload.phrases) items = items.concat(payload.phrases);
         if (payload.proverbs) items = items.concat(payload.proverbs);
+        if (payload.songs) items = items.concat(payload.songs);
         
         // Take top 8 suggestions max
         items = items.slice(0, 8);

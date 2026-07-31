@@ -1,9 +1,9 @@
 /* 设置页青花瓷风格与东方留白设计 */
 
 .landscape-bg {
-  background: 
-    url('https://my-buyi-dict.com/images/bg-mountain-top.png') no-repeat top center / 100% auto,
-    url('https://my-buyi-dict.com/images/bg-wave-bottom.png') no-repeat bottom center / 100% auto,
+  background:
+    linear-gradient(to bottom, #E8EEF7 0%, #F4F8FF 30%, transparent 70%),
+    linear-gradient(to top, #DCE6F2 0%, #EAF1FA 30%, transparent 70%),
     var(--color-bg);
 }
 
@@ -159,8 +159,10 @@
 
 /* ================= 深色模式适配 ================= */
 .page.dark .landscape-bg {
-  /* 移除浅色背景图，使用纯净深色底色，或如果你有深色山水图可替换 */
-  background: var(--color-bg);
+  background:
+    linear-gradient(to bottom, #1a2240 0%, #0f1428 30%, transparent 70%),
+    linear-gradient(to top, #14203a 0%, #0f1428 30%, transparent 70%),
+    var(--color-bg);
 }
 
 .page.dark .text-title {

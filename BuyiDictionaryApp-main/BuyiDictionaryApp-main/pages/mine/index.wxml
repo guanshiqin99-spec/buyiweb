@@ -112,4 +112,7 @@
     <text class="quote-seal">印</text>
   </view>
 
+  <!-- AI 导览员悬浮入口 -->
+  <agent-panel context="mine" />
+
 </view>

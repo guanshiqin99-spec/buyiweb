@@ -62,6 +62,15 @@ Page({
     }
   },
 
+  onAbout() {
+    wx.showModal({
+      title: '关于布依语言文化计划',
+      content: '布依语词典致力于布依族语言文化的数字化保护与传承，收录词条、短语、谚语与民歌，结合 AI 技术提供学习辅助。',
+      showCancel: false,
+      confirmText: '我知道了'
+    });
+  },
+
   onShow() {
     syncAppearance(this, { isLogin: !!getApp().globalData.isLogin });
     this.loadSettings();
@@ -294,8 +303,9 @@ Page({
 
   clearFavorites() {
     wx.showModal({
-      title: '\u6E05\u7A7A\u6536\u85CF',
-      content: '\u786E\u5B9A\u8981\u6E05\u7A7A\u6240\u6709\u6536\u85CF\u5417\uFF1F',
+      title: '确认清空',
+      content: '此操作不可恢复，将清空所有云端收藏，是否继续？',
+      confirmColor: '#c65b5b',
       success: async (res) => {
         if (!res.confirm) {
           return;
@@ -310,8 +320,9 @@ Page({
 
   clearRecords() {
     wx.showModal({
-      title: '\u6E05\u7A7A\u8BB0\u5F55',
-      content: '\u786E\u5B9A\u8981\u6E05\u7A7A\u5B66\u4E60\u8BB0\u5F55\u5417\uFF1F',
+      title: '确认清空',
+      content: '此操作不可恢复，将清空所有学习记录，是否继续？',
+      confirmColor: '#c65b5b',
       success: async (res) => {
         if (!res.confirm) {
           return;

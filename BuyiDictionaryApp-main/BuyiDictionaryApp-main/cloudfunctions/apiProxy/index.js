@@ -6,9 +6,10 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 
-// 后端基础地址，直连服务器 IP
-// 注意：云函数运行在微信服务器，可以访问 HTTP IP，不受小程序白名单限制
-const BACKEND_BASE = 'http://39.96.81.132:80/api';
+// 后端基础地址：优先读云函数环境变量 BACKEND_BASE，便于切换 HTTPS 域名时无需改代码
+// 安全提示：生产应配置为 https://<域名>/api，避免 Bearer Token 在传输中裸奔
+//   （强制 HTTPS 需后端先启用 TLS，此处保留 http 默认值以兼容当前后端，不破坏现有功能）
+const BACKEND_BASE = process.env.BACKEND_BASE || 'http://39.96.81.132:80/api';
 // 普通请求超时时间（毫秒）
 const REQUEST_TIMEOUT = 15000;
 // AI 流式接口超时时间（毫秒），DeepSeek 生成 5 题可能需要较长时间

@@ -224,15 +224,14 @@ function updateActive() {
 
 function selectActive() {
   if (activeIndex.value >= 0 && flatItems.value[activeIndex.value]?.type === 'item') {
-    const it = flatItems.value[activeIndex.value].data
-    submitSearch(it.zhText || it.buyiText || it.title || '')
+    openSuggestion(flatItems.value[activeIndex.value])
   } else if (query.value.trim()) {
     submitSearch(query.value.trim())
   }
 }
 
 function selectResult(item) {
-  submitSearch(item.zhText || item.buyiText || item.title || '')
+  openSuggestion(item)
 }
 
 function selectRecent(kw) {
@@ -244,6 +243,23 @@ function submitSearch(kw) {
   if (!kw) return
   saveRecent(kw)
   router.push({ path: '/dictionary', query: { q: kw } })
+  emit('close')
+}
+
+function openSuggestion(entry) {
+  const item = entry?.data || entry
+  const kw = item?.zhText || item?.buyiText || item?.title || ''
+  if (!kw) return
+
+  saveRecent(kw)
+
+  if (entry?.group === 'songs' || item?.contentType === 'song' || item?.type === 'song') {
+    const query = item?.id != null ? { song: String(item.id) } : {}
+    router.push({ path: '/songs', query })
+  } else {
+    router.push({ path: '/dictionary', query: { q: kw } })
+  }
+
   emit('close')
 }
 
@@ -329,7 +345,7 @@ function optionId(idx) {
                 :aria-selected="idx === activeIndex"
                 :data-idx="idx"
                 :class="{ 'is-active': idx === activeIndex }"
-                @click="selectResult(f.data)"
+                @click="selectResult(f)"
                 @mouseenter="activeIndex = idx"
               >
                 <span class="suggestion-item-buyi">{{ primary(f.data) }}</span>
