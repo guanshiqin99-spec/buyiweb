@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-ssr
+.trae
+.vite
+.wrangler
+.vercel
+design_concepts
+BuyiDictionaryApp-main
+buyi-dictionary-vue
+__pycache__
+$null
