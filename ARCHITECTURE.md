@@ -2,7 +2,7 @@
 
 > 本文档描述布依族词典项目的整体架构、模块划分与数据流。
 >
-> 最后更新：2026-07-24
+> 最后更新：2026-08-02
 
 ---
 
@@ -57,9 +57,9 @@
 | `assets/styles/` | 设计令牌系统 | `variables.css`, `liquid-glass.css`, `main.css` |
 | `components/layout/` | 布局组件 | `AppHeader.vue`, `AppFooter.vue` |
 | `components/common/` | 通用组件 | `PageShell.vue`, `SearchBar.vue`, `SearchModal.vue`, `FloatingParticles.vue` |
-| `components/specific/` | 业务组件 | `AudioPlayer.vue`, `AgentPanel.vue`, `ToneChart.vue`, `BarChart.vue` |
+| `components/specific/` | 业务组件 | `AudioPlayer.vue`, `AudioSpectrum.vue`, `AgentPanel.vue`, `ToneChart.vue`, `TonePiano.vue`, `BarChart.vue`, `RadarChart.vue`, `HeatMap.vue`, `ShareCard.vue`, `DictionaryEntryDetail.vue`, `PatternDecoration.vue` |
 | `components/icons/` | SVG 图标 | `IconBase.vue` + 20+ 图标组件 |
-| `views/` | 页面视图 | 10 个页面，对应 10 条路由 |
+| `views/` | 页面视图 | 13 个页面（Home/Dictionary/Culture/Songs/Learn/Quiz/Record/Profile/Favorites/Settings/Login/About/NotFound），对应 13 条路由 |
 | `stores/` | Pinia 状态 | `auth`, `player`, `favorites`, `search`, `theme`, `agent` |
 | `router/` | 路由配置 | History 模式 + `requiresAuth` 守卫 |
 | `utils/` | 工具函数 | `api.js`（Axios 封装）、`liquidGlass.js`、`navTonePolicy.js` |
@@ -69,16 +69,24 @@
 
 | 模块 | 职责 |
 |------|------|
-| `pages/home/` | 首页 |
-| `pages/dictionary/`, `pages/query/` | 词汇查询 |
+| `pages/home/` | 首页（含轮播图） |
+| `pages/query/`, `pages/vocabulary/` | 词汇查询与浏览 |
 | `pages/phrases/`, `pages/proverbs/` | 短语与谚语 |
-| `pages/song/` | 民歌列表 |
+| `pages/song/`, `pages/player-detail/` | 民歌列表与播放器详情 |
+| `pages/culture/` | 文化展厅（蜡染/工艺/自然 + 音频导览） |
+| `pages/learn/` | 学习中心 |
 | `pages/quiz/` | 答题测验 |
 | `pages/login/` | 登录注册 |
-| `pages/mine/`, `pages/setting/` | 个人中心与设置 |
-| `pages/record/` | 学习记录 |
+| `pages/mine/`, `pages/setting/` | 个人中心（含成就/徽章/可视化）与设置 |
+| `pages/record/` | 学习记录（含热力图/雷达图/学习建议） |
 | `pages/favorite/` | 收藏 |
-| `utils/api.js` | 接口封装 |
+| `pages/app/`, `pages/application/` | 应用入口与功能引导 |
+| `components/agent-panel/` | AI 导览员悬浮面板 |
+| `components/badge-motif/` | 徽章纹样组件 |
+| `components/bar-chart/`, `components/radar-chart/`, `components/heat-map/` | 数据可视化组件 |
+| `components/share-card/` | 成就分享卡导出 |
+| `utils/api.js` | 接口封装（含 badges/userProgress/dailyTasks/learningSuggestion） |
+| `utils/userProgress.js`, `utils/dailyTasks.js`, `utils/learningSuggestion.js` | 成就/任务/建议工具 |
 | `utils/runtime-config.js` | 运行时接口地址配置 |
 | `app.js` | 小程序入口 |
 

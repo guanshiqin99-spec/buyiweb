@@ -10,9 +10,10 @@
 
 ### 计划中
 
-- 接入真实音频播放（替换模拟播放器）
 - 完善后端测试覆盖率（miniapp-auth / content-import / media service）
 - 移动端 Web 端适配优化
+- 小程序本地 `assets/images/covers` 目录补齐（当前依赖后端动态返回，离线场景回退 banner1.jpg）
+- 「从一个词，走进一座文化馆」文案落地与防断行排版（详见 `待修改问题清单.md` 第 5 项）
 
 ### 新增
 
@@ -22,8 +23,24 @@
 - **Web 词典移动端详情弹窗**：抽出 `buyi-dictionary-vue/src/components/specific/DictionaryEntryDetail.vue` 复用详情渲染；`Dictionary.vue` 在窄屏（≤860px）下改为点击词条弹出底部悬浮弹窗，解决竖屏数据量大时详解卡片掉到底部的问题
 - **部署方案（Cloudflare Named Tunnel）**：`部署方案.md` 重写，落地北京 ECS（39.96.81.132）+ Cloudflare Named Tunnel（`api.buyitech.asia`）+ Cloudflare Pages 前端的三段式架构，cloudflared 安装为 systemd 守护进程保证开机自启
 
+#### 2026-08-01 ~ 2026-08-02 增强
+
+- **小程序成就系统**：新增徽章组件 `components/badge-motif/`、柱状图 `components/bar-chart/`、雷达图 `components/radar-chart/`、热力图 `components/heat-map/`、分享卡 `components/share-card/`（布依族风格视觉）；`mine` 与 `record` 页接入徽章、每日任务、学习建议、可视化图表；学习行为联动每日任务进度
+- **小程序成就 API 封装**：`utils/api.js` 扩展 badges/userProgress/dailyTasks/learningSuggestion 接口；新增 `utils/userProgress.js`、`utils/dailyTasks.js`、`utils/learningSuggestion.js` 工具
+- **小程序文化展厅页面**：新增 `pages/culture/`（含蜡染/工艺/自然三大展项 + 音频导览）
+- **小程序学习与词汇页面**：新增 `pages/learn/`（学习中心）、`pages/vocabulary/`（词汇浏览）、`pages/app/` 与 `pages/application/`（应用入口）、`pages/player-detail/`（播放器详情）
+- **小程序封面图全部替换**：`backend/uploads/covers/` 替换为高清封面（万峰林、八音坐唱、村寨表演等）
+
 ### 变更
 
+#### 2026-08-01 ~ 2026-08-02 变更
+
+- **小程序 UI 与 Web 功能对齐**：`pages/home/`、`pages/query/`、`pages/quiz/`、`pages/mine/`、`pages/record/` 等页面 UI 重构，对齐 Web 端体验
+- **学习记录未定义问题修复**：前后端认证与功能逻辑优化，修复 `learning-record` 在特定场景下 undefined 的报错
+- **后端安全清理同步**：`f1647645` 同步后端安全清理、小程序 Agent 面板与前端组件更新
+- **无用资源清理**：`a5f8fa61` 清理无用资源与统一后端错误提示文案
+
+- **Web 民歌播放器接入真实音频**：`buyi-dictionary-vue/src/stores/player.js` 由 `requestAnimationFrame` 模拟进度改为 `attachAudioElement` 注入真实 `<audio>` 元素，监听 `loadedmetadata`/`timeupdate`/`play`/`pause`/`ended`/`error`/`waiting`/`canplay` 事件驱动状态；`AudioPlayer.vue` 挂载 `<audio ref>` 并在卸载时调用 `destroy()`；时长不再硬编码 222 秒，改由 `loadedmetadata` 读取真实音频时长，后端字段作回退；远程音源失败时自动 fallback 到 `public/audio/` 随包演示音源；新增 AudioContext 频谱分析与 Cache API 离线缓存；补充 `tests/player.test.js` 覆盖真实媒体事件与 fallback 流程
 - **小程序 AI 导览员弹窗遮挡导航栏修复**：`components/agent-panel/agent-panel.js` 新增 `_toggleTabBar` 方法，面板展开时调用 `wx.hideTabBar`、关闭时调用 `wx.showTabBar`，并通过 `app.eventBus` 广播 `tabbar:hide` / `tabbar:show` 事件，组件 `detached` 时恢复 TabBar；`agent-panel.wxss` 输入区 `padding-bottom` 调整为 `calc(24rpx + env(safe-area-inset-bottom))` 适配全面屏安全区，解决 AI 面板覆盖底部导航栏导致无法切页的问题
 - **云函数 apiProxy**：`cloudfunctions/apiProxy/index.js` 对 `/miniapp/agent/*` 路径新增 `requestStream` 流式累积逻辑（解析 SSE `delta`/`done`/`error` 事件后一次性返回完整结果）；`BACKEND_BASE` 由 `:3000` 改为 `:80`（走 Nginx 入口）；`cloudbaserc.json` 云函数超时调整为 60s；`app.js` 的 `wx.cloud.callFunction` 透传 `timeout`
 - **Web 个人中心徽章视觉**：`Profile.vue` 徽章增加「已解锁 / 未解锁」状态文案与差异化样式（已解锁品牌色描边 + 光晕，未解锁灰度 + 虚线边框）
@@ -107,7 +124,6 @@
 
 ### 已知限制
 
-- **播放器为模拟实现**：`player.js` 用 `requestAnimationFrame` 模拟进度推进，时长硬编码 222 秒，未接入真实音频文件
 - **AI 助手依赖后端**：`agentApi.askStream` 需后端 `/miniapp/agent/ask` 返回 SSE 流
 - **图片资源未压缩**：部分首页背景图超过 1MB，影响首屏性能
 - **内容深度有限**：词条、短语、谚语数量较少，需通过后台 Excel 批量导入扩展

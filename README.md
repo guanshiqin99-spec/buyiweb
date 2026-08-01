@@ -50,6 +50,8 @@
 - **双令牌认证**：access token + refresh token，session 级 logout
 - **AI 助手**：SSE 流式问答（依赖后端 DeepSeek 接入）
 - **微信学习提醒**：每日定时投递订阅消息
+- **成就系统**：徽章、每日任务、学习建议、热力图/雷达图/柱状图可视化、成就分享卡（小程序与 Web 端）
+- **文化展厅**：布依族蜡染/工艺/自然三大展项 + 音频导览
 
 ---
 
@@ -106,7 +108,7 @@ BuyiDictionaryWeb/
 │   ├── src/
 │   │   ├── assets/                  # 图片与样式令牌
 │   │   ├── components/              # 布局 / 通用 / 业务组件
-│   │   ├── views/                   # 10 个页面视图
+│   │   ├── views/                   # 13 个页面视图（含 Home/Dictionary/Culture/Songs/Learn/Quiz/Record/Profile/Favorites/Settings/Login/About/NotFound）
 │   │   ├── stores/                   # Pinia 状态管理
 │   │   ├── router/                   # 路由 + 鉴权守卫
 │   │   └── utils/                    # API 封装、工具函数
