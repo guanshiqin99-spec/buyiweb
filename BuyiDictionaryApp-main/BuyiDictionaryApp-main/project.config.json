@@ -51,6 +51,22 @@
       {
         "value": ".git",
         "type": "folder"
+      },
+      {
+        "value": "assets/images/bouyei-batik-atmosphere.png",
+        "type": "file"
+      },
+      {
+        "value": "assets/images/bouyei-craft.jpg",
+        "type": "file"
+      },
+      {
+        "value": "assets/images/bouyei-nature.jpg",
+        "type": "file"
+      },
+      {
+        "value": "assets/audio/tones",
+        "type": "folder"
       }
     ],
     "include": []

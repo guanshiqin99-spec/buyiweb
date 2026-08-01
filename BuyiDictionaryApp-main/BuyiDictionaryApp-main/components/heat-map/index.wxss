@@ -1,0 +1,158 @@
+.heat-map {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 顶部标题与说明 */
+.heat-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.heat-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.heat-sub {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+}
+
+/* 主体：横向可滚动，适配窄屏 */
+.heat-body {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.heat-grid {
+  display: flex;
+  flex-direction: column;
+  min-width: 380rpx;
+}
+
+/* 月份标签行 */
+.heat-month-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+  height: 28rpx;
+}
+
+.heat-week-label-spacer {
+  width: 40rpx;
+  flex-shrink: 0;
+}
+
+.heat-month-cell {
+  width: 24rpx;
+  margin-right: 4rpx;
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* 格子行 */
+.heat-cell-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4rpx;
+}
+
+.heat-week-label {
+  width: 40rpx;
+  flex-shrink: 0;
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 24rpx;
+}
+
+/* 格子：24rpx × 24rpx，间距 4rpx，圆角 4rpx */
+.heat-cell {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 4rpx;
+  border-radius: 4rpx;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* 未来日期格子：level-0 但半透明区分 */
+.heat-cell.is-future {
+  opacity: 0.3;
+}
+
+/* 格内月份标签：仅作数据载体，不在格内显示以免遮挡颜色 */
+.heat-month-tag {
+  display: none;
+}
+
+/* level 五档颜色：浅灰 → 品牌色深色（布依族蜡染靛蓝） */
+.heat-cell.level-0 {
+  background-color: var(--color-card-border);
+}
+
+.heat-cell.level-1 {
+  background-color: rgba(22, 100, 217, 0.25);
+}
+
+.heat-cell.level-2 {
+  background-color: rgba(22, 100, 217, 0.45);
+}
+
+.heat-cell.level-3 {
+  background-color: rgba(22, 100, 217, 0.7);
+}
+
+.heat-cell.level-4 {
+  background-color: var(--color-primary);
+}
+
+/* 底部图例 */
+.heat-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 16rpx;
+}
+
+.heat-legend-text {
+  font-size: 20rpx;
+  color: var(--color-text-secondary);
+  margin: 0 8rpx;
+  line-height: 1;
+}
+
+.heat-legend-cell {
+  margin-right: 4rpx;
+}
+
+.heat-legend-cell:last-of-type {
+  margin-right: 0;
+}
+
+/* 深色模式：.page.dark（与 app.wxss 实际定义对齐） */
+.page.dark .heat-cell.level-0 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.page.dark .heat-cell.level-1 {
+  background-color: rgba(90, 169, 255, 0.3);
+}
+
+.page.dark .heat-cell.level-2 {
+  background-color: rgba(90, 169, 255, 0.5);
+}
+
+.page.dark .heat-cell.level-3 {
+  background-color: rgba(90, 169, 255, 0.75);
+}
+
+.page.dark .heat-cell.level-4 {
+  background-color: var(--color-primary-light);
+}

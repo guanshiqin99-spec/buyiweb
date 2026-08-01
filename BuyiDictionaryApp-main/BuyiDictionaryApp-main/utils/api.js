@@ -261,6 +261,12 @@ const homeApi = {
   },
 };
 
+const cultureExhibitsApi = {
+  detail(slug) {
+    return get(`/miniapp/culture-exhibits/${encodeURIComponent(slug)}`, null, { showError: false });
+  },
+};
+
 const healthApi = {
   check() {
     return get('/health', null, { showError: false, redirectOn401: false, allowRefresh: false });
@@ -313,6 +319,15 @@ const recordsApi = {
   clear() {
     return del('/miniapp/learning-records', null, { needAuth: true });
   },
+  stats() {
+    return get('/miniapp/learning-records/stats', null, { needAuth: true, showError: false });
+  },
+};
+
+const badgesApi = {
+  list() {
+    return get('/miniapp/badges', null, { needAuth: true, showError: false });
+  },
 };
 
 module.exports = {
@@ -325,10 +340,12 @@ module.exports = {
   meApi,
   settingsApi,
   homeApi,
+  cultureExhibitsApi,
   healthApi,
   contentApi,
   favoritesApi,
   recordsApi,
+  badgesApi,
   quizApi,
   extractMessage,
 };

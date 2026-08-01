@@ -1,0 +1,24 @@
+/* 徽章组件样式：勋章外框已在 SVG 内绘制，外层仅做容器与微光晕 */
+
+.badge-motif {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.badge-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 已解锁状态：瓷釉质感微光晕，强调勋章立体感 */
+.badge-motif:not(.is-locked) .badge-image {
+  filter: drop-shadow(0 2rpx 6rpx rgba(201, 169, 110, 0.35));
+}
+
+/* 未解锁状态：轻微降透明，灰色已在 SVG 内绘制 */
+.is-locked .badge-image {
+  opacity: 0.75;
+}

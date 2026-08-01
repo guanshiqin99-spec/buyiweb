@@ -25,7 +25,11 @@ Page({
     wx.navigateTo({ url: '/pages/proverbs/index' });
   },
 
-  goToVocabulary() {
-    wx.navigateTo({ url: '/pages/vocabulary/index' });
+  goToLearn() {
+    wx.navigateTo({ url: '/pages/learn/index' });
+  },
+
+  goToCulture() {
+    wx.navigateTo({ url: '/pages/culture/index' });
   },
 });

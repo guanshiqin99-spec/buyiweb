@@ -1,0 +1,376 @@
+/* 文化馆页样式：沿用全局青花瓷令牌，rpx 单位 */
+
+.culture-page {
+  padding: 0 40rpx 160rpx;
+}
+
+/* ============ Hero 区 ============ */
+.hero {
+  display: flex;
+  flex-direction: column;
+  padding: 32rpx 8rpx 40rpx;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.hero-kicker {
+  color: #D4883A;
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 4rpx;
+}
+
+.hero-title {
+  margin: 16rpx 0 20rpx;
+  color: var(--color-primary-dark);
+  font-size: 60rpx;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hero-desc {
+  color: var(--color-text-secondary);
+  font-size: 28rpx;
+  line-height: 1.75;
+}
+
+/* ============ 通用区块 ============ */
+.section {
+  padding: 56rpx 0 8rpx;
+}
+
+.section-head {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 32rpx;
+}
+
+.section-kicker {
+  color: #D4883A;
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 3rpx;
+}
+
+.section-title {
+  margin: 12rpx 0 16rpx;
+  color: var(--color-primary-dark);
+}
+
+.section-desc {
+  line-height: 1.75;
+}
+
+/* ============ 声调钢琴 ============ */
+.tone-piano {
+  padding: 32rpx;
+  border-radius: var(--radius-card);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-light);
+  margin-bottom: 32rpx;
+}
+
+.tone-keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+
+.tone-key {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 180rpx;
+  padding: 20rpx 18rpx;
+  border-radius: 0 0 var(--radius-card-sm) var(--radius-card-sm);
+  background: rgba(22, 100, 217, 0.06);
+  border: 1px solid var(--color-card-border);
+  color: var(--color-text-primary);
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.tone-key.is-selected {
+  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: translateY(-6rpx);
+}
+
+.tone-key-index {
+  margin-bottom: auto;
+  color: var(--color-text-secondary);
+  font-size: 22rpx;
+  opacity: 0.72;
+}
+
+.tone-key.is-selected .tone-key-index {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tone-key-name {
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.tone-key-value {
+  margin-top: 8rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+}
+
+.tone-key-playing {
+  position: absolute;
+  top: 12rpx;
+  right: 14rpx;
+  color: #D4883A;
+  font-size: 32rpx;
+}
+
+.tone-detail {
+  display: flex;
+  flex-direction: column;
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 1px solid var(--color-card-border);
+}
+
+.tone-detail-strong {
+  color: var(--color-primary-dark);
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 10rpx;
+}
+
+/* ============ 调值曲线 canvas ============ */
+.tone-chart {
+  padding: 28rpx;
+}
+
+.tone-chart-head {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20rpx;
+}
+
+.tone-canvas {
+  width: 100%;
+  height: 360rpx;
+}
+
+/* ============ 纹样卡 ============ */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32rpx;
+}
+
+.pattern-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-card);
+  padding-bottom: 28rpx;
+  transition: transform 200ms ease;
+}
+
+.pattern-card:active {
+  transform: scale(0.98);
+}
+
+.pattern-card-img {
+  width: 100%;
+  height: 320rpx;
+  background: rgba(22, 100, 217, 0.05);
+}
+
+.pattern-card-label {
+  margin: 24rpx 28rpx 8rpx;
+  color: #D4883A;
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.pattern-card-title {
+  margin: 0 28rpx 12rpx;
+  color: var(--color-primary-dark);
+}
+
+.pattern-card-summary {
+  margin: 0 28rpx;
+  line-height: 1.75;
+}
+
+.pattern-card-action {
+  margin: 24rpx 28rpx 0;
+  color: var(--color-primary);
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+/* ============ 资料说明 ============ */
+.source-note {
+  display: flex;
+  flex-direction: column;
+}
+
+.source-note .text-h3 {
+  margin-bottom: 14rpx;
+  color: var(--color-primary-dark);
+}
+
+.source-note .text-sub {
+  line-height: 1.8;
+}
+
+/* ============ 关联展项错误提示 ============ */
+.exhibit-error {
+  margin-top: 32rpx;
+  border: 1px solid rgba(245, 158, 11, 0.42);
+  background: rgba(255, 248, 235, 0.92);
+}
+
+/* ============ 关联展项（由词入馆） ============ */
+.linked-exhibit {
+  margin-top: 32rpx;
+  padding: 36rpx 32rpx;
+  background: linear-gradient(160deg, rgba(30, 44, 96, 0.06), rgba(30, 44, 96, 0.12));
+  border-left: 6rpx solid var(--color-primary);
+}
+.linked-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+}
+.linked-title {
+  color: var(--color-primary);
+}
+.linked-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  padding: 24rpx 0 0;
+}
+.linked-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+.linked-btn {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  background: var(--color-card-bg, #ffffff);
+  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+}
+.linked-btn:active {
+  background: rgba(30, 44, 96, 0.06);
+}
+.source-icon {
+  font-size: 28rpx;
+}
+.source-text {
+  flex: 1;
+  color: var(--color-primary);
+  font-size: 26rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============ 纹样详情弹窗 ============ */
+.pattern-dialog-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  background: rgba(3, 15, 24, 0.78);
+}
+
+.pattern-dialog {
+  position: relative;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-card-lg);
+  background: #fff;
+  box-shadow: 0 24rpx 60rpx rgba(0, 0, 0, 0.3);
+}
+
+.pattern-dialog-close {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  z-index: 2;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--color-primary-dark);
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.pattern-dialog-img {
+  width: 100%;
+  height: 360rpx;
+  flex-shrink: 0;
+}
+
+.pattern-dialog-body {
+  padding: 36rpx;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pattern-dialog-title {
+  margin: 12rpx 0 20rpx;
+  color: var(--color-primary-dark);
+}
+
+.pattern-dialog-detail {
+  line-height: 1.85;
+}
+
+.pattern-dialog-source {
+  display: flex;
+  align-items: center;
+  margin-top: 32rpx;
+  padding: 20rpx 24rpx;
+  border-radius: var(--radius-card-sm);
+  background: rgba(22, 100, 217, 0.08);
+}
+
+.source-icon {
+  margin-right: 12rpx;
+  font-size: 28rpx;
+}
+
+.source-text {
+  flex: 1;
+  color: var(--color-primary);
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 1.5;
+}

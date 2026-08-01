@@ -1,0 +1,58 @@
+<!-- 学习类型分布柱状图组件 -->
+<view class="chart-container">
+  <view class="chart-title">{{title}}</view>
+
+  <!-- 空数据占位 -->
+  <view wx:if="{{!hasData}}" class="chart-empty">暂无学习分布数据</view>
+
+  <!-- 图表主体 -->
+  <view wx:if="{{hasData}}" class="chart-wrapper">
+    <!-- Y 轴刻度 -->
+    <view class="y-axis">
+      <view
+        wx:for="{{yAxisLabels}}"
+        wx:key="index"
+        class="y-label"
+      >{{item}}</view>
+    </view>
+
+    <!-- 绘图区 -->
+    <view class="chart-area">
+      <!-- 横向网格线 -->
+      <view class="grid-lines">
+        <view class="grid-line"></view>
+        <view class="grid-line"></view>
+        <view class="grid-line"></view>
+        <view class="grid-line"></view>
+        <view class="grid-line"></view>
+      </view>
+
+      <!-- 柱子 -->
+      <view class="bars-container">
+        <view
+          wx:for="{{data}}"
+          wx:key="category"
+          class="bar-group"
+        >
+          <view class="bar-wrapper">
+            <view
+              class="bar"
+              style="height: {{maxValue ? item.count / maxValue * 100 : 0}}%; animation-delay: {{index * 0.1}}s;"
+            >
+              <view class="bar-value">{{item.count}}</view>
+            </view>
+          </view>
+          <view class="bar-label">{{item.category}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 图例 -->
+  <view wx:if="{{hasData}}" class="chart-legend">
+    <view class="legend-item">
+      <view class="legend-color"></view>
+      <view class="legend-text">共 {{totalCount}} 条</view>
+    </view>
+  </view>
+</view>

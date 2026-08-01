@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { contentApi, recordsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
@@ -19,6 +19,7 @@ const playerStore = usePlayerStore()
 const authStore = useAuthStore()
 const favoritesStore = useFavoritesStore()
 const route = useRoute()
+const router = useRouter()
 const songs = ref(fallbackSongs)
 const isLoading = ref(false)
 const sourceNotice = ref('')
@@ -92,7 +93,13 @@ async function recordSongPlay(song) {
 }
 
 async function toggleSongFav(song) {
-  if (!authStore.isLoggedIn) return notifyFav('登录后可以把民歌加入收藏。')
+  if (!authStore.isLoggedIn) {
+    // 未登录：弹窗确认后引导去登录页，保留当前页面路径便于登录后返回
+    if (window.confirm('登录后可以把民歌加入收藏，是否前往登录？')) {
+      router.push({ name: 'login', query: { redirect: route.fullPath } })
+    }
+    return
+  }
   try {
     await favoritesStore.toggleFavorite('song', song.id, {
       title: song.title,

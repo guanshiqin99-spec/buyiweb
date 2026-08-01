@@ -1,0 +1,4 @@
+<!-- 徽章纹样组件：根据 pattern 渲染布依族非遗纹样 -->
+<view class="badge-motif {{locked ? 'is-locked' : ''}}" style="width:{{size}}rpx;height:{{size}}rpx;">
+  <image src="{{currentSrc}}" mode="aspectFit" class="badge-image" />
+</view>

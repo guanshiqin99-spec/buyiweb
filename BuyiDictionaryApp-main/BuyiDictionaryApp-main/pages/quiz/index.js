@@ -1,6 +1,7 @@
 const { quizApi } = require('../../utils/api');
 const { generateStream } = require('../../utils/agentStream');
 const { syncAppearance } = require('../../utils/view');
+const { notifyUserProgressUpdated } = require('../../utils/userProgress');
 
 const QUIZ_BANK = [
   { id: 'drum-type', prompt: '“铜鼓十二调”属于哪一类别？', answer: '传统音乐', options: ['传统音乐', '传统美术', '民俗', '曲艺'], explanation: '“铜鼓十二调”被列为传统音乐项目。' },
@@ -227,6 +228,12 @@ Page({
     if (!getApp().globalData.isLogin) {
       this.setData({ saveMsg: '成绩已保存在本机，登录后可同步到账号。' });
       return;
+    }
+    // 登录态：本地已保存，立即通知每日任务进度（不依赖云端同步）
+    try {
+      notifyUserProgressUpdated('quiz', 'quiz');
+    } catch (e) {
+      // 联动失败不影响主流程
     }
     this.setData({ saving: true, saveMsg: '正在保存成绩…' });
     try {

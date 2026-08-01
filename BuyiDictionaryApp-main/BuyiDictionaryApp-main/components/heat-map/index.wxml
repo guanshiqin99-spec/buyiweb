@@ -1,0 +1,44 @@
+<view class="heat-map">
+  <view class="heat-header">
+    <view class="heat-title">学习热力图</view>
+    <view class="heat-sub">近 12 周共 {{totalCount}} 条记录</view>
+  </view>
+
+  <view class="heat-body">
+    <view class="heat-grid">
+      <!-- 月份标签行：12 列，对齐每列首格月份 -->
+      <view class="heat-month-row">
+        <view class="heat-week-label-spacer"></view>
+        <view class="heat-month-cell" wx:for="{{monthLabels}}" wx:key="index">
+          {{item}}
+        </view>
+      </view>
+
+      <!-- 主体：7 行（周一到周日）× 12 列格子 -->
+      <view class="heat-cell-row" wx:for="{{cellMatrix}}" wx:for-item="row" wx:for-index="rowIdx" wx:key="rowIdx">
+        <view class="heat-week-label">{{weekLabels[rowIdx]}}</view>
+        <view
+          class="heat-cell level-{{cell.level}} {{cell.isInFuture ? 'is-future' : ''}}"
+          wx:for="{{row}}"
+          wx:for-item="cell"
+          wx:for-index="colIdx"
+          wx:key="colIdx"
+        >
+          <!-- wx:if 月份标签：仅首行月份变化格子携带，作数据载体不在格内显示文字 -->
+          <view wx:if="{{cell.monthLabel}}" class="heat-month-tag">{{cell.monthLabel}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 图例：少 → 多（level-0 到 level-4） -->
+  <view class="heat-legend">
+    <text class="heat-legend-text">少</text>
+    <view class="heat-cell level-0 heat-legend-cell"></view>
+    <view class="heat-cell level-1 heat-legend-cell"></view>
+    <view class="heat-cell level-2 heat-legend-cell"></view>
+    <view class="heat-cell level-3 heat-legend-cell"></view>
+    <view class="heat-cell level-4 heat-legend-cell"></view>
+    <text class="heat-legend-text">多</text>
+  </view>
+</view>

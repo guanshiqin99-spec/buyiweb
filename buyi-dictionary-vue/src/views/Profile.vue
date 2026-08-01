@@ -414,7 +414,7 @@ onUnmounted(() => {
           <div v-if="typeChartData.length" class="chart-card liquid-glass liquid-glass-content">
             <BarChart :data="typeChartData" title="学习类型分布" :height="220" />
           </div>
-          <RadarChart class="radar-card liquid-glass liquid-glass-content" :data="learnStats.typeCounts || {}" />
+          <RadarChart class="radar-card liquid-glass liquid-glass-content" :data="todayTypeCounts" />
         </div>
       </section>
 

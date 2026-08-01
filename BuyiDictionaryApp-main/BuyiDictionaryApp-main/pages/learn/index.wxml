@@ -1,0 +1,82 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page learn-page">
+  <custom-nav title="单词卡学习"></custom-nav>
+
+  <view class="header-section">
+    <text class="learn-eyebrow">学习布依语</text>
+    <text class="text-h1 learn-title">翻转卡片，记住每一个词</text>
+  </view>
+
+  <!-- 学习统计条（登录态显示） -->
+  <view wx:if="{{isLogin}}" class="card learn-stats">
+    <view class="learn-stat">
+      <text class="learn-stat-value">{{stats.streak}}</text>
+      <text class="learn-stat-label">连续天数</text>
+    </view>
+    <view class="learn-stat-divider"></view>
+    <view class="learn-stat">
+      <text class="learn-stat-value">{{stats.total}}</text>
+      <text class="learn-stat-label">累计学习</text>
+    </view>
+    <view class="learn-stat-divider"></view>
+    <view class="learn-stat">
+      <text class="learn-stat-value">{{stats.today}}</text>
+      <text class="learn-stat-label">今日</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="card status-card">
+    <text class="text-h3">正在加载词汇</text>
+    <text class="text-sub">稍等片刻，词条马上就绪。</text>
+  </view>
+
+  <view wx:elif="{{errorText}}" class="card status-card error">
+    <text class="text-h3 text-danger">词汇加载失败</text>
+    <text class="text-sub">{{errorText}}</text>
+  </view>
+
+  <view wx:elif="{{!words.length}}" class="card status-card empty">
+    <text class="text-h3">暂无词汇</text>
+    <text class="text-sub">等后台补充词条后这里会自动展示。</text>
+  </view>
+
+  <block wx:else>
+    <view class="card progress">
+      <text class="text-sub">已学习 {{learnedCount}} 词</text>
+      <text class="text-sub">进度 {{currentIndex + 1}} / {{words.length}}</text>
+    </view>
+
+    <view class="card-container" bindtap="flipCard">
+      <view class="card-inner {{isFlipped ? 'flipped' : ''}}">
+        <view class="card-face card-front">
+          <text wx:if="{{words[currentIndex].description}}" class="phonetic">{{words[currentIndex].description}}</text>
+          <text class="word">{{words[currentIndex].buyiText}}</text>
+          <text class="hint">点击翻转</text>
+        </view>
+        <view class="card-face card-back">
+          <text class="card-back-title">{{words[currentIndex].zhText}}</text>
+          <text wx:if="{{words[currentIndex].enText}}" class="english">{{words[currentIndex].enText}}</text>
+          <text wx:if="{{words[currentIndex].description}}" class="phonetic card-back-phonetic">{{words[currentIndex].description}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="action-bar">
+      <view class="action-btn" bindtap="handlePlay">
+        <text class="action-icon">{{playingIndex === currentIndex ? '■' : '▶'}}</text>
+        <text class="action-text">{{playingIndex === currentIndex ? '停止' : '发音'}}</text>
+      </view>
+      <view class="action-btn" bindtap="handleFavorite">
+        <text class="action-icon">♡</text>
+        <text class="action-text">收藏</text>
+      </view>
+      <view class="action-btn" bindtap="handleReview">
+        <text class="action-icon">↻</text>
+        <text class="action-text">复习</text>
+      </view>
+      <view class="action-btn action-btn-primary" bindtap="nextWord">
+        <text class="action-icon">→</text>
+        <text class="action-text">下一词</text>
+      </view>
+    </view>
+  </block>
+</view>

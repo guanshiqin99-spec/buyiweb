@@ -24,59 +24,172 @@
     </view>
   </view>
 
-  <!-- 瓷片统计卡 -->
-  <view class="porcelain-stat-card card">
-    <view class="stat-item" bindtap="toFavAndRecord">
-      <view class="stat-icon-wrap">
-        <image class="stat-icon" src="/assets/icons/star.svg" mode="aspectFit" />
+  <!-- 成就体系区块 -->
+  <view wx:if="{{isLogin}}" class="achievement-section">
+
+    <!-- 今日学习 section -->
+    <view class="section-title">今日学习</view>
+
+    <!-- 学习概览仪表盘（合并原瓷片统计 + 学习成长 + 概览为单行 4 格） -->
+    <view class="card stats-dashboard">
+      <view class="card-header card-header-toggle {{dashboardCollapsed ? 'is-collapsed' : ''}}" bindtap="toggleCard" data-key="dashboardCollapsed">
+        <image class="header-icon" src="/assets/icons/trend-up.svg" mode="aspectFit" />
+        <text class="header-title">学习概览</text>
+        <text class="collapse-arrow {{dashboardCollapsed ? 'is-collapsed' : ''}}">▾</text>
       </view>
-      <view class="stat-data">
-        <text class="stat-num">{{isLogin ? stats.favoriteCount : '0'}}</text>
-        <text class="stat-title">累计收藏</text>
+      <view class="stat-card-dashboard-row" wx:if="{{!dashboardCollapsed}}">
+        <view class="stat-card-dashboard stat-card-tap" catchtap="toRecord">
+          <text class="stat-card-num">{{learnStats.streakDays}}</text>
+          <text class="stat-card-label">连续打卡</text>
+        </view>
+        <view class="stat-card-dashboard stat-card-tap" catchtap="toRecord">
+          <text class="stat-card-num">{{learnStats.todayCount}}</text>
+          <text class="stat-card-label">今日学习</text>
+        </view>
+        <view class="stat-card-dashboard stat-card-tap" catchtap="toRecord">
+          <text class="stat-card-num">{{learnStats.totalCount}}</text>
+          <text class="stat-card-label">累计学习</text>
+        </view>
+        <view class="stat-card-dashboard stat-card-tap" catchtap="toFavAndRecord">
+          <text class="stat-card-num">{{learnStats.favoriteCount}}</text>
+          <text class="stat-card-label">收藏词汇</text>
+        </view>
       </view>
     </view>
-    
-    <view class="stat-divider-cloud"></view>
-    
-    <view class="stat-item" bindtap="toRecord">
-      <view class="stat-icon-wrap">
-        <image class="stat-icon" src="/assets/icons/clock.svg" mode="aspectFit" />
+
+    <!-- 每日任务卡 -->
+    <view class="card daily-tasks">
+      <view class="card-header card-header-toggle {{tasksCollapsed ? 'is-collapsed' : ''}}" bindtap="toggleCard" data-key="tasksCollapsed">
+        <image class="header-icon" src="/assets/icons/check-circle.svg" mode="aspectFit" />
+        <text class="header-title">每日任务</text>
+        <text class="tasks-count">{{dailyTasksCompletedCount}}/{{dailyTasks.length}}</text>
+        <text class="collapse-arrow {{tasksCollapsed ? 'is-collapsed' : ''}}">▾</text>
       </view>
-      <view class="stat-data">
-        <text class="stat-num">{{isLogin ? stats.learningRecordCount : '0'}}</text>
-        <text class="stat-title">学习记录</text>
+      <block wx:if="{{!tasksCollapsed}}">
+        <view wx:if="{{allDailyTasksCompleted}}" class="daily-tasks-banner">
+          今日任务已全部完成，明日继续加油！
+        </view>
+        <view class="task-list">
+          <view wx:for="{{dailyTasks}}" wx:key="title" class="task-item">
+            <view class="task-info">
+              <text class="task-title">{{item.title}}</text>
+              <text class="task-progress-text">{{item.current}}/{{item.target}}</text>
+            </view>
+            <view class="task-progress-bar">
+              <view class="task-progress-fill" style="width: {{item.target > 0 ? (item.current / item.target * 100) : 0}}%"></view>
+            </view>
+            <button
+              class="task-action-btn {{item.completed ? 'task-action-done' : ''}}"
+              bindtap="onTaskTap"
+              data-link="{{item.link}}"
+            >
+              {{item.completed ? '再学一次' : '去完成'}}
+            </button>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 学习建议卡 -->
+    <view class="card suggestion-card" wx:if="{{suggestions.length}}">
+      <view class="card-header card-header-toggle {{suggestionCollapsed ? 'is-collapsed' : ''}}" bindtap="toggleCard" data-key="suggestionCollapsed">
+        <image class="header-icon" src="/assets/icons/info.svg" mode="aspectFit" />
+        <text class="header-title">学习建议</text>
+        <text class="collapse-arrow {{suggestionCollapsed ? 'is-collapsed' : ''}}">▾</text>
+      </view>
+      <view class="suggestion-list" wx:if="{{!suggestionCollapsed}}">
+        <view
+          wx:for="{{suggestions}}"
+          wx:key="key"
+          class="suggestion-item"
+          bindtap="onSuggestionTap"
+          data-link="{{item.link}}"
+        >
+          <text class="suggestion-icon">{{item.icon}}</text>
+          <text class="suggestion-text">{{item.text}}</text>
+          <text class="suggestion-arrow">></text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 成长沉淀 section -->
+    <view class="section-title">成长沉淀</view>
+
+    <!-- 徽章墙（吸收原分享导出卡，header 加导出/分享按钮） -->
+    <view class="card badge-wall">
+      <view class="card-header card-header-toggle {{badgesCollapsed ? 'is-collapsed' : ''}}" bindtap="toggleCard" data-key="badgesCollapsed">
+        <image class="header-icon" src="/assets/icons/star.svg" mode="aspectFit" />
+        <text class="header-title">徽章墙</text>
+        <view class="badge-wall-actions" catchtap="">
+          <text class="badge-count">已解锁 {{unlockedBadgeCount}} / {{totalBadgeCount}}</text>
+          <button class="badge-action-btn" catchtap="exportAchievement" loading="{{isExporting}}" disabled="{{isExporting}}">导出</button>
+          <button class="badge-action-btn" open-type="share">分享</button>
+        </view>
+        <text class="collapse-arrow {{badgesCollapsed ? 'is-collapsed' : ''}}">▾</text>
+      </view>
+      <view class="badge-grid" wx:if="{{!badgesCollapsed}}">
+        <view
+          wx:for="{{badges}}"
+          wx:key="id"
+          class="badge-item {{item.isUnlocked ? 'badge-unlocked' : 'badge-locked'}}"
+          bindtap="openBadge"
+          data-badge="{{item}}"
+        >
+          <badge-motif pattern="{{item.pattern}}" locked="{{!item.isUnlocked}}" size="96" />
+          <text class="badge-name">{{item.name}}</text>
+          <text class="badge-status">{{item.isUnlocked ? '已解锁' : '未解锁'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 学习类型分布柱状图 + 雷达图 -->
+    <view class="card chart-card">
+      <view class="card-header card-header-toggle {{chartCollapsed ? 'is-collapsed' : ''}}" bindtap="toggleCard" data-key="chartCollapsed">
+        <image class="header-icon" src="/assets/icons/trend-up.svg" mode="aspectFit" />
+        <text class="header-title">学习分布</text>
+        <text class="collapse-arrow {{chartCollapsed ? 'is-collapsed' : ''}}">▾</text>
+      </view>
+      <block wx:if="{{!chartCollapsed}}">
+        <bar-chart data="{{typeChartData}}" />
+        <view class="chart-divider"></view>
+        <radar-chart data="{{learnStats.typeCounts}}" title="学习侧重" />
+      </block>
+    </view>
+
+  </view>
+
+  <!-- 徽章详情弹窗 -->
+  <view wx:if="{{selectedBadge}}" class="badge-modal-overlay" bindtap="closeBadge">
+    <view class="badge-modal" catchtap="">
+      <view class="badge-modal-close" bindtap="closeBadge">×</view>
+      <view class="badge-modal-motif {{selectedBadge.isUnlocked ? '' : 'badge-locked'}}">
+        <badge-motif pattern="{{selectedBadge.pattern}}" locked="{{!selectedBadge.isUnlocked}}" size="160" />
+      </view>
+      <text class="badge-modal-name">{{selectedBadge.name}}</text>
+      <text class="badge-modal-desc">{{selectedBadge.description}}</text>
+      <view wx:if="{{selectedBadge.isUnlocked}}" class="badge-modal-time">
+        解锁时间：{{selectedBadge.unlockedAtText}}
+      </view>
+      <view wx:else class="badge-modal-time badge-modal-hint">
+        继续学习以解锁此徽章
       </view>
     </view>
   </view>
 
-  <!-- 学习成长模块 (高级感) -->
-  <view class="growth-card card">
-    <view class="card-header">
-      <image class="header-icon" src="/assets/icons/trend-up.svg" mode="aspectFit" />
-      <text class="header-title">学习成长</text>
-    </view>
-    <view class="growth-content">
-      <view class="growth-item" bindtap="toRecord">
-        <image class="growth-icon" src="/assets/icons/flame.svg" mode="aspectFit" />
-        <view class="growth-info">
-          <text class="growth-label">连续学习</text>
-          <view class="growth-value"><text class="growth-num">{{isLogin ? stats.streak : '0'}}</text><text class="growth-unit">天</text></view>
-          <text class="growth-desc">继续保持，收获更多</text>
-        </view>
-      </view>
-      <view class="growth-item" bindtap="toRecord">
-        <image class="growth-icon" src="/assets/icons/check-circle.svg" mode="aspectFit" />
-        <view class="growth-info">
-          <text class="growth-label">已学习词汇</text>
-          <view class="growth-value"><text class="growth-num">{{isLogin ? stats.learningRecordCount : '0'}}</text><text class="growth-unit">个</text></view>
-          <text class="growth-desc">探索布依语言之美</text>
-        </view>
-      </view>
-    </view>
-  </view>
+  <!-- 更多功能 section -->
+  <view class="section-title">更多功能</view>
 
   <!-- 文化感功能菜单 -->
   <view class="culture-menu-card card">
+    <view class="menu-item" bindtap="goToLearn">
+      <view class="menu-icon-wrap"><image class="menu-icon" src="/assets/icons/trend-up.svg" mode="aspectFit" /></view>
+      <view class="menu-content">
+        <text class="menu-text text-body">单词卡学习</text>
+        <text class="menu-sub text-sub">翻转卡片记单词，发音收藏复习一步到位</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-divider-fade"></view>
     <view class="menu-item" bindtap="toRecord">
       <view class="menu-icon-wrap"><image class="menu-icon" src="/assets/icons/clock.svg" mode="aspectFit" /></view>
       <view class="menu-content">
@@ -111,6 +224,9 @@
     <text class="quote-text">语言是文化的根，词典是传承的桥。</text>
     <text class="quote-seal">印</text>
   </view>
+
+  <!-- 成就分享卡组件（隐藏 canvas 离屏绘制 + 预览弹窗） -->
+  <share-card id="shareCard" bindshare="onShareCardReady" />
 
   <!-- AI 导览员悬浮入口 -->
   <agent-panel context="mine" />

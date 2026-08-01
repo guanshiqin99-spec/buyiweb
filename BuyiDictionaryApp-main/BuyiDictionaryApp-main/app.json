@@ -14,6 +14,8 @@
     "pages/record/index",
     "pages/vocabulary/index",
     "pages/quiz/index",
+    "pages/learn/index",
+    "pages/culture/index",
     "pages/setting/index"
   ],
   "darkmode": true,

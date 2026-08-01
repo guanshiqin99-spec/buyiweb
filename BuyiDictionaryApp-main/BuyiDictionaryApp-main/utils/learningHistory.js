@@ -1,5 +1,6 @@
 const { recordsApi } = require('./api');
 const { mapLearningRecordsResponse } = require('./content-mapper');
+const { notifyUserProgressUpdated } = require('./userProgress');
 
 function isLoggedIn() {
   const app = getApp();
@@ -58,6 +59,11 @@ module.exports = {
     try {
       await recordsApi.create(info.contentType, info.contentId, actionType);
       emitChange({ action: 'add', item: { ...item, actionType } });
+      try {
+        notifyUserProgressUpdated('learning-record', info.contentType);
+      } catch (e) {
+        // 联动失败不影响主流程
+      }
       return true;
     } catch (error) {
       return false;

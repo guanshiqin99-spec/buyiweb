@@ -1,9 +1,22 @@
 const History = require('../../utils/learningHistory');
 const { syncAppearance } = require('../../utils/view');
+const { recordsApi } = require('../../utils/api');
+const { generateSuggestions } = require('../../utils/learningSuggestion');
+const { normalizeLearningStats } = require('../../utils/userProgress');
+
+// tabBar 页路径集合，onSuggestionTap 跳转时需用 wx.switchTab
+const TAB_BAR_PATHS = [
+  '/pages/home/index',
+  '/pages/app/index',
+  '/pages/favorite/index',
+  '/pages/song/index',
+  '/pages/mine/index',
+];
 
 Page({
   data: {
     records: [],
+    heatmapRecords: [],
     recent: [],
     currentTheme: 'light',
     fontSizeClass: 'medium',
@@ -18,6 +31,8 @@ Page({
       total: 0,
       progress: 0,
     },
+    typeCounts: {},
+    suggestions: [],
   },
 
   onLoad() {
@@ -39,10 +54,13 @@ Page({
       this.setData({
         isLogin: false,
         records: [],
+        heatmapRecords: [],
         recent: [],
         page: 1,
         totalPages: 1,
         stats: { today: 0, streak: 0, total: 0, progress: 0 },
+        typeCounts: {},
+        suggestions: [],
       });
       return;
     }
@@ -69,6 +87,11 @@ Page({
           progress,
         },
       });
+      // 仅首页拉取学习统计与建议，失败时静默置空，不阻塞主流程
+      if (page === 1) {
+        this.loadStatsAndSuggestions();
+        this.loadHeatmapRecords();
+      }
     } catch (error) {
       this.setData({
         records: page === 1 ? [] : this.data.records,
@@ -78,8 +101,40 @@ Page({
         page: page === 1 ? 1 : this.data.page,
         totalPages: page === 1 ? 1 : this.data.totalPages,
         stats: page === 1 ? { today: 0, streak: 0, total: 0, progress: 0 } : this.data.stats,
+        typeCounts: page === 1 ? {} : this.data.typeCounts,
+        suggestions: page === 1 ? [] : this.data.suggestions,
       });
       wx.showToast({ title: page === 1 ? '\u5B66\u4E60\u8BB0\u5F55\u52A0\u8F7D\u5931\u8D25' : '更多记录加载失败', icon: 'none' });
+    }
+  },
+
+  // 拉取学习统计（typeCounts）并生成学习建议；任何异常均静默置空，不影响主流程
+  async loadStatsAndSuggestions() {
+    try {
+      const stats = await recordsApi.stats();
+      const normalized = normalizeLearningStats(stats || {});
+      const typeCounts = normalized.typeCounts || {};
+      const suggestions = generateSuggestions({
+        totalCount: normalized.totalCount,
+        todayCount: normalized.todayCount,
+        streakDays: normalized.streakDays,
+        typeCounts,
+      });
+      this.setData({ typeCounts, suggestions });
+    } catch (error) {
+      this.setData({ typeCounts: {}, suggestions: [] });
+    }
+  },
+
+  // 拉取覆盖近 12 周的大 pageSize 记录用于热力图，失败时静默置空，不阻塞主流程
+  async loadHeatmapRecords() {
+    try {
+      const payload = await History.list(1, 500);
+      this.setData({
+        heatmapRecords: payload.records || [],
+      });
+    } catch (error) {
+      this.setData({ heatmapRecords: [] });
     }
   },
 
@@ -138,5 +193,24 @@ Page({
 
   toLogin() {
     wx.navigateTo({ url: '/pages/login/login' });
+  },
+
+  // 点击学习建议卡跳转：tabBar 页用 switchTab，其他用 navigateTo
+  onSuggestionTap(e) {
+    const link = e.currentTarget.dataset.link;
+    if (!link || typeof link !== 'string') return;
+
+    const cleanPath = link.split('?')[0];
+    if (TAB_BAR_PATHS.indexOf(cleanPath) !== -1) {
+      wx.switchTab({ url: cleanPath, fail: () => {} });
+    } else {
+      wx.navigateTo({
+        url: link,
+        fail: () => {
+          // 个别页面可能未注册或路径有问题，降级尝试 switchTab
+          wx.switchTab({ url: cleanPath, fail: () => {} });
+        },
+      });
+    }
   },
 });

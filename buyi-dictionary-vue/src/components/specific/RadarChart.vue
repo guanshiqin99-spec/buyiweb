@@ -15,6 +15,17 @@ const dimensions = [
   { key: 'song', label: '民歌' },
   { key: 'quiz', label: '答题' }
 ]
+
+// 各维度每日投入基准（达成 100% 即满格）：每个维度独立标准，
+// 避免“查词天然高频”让词典维度在绝对记录量上永远碾压其他四维。
+// 词汇按查词数、短语/谚语按浏览条数、民歌按播放次数、答题按完成轮数。
+const targets = {
+  dictionary: 20,
+  phrase: 5,
+  proverb: 5,
+  song: 3,
+  quiz: 2
+}
 // 内嵌视图（默认）与放大视图共用中心点；放大视图使用更大的半径与画布
 const center = { x: 180, y: 150 }
 const radius = 98
@@ -53,23 +64,29 @@ watch(isExpanded, (open) => {
   document.body.style.overflow = open ? 'hidden' : ''
 })
 
+// 达成度：今日计数 / 该维度基准，封顶 100，用于雷达形状与图上标注
 const values = computed(() => dimensions.map(({ key }) => {
-  const value = Number(props.data?.[key] ?? 0)
-  return Number.isFinite(value) && value > 0 ? value : 0
+  const count = Number(props.data?.[key] ?? 0)
+  const target = targets[key] || 1
+  return Number.isFinite(count) && count > 0
+    ? Math.min(100, Math.round((count / target) * 100))
+    : 0
+}))
+// 今日原始计数，用于图例展示真实条数
+const rawValues = computed(() => dimensions.map(({ key }) => {
+  const count = Number(props.data?.[key] ?? 0)
+  return Number.isFinite(count) && count > 0 ? Math.floor(count) : 0
 }))
 const maxValue = computed(() => Math.max(0, ...values.value))
 const hasData = computed(() => maxValue.value > 0)
 
-// 计算总和用于占比展示
-const totalValue = computed(() => values.value.reduce((sum, v) => sum + v, 0))
-const dimensionStats = computed(() => dimensions.map((dim, index) => {
-  const v = values.value[index]
-  return {
-    ...dim,
-    value: v,
-    ratio: totalValue.value > 0 ? Math.round((v / totalValue.value) * 100) : 0
-  }
-}))
+// 图例统计：value 为今日条数，progress 为达成度百分比
+const totalValue = computed(() => rawValues.value.reduce((sum, v) => sum + v, 0))
+const dimensionStats = computed(() => dimensions.map((dim, index) => ({
+  ...dim,
+  value: rawValues.value[index],
+  progress: values.value[index]
+})))
 
 function makePoint(centerPt, pointRadius, index, ratio, dimCount = dimensions.length) {
   const angle = -Math.PI / 2 + (Math.PI * 2 * index) / dimCount
@@ -170,7 +187,7 @@ function labelAnchor(x, cx = center.x) {
         :text-anchor="labelAnchor(axis.labelPoint.x)"
         dominant-baseline="middle"
         class="radar-chart__label"
-      >{{ axis.label }} {{ values[index] }}</text>
+      >{{ axis.label }} {{ values[index] }}%</text>
     </svg>
 
     <!-- 放大弹层：Teleport 到 body 避免父级裁切 -->
@@ -235,7 +252,7 @@ function labelAnchor(x, cx = center.x) {
               :text-anchor="labelAnchor(axis.labelPoint.x, expandedCenter.x)"
               dominant-baseline="middle"
               class="radar-chart__label radar-chart__label--lg"
-            >{{ axis.label }} {{ values[index] }}</text>
+            >{{ axis.label }} {{ values[index] }}%</text>
           </svg>
 
           <ul class="radar-chart__legend">

@@ -40,6 +40,48 @@
       </view>
     </view>
 
+    <!-- 可视化区块：热力图 + 雷达图 + 学习建议 -->
+    <view wx:if="{{isLogin}}" class="viz-section">
+      <!-- 学习热力图（近 12 周） -->
+      <view class="card viz-card">
+        <view class="viz-header">
+          <text class="text-h3">学习热力图</text>
+          <text class="text-sub">近 12 周</text>
+        </view>
+        <heat-map records="{{heatmapRecords}}" />
+      </view>
+
+      <!-- 学习雷达图（5 维度） -->
+      <view class="card viz-card">
+        <view class="viz-header">
+          <text class="text-h3">学习雷达图</text>
+          <text class="text-sub">五维侧重</text>
+        </view>
+        <radar-chart data="{{typeCounts}}" />
+      </view>
+
+      <!-- 学习建议卡（最多 3 条） -->
+      <view wx:if="{{suggestions.length}}" class="card viz-card suggestion-card">
+        <view class="viz-header">
+          <text class="text-h3">学习建议</text>
+          <text class="text-sub">为你定制</text>
+        </view>
+        <view class="suggestion-list">
+          <view
+            wx:for="{{suggestions}}"
+            wx:key="key"
+            class="suggestion-item"
+            data-link="{{item.link}}"
+            bindtap="onSuggestionTap"
+          >
+            <text class="suggestion-icon">{{item.icon}}</text>
+            <text class="suggestion-text">{{item.text}}</text>
+            <text class="suggestion-arrow">></text>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- 最近学习横滑列表 -->
     <view class="recent-section">
       <text class="text-h3 section-title">最近学习</text>

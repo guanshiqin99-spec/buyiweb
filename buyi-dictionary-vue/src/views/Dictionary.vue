@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import SearchBar from '@/components/common/SearchBar.vue'
 import ShareCard from '@/components/specific/ShareCard.vue'
 import DictionaryEntryDetail from '@/components/specific/DictionaryEntryDetail.vue'
-import { healthApi, searchApi, recordsApi, apiBaseURL } from '@/utils/api'
+import { healthApi, searchApi, contentApi, recordsApi, apiBaseURL } from '@/utils/api'
 import { generateStream } from '@/utils/agentStream'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useAuthStore } from '@/stores/auth'
@@ -27,6 +27,11 @@ const requestError = ref('')
 const serviceState = ref('unknown')
 const actionMsg = ref('')
 const cacheNotice = ref('')
+// 浏览全部模式：用户在无搜索词时主动翻阅短语/谚语，与搜索流程互斥
+const requestMode = ref('search') // 'search' | 'browse'
+const browsePage = ref(1)
+const browseTotalPages = ref(1)
+const browseTotal = ref(0)
 const bgParallax = ref(0)
 const playingId = ref(null)
 const shareCardRef = ref(null)
@@ -75,6 +80,24 @@ function mapResults(data) {
   return mapped
 }
 
+// 浏览全部模式下，contentApi.list 返回 {items, total, totalPages}，
+// 与搜索返回的 {dictionary, phrases, proverbs} 结构不同，这里按相同字段映射成 result-row 可用的条目。
+function mapBrowseResults(data, type) {
+  return (data.items || []).map((item) => ({
+    id: `${type}-${item.id}`,
+    type,
+    rawId: item.id,
+    bouyei: item.buyiText,
+    chinese: item.zhText,
+    english: item.enText,
+    phonetic: item.description || '',
+    example: item.culturalNote || item.description || '',
+    audioUrl: item.audioUrl || '',
+    relatedExhibits: item.relatedExhibits || [],
+    isFavorited: Boolean(item.isFavorited)
+  }))
+}
+
 const filteredResults = computed(() => {
   if (activeFilter.value === 'all') return allResults.value
   // filters 仍以 word 作为 UI key，这里映射回 API content type
@@ -84,6 +107,8 @@ const filteredResults = computed(() => {
 
 const selectedItem = computed(() => filteredResults.value.find((item) => item.id === selectedId.value) || null)
 const hasQuery = computed(() => Boolean(searchQuery.value.trim()))
+// 当前分类的中文标签，用于分类空态提示文案
+const activeFilterLabel = computed(() => filters.find((f) => f.key === activeFilter.value)?.label || '当前分类')
 const isFavoriteSelected = computed(() => {
   if (!selectedItem.value) return false
   return selectedItem.value.isFavorited
@@ -114,7 +139,7 @@ function saveCachedSearch(keyword, data) {
 
 async function runSearch() {
   clearTimeout(debounceTimer)
-  router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined } })
+  router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined, mode: undefined } })
   const sequence = ++requestSequence
   requestState.value = 'loading'
   requestError.value = ''
@@ -147,6 +172,55 @@ async function runSearch() {
   }
 }
 
+// 浏览全部模式：拉取某一类型的分页列表。短语/谚语的公开列表接口不返回收藏状态，
+// 登录态下用收藏 store 补标注，与搜索模式（/mine 接口自带标注）行为一致。
+async function runBrowse(page = 1) {
+  requestMode.value = 'browse'
+  requestState.value = 'loading'
+  requestError.value = ''
+  cacheNotice.value = ''
+  try {
+    const apiType = activeFilter.value === 'word' ? 'dictionary' : activeFilter.value
+    const data = await contentApi.list(apiType, { page, pageSize: 20 })
+    let items = mapBrowseResults(data, apiType)
+    if (authStore.isLoggedIn) {
+      if (!favoritesStore.favorites.length && !favoritesStore.isLoading) {
+        await favoritesStore.fetchFavorites().catch(() => {})
+      }
+      items = items.map((item) => ({
+        ...item,
+        isFavorited: favoritesStore.isFavorite(item.type, item.rawId)
+      }))
+    }
+    allResults.value = items
+    browsePage.value = Number(data.page || page)
+    browseTotalPages.value = Number(data.totalPages || Math.max(1, Math.ceil(Number(data.total || 0) / 20)))
+    browseTotal.value = Number(data.total || 0)
+    selectedId.value = filteredResults.value[0]?.id || null
+    requestState.value = allResults.value.length ? 'ready' : 'empty'
+    recordSearchView(filteredResults.value[0])
+  } catch {
+    allResults.value = []
+    selectedId.value = null
+    requestState.value = 'error'
+    requestError.value = '暂时无法加载浏览列表。'
+  }
+}
+
+function enterBrowse() {
+  browsePage.value = 1
+  router.replace({ query: { ...route.query, mode: 'browse' } })
+  return runBrowse(1)
+}
+
+function browsePrev() {
+  if (browsePage.value > 1) runBrowse(browsePage.value - 1)
+}
+
+function browseNext() {
+  if (browsePage.value < browseTotalPages.value) runBrowse(browsePage.value + 1)
+}
+
 async function checkService() {
   serviceState.value = 'checking'
   try {
@@ -160,15 +234,27 @@ async function checkService() {
 function scheduleSearch() {
   clearTimeout(debounceTimer)
   debounceTimer = window.setTimeout(() => {
-    router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined } })
+    router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined, mode: undefined } })
     runSearch()
   }, 420)
 }
 
 function setFilter(key) {
   activeFilter.value = key
+  // 浏览模式：切到短语/谚语按新类型重拉；切到“全部”或“词汇”退出浏览回搜索态，避免旧列表挂在错误标签下
+  if (requestMode.value === 'browse') {
+    if (key === 'phrase' || key === 'proverb') {
+      router.replace({ query: { ...route.query, type: key, mode: 'browse' } })
+      runBrowse(1)
+      return
+    }
+    requestMode.value = 'search'
+    allResults.value = []
+    selectedId.value = null
+    requestState.value = 'idle'
+  }
   selectedId.value = filteredResults.value[0]?.id || null
-  router.replace({ query: { ...route.query, type: key === 'all' ? undefined : key } })
+  router.replace({ query: { ...route.query, type: key === 'all' ? undefined : key, mode: undefined } })
 }
 
 function selectItem(item) {
@@ -207,7 +293,13 @@ async function recordSearchView(item) {
 }
 
 async function handleFavorite(item) {
-  if (!authStore.isLoggedIn) return notify('登录后可以把词条加入收藏。')
+  if (!authStore.isLoggedIn) {
+    // 未登录：弹窗确认后引导去登录页，保留当前页面路径便于登录后返回
+    if (window.confirm('登录后可以把词条加入收藏，是否前往登录？')) {
+      router.push({ name: 'login', query: { redirect: route.fullPath } })
+    }
+    return
+  }
   try {
     const result = await favoritesStore.toggleFavorite(item.type, item.rawId, {
       buyiText: item.bouyei,
@@ -400,7 +492,14 @@ function notify(message) {
   window.setTimeout(() => { actionMsg.value = '' }, 2600)
 }
 
-watch(searchQuery, scheduleSearch)
+// 用户一旦输入搜索词，就从浏览模式退回搜索模式，避免分页结果污染新的搜索流程。
+watch(searchQuery, (val) => {
+  if (requestMode.value === 'browse' && val.trim()) {
+    requestMode.value = 'search'
+    allResults.value = []
+  }
+  scheduleSearch()
+})
 watch(filteredResults, (items) => {
   if (!items.some((item) => item.id === selectedId.value)) selectedId.value = items[0]?.id || null
 })
@@ -414,7 +513,13 @@ function handleModalKeydown(event) {
 }
 
 onMounted(async () => {
-  await runSearch()
+  // 刷新/直达链接携带 mode=browse 时恢复浏览模式，避免退回搜索空态
+  if (route.query.mode === 'browse' && (route.query.type === 'phrase' || route.query.type === 'proverb')) {
+    activeFilter.value = String(route.query.type)
+    await enterBrowse()
+  } else {
+    await runSearch()
+  }
   if (route.query.focus) {
     await nextTick()
     document.querySelector('.dictionary-search input')?.focus()
@@ -481,6 +586,12 @@ onUnmounted(() => {
             :aria-pressed="activeFilter === filter.key"
             @click="setFilter(filter.key)"
           >{{ filter.label }}</button>
+          <button
+            v-if="(activeFilter === 'phrase' || activeFilter === 'proverb') && !searchQuery.trim() && requestMode !== 'browse'"
+            type="button"
+            class="browse-all-btn"
+            @click="enterBrowse"
+          >浏览全部</button>
         </div>
         <p aria-live="polite">{{ requestState === 'ready' ? `${filteredResults.length} 条结果` : '查询结果会显示在这里' }}</p>
       </div>
@@ -489,6 +600,11 @@ onUnmounted(() => {
     <section class="dictionary-results dict-results-anim" aria-label="词典结果">
       <div class="result-list liquid-glass liquid-glass-content" aria-live="polite">
         <p v-if="cacheNotice" class="cache-notice" role="status">{{ cacheNotice }}</p>
+        <div v-if="requestMode === 'browse' && requestState === 'ready'" class="browse-pager">
+          <span>共 {{ browseTotal }} 条，第 {{ browsePage }}/{{ browseTotalPages }} 页</span>
+          <button type="button" :disabled="browsePage <= 1" @click="browsePrev">上一页</button>
+          <button type="button" :disabled="browsePage >= browseTotalPages" @click="browseNext">下一页</button>
+        </div>
         <template v-if="requestState === 'loading'">
           <div v-for="item in 4" :key="item" class="result-skeleton" aria-hidden="true"><i></i><b></b><span></span></div>
           <p class="state-copy">正在检索词典与文化关联…</p>
@@ -500,12 +616,15 @@ onUnmounted(() => {
           <button type="button" @click="runSearch">重新连接</button>
         </div>
         <div v-else-if="requestState === 'empty'" class="state-panel">
-          <strong>{{ hasQuery ? '没有找到匹配词条' : '词典还没有可显示的词条' }}</strong>
-          <p>{{ hasQuery ? '换一个汉字、拼音或布依语拼写再试。' : '请确认后端词库已启动并包含已发布内容。' }}</p>
+          <strong v-if="requestMode === 'browse'">该分类暂无已发布内容</strong>
+          <strong v-else>{{ hasQuery ? '没有找到匹配词条' : '词典还没有可显示的词条' }}</strong>
+          <p v-if="requestMode === 'browse'">换个分类浏览，或使用关键词搜索。</p>
+          <p v-else>{{ hasQuery ? '换一个汉字、拼音或布依语拼写再试。' : '请确认后端词库已启动并包含已发布内容。' }}</p>
         </div>
         <div v-else-if="!filteredResults.length" class="state-panel">
-          <strong>这个分类暂时没有匹配词条</strong>
-          <p>可切换到“全部”，或使用其他关键词继续查询。</p>
+          <strong>「{{ activeFilterLabel }}」分类下暂无匹配结果</strong>
+          <p>搜索词在其他分类有结果，可切换到“全部”查看，或使用其他关键词继续查询。</p>
+          <button v-if="activeFilter !== 'all'" type="button" @click="setFilter('all')">切换到“全部”</button>
         </div>
         <button
           v-else
@@ -608,6 +727,15 @@ onUnmounted(() => {
 .recruit-banner__contact:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; border-radius: 2px; }
 /* 搜索区：hero 玻璃外壳。内部 SearchBar 自带 content 玻璃会被下面 :deep 抹平，避免双层玻璃叠糊。 */
 .dictionary-search { padding: 24px; }.dictionary-search :deep(.search-bar) { border-color: transparent; background: var(--c-glass); box-shadow: none; }.dictionary-search :deep(.search-bar:focus-within) { box-shadow: 0 0 0 4px var(--c-brand-08); }.dictionary-search__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }.dictionary-search__meta p { margin: 0; color: var(--c-text-60); font-size: .875rem; }.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }.filter-pills button { min-height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; color: var(--c-text-70); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.filter-pills button:hover { color: var(--c-text); background: var(--c-brand-06); }.filter-pills button.active { color: var(--c-white); background: var(--c-brand); }.filter-pills button:focus-visible, .entry-actions button:focus-visible, .state-panel button:focus-visible, .result-row:focus-visible, .culture-links a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
+/* 浏览全部按钮：与普通 pill 区分，使用 brand 描边和 brand 文字色。前缀 .filter-pills 用于压过 .filter-pills button 的默认 pill 样式。 */
+.filter-pills .browse-all-btn { min-height: 36px; padding: 0 14px; border: 1px solid var(--c-brand-40); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }
+.filter-pills .browse-all-btn:hover { background: var(--c-brand-06); }
+.filter-pills .browse-all-btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
+/* 浏览模式分页条：紧贴列表顶部，与 cache-notice 同区 */
+.browse-pager { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--c-divider); color: var(--c-text-70); font-size: .8125rem; }
+.browse-pager button { min-height: 32px; padding: 0 12px; border: 1px solid var(--c-divider); border-radius: 999px; background: transparent; color: var(--c-text-70); cursor: pointer; font: 600 .8125rem var(--font-sans); }
+.browse-pager button:hover:not(:disabled) { background: var(--c-brand-06); color: var(--c-brand); }
+.browse-pager button:disabled { opacity: .4; cursor: not-allowed; }
 .dictionary-results { display: grid; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr); gap: 32px; align-items: start; margin-top: 28px; }.result-list { min-height: 420px; padding: 4px 8px 12px; }.result-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; width: 100%; padding: 18px 14px; border: 0; border-bottom: 1px solid var(--c-divider); color: inherit; background: transparent; cursor: pointer; text-align: left; }.result-row:hover { background: var(--c-brand-06); }.result-row.selected { background: var(--c-brand-08); box-shadow: inset 3px 0 0 var(--c-brand); }.result-row__type { grid-row: span 2; align-self: start; padding: 4px 7px; border-radius: 999px; color: var(--c-brand); background: var(--c-brand-08); font-size: .6875rem; font-weight: 700; }.result-row strong { overflow: hidden; color: var(--c-text); font-size: 1.0625rem; text-overflow: ellipsis; white-space: nowrap; }.result-row > span:not(.result-row__type) { overflow: hidden; color: var(--c-text-70); font-size: .875rem; text-overflow: ellipsis; white-space: nowrap; }.result-row small { grid-column: 2; color: var(--c-accent); font-size: .75rem; }
 .entry-detail { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px) + 20px); min-height: 420px; padding: clamp(24px, 4vw, 46px); }
 .state-panel { max-width: 34rem; margin: 40px auto; padding: 28px; border: 1px solid var(--c-divider); border-radius: var(--radius-md); background: var(--c-bg-silver); }.state-panel strong { color: var(--c-text); }.state-panel p { margin: 8px 0 20px; color: var(--c-text-70); line-height: 1.7; }.state-panel button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 600 .875rem var(--font-sans); }.state-panel--error { background: var(--c-danger-08); border-color: color-mix(in srgb, var(--c-danger) 28%, transparent); }.state-copy { margin: 16px 0; color: var(--c-text-60); font-size: .875rem; }.result-skeleton { display: grid; grid-template-columns: 50px 1fr; gap: 10px; padding: 20px 14px; border-bottom: 1px solid var(--c-divider); }.result-skeleton i, .result-skeleton b, .result-skeleton span { display: block; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-06), var(--c-brand-08), var(--c-brand-06)); animation: shimmer 1.4s ease-in-out infinite; }.result-skeleton i { grid-row: span 2; height: 22px; }.result-skeleton b { height: 17px; width: 44%; }.result-skeleton span { height: 12px; width: 64%; }.entry-detail__empty { display: grid; min-height: 340px; place-content: center; gap: 14px; color: var(--c-text-60); text-align: center; }.entry-detail__empty span { color: var(--c-accent); font: 3rem var(--font-serif); }.entry-detail__empty p { max-width: 25ch; margin: 0; line-height: 1.8; }.action-message { position: absolute; right: 24px; bottom: 18px; left: 24px; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--c-text); background: var(--c-accent-10); font-size: .8125rem; }

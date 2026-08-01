@@ -264,6 +264,13 @@ Page({
     wx.navigateTo({ url: '/pages/record/index' });
   },
 
+  // 由词入馆：跳转文化馆并携带展项 slug
+  goToExhibit(e) {
+    const slug = e.currentTarget.dataset.slug;
+    if (!slug) return;
+    wx.navigateTo({ url: `/pages/culture/index?slug=${encodeURIComponent(slug)}` });
+  },
+
   // ============ AI 造句 / AI 关联推荐 ============
 
   // 校验登录态，返回 false 时已自动提示

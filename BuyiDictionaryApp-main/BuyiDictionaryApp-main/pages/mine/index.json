@@ -1,3 +1,9 @@
 {
-  "navigationBarTitleText": "我的"
+  "navigationBarTitleText": "我的",
+  "usingComponents": {
+    "bar-chart": "/components/bar-chart/index",
+    "radar-chart": "/components/radar-chart/index",
+    "badge-motif": "/components/badge-motif/index",
+    "share-card": "/components/share-card/index"
+  }
 }

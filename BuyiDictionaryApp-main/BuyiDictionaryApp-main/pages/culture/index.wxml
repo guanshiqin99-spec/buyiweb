@@ -1,0 +1,131 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} culture-page porcelain-bg-page">
+  <custom-nav title="文化馆"></custom-nav>
+
+  <!-- Hero 区 -->
+  <view class="hero">
+    <text class="hero-kicker">CULTURE</text>
+    <text class="hero-title">布依语文化馆</text>
+    <text class="hero-desc">把静态资料变成可以听、按、展开阅读的展览。这里不替代田野与实物，而是用可玩的声音、可展开的资料和明确的出处，给第一次接触留下可靠入口。</text>
+  </view>
+
+  <!-- 关联展项载入失败提示 -->
+  <view wx:if="{{linkedExhibitError}}" class="exhibit-error card">
+    <text class="text-sub">{{linkedExhibitError}}</text>
+  </view>
+
+  <!-- 关联展项（由词入馆） -->
+  <view wx:if="{{linkedExhibit}}" class="card linked-exhibit">
+    <view class="linked-head">
+      <text class="section-kicker">{{linkedExhibit.kicker || '由词入馆'}}</text>
+      <text class="text-h2 linked-title">{{linkedExhibit.title}}</text>
+      <text class="text-sub">{{linkedExhibit.summary}}</text>
+    </view>
+    <view class="linked-block" wx:if="{{linkedExhibit.story}}">
+      <text class="text-h3">词义语境</text>
+      <text class="text-sub">{{linkedExhibit.story}}</text>
+    </view>
+    <view class="linked-block" wx:if="{{linkedExhibit.patternLabel}}">
+      <text class="text-h3">纹样与工艺焦点</text>
+      <text class="text-sub">{{linkedExhibit.patternLabel}}</text>
+    </view>
+    <view class="linked-actions">
+      <view class="linked-btn" wx:if="{{linkedExhibit.sourceUrl}}" data-url="{{linkedExhibit.sourceUrl}}" bindtap="copySourceUrl">
+        <text class="source-icon">🔗</text>
+        <text class="source-text">出处：{{linkedExhibit.sourceTitle || '原始资料'}}</text>
+      </view>
+      <view class="linked-btn" wx:if="{{linkedExhibit.featuredSongId}}" bindtap="goToFeaturedSong">
+        <text class="source-icon">♪</text>
+        <text class="source-text">前往关联民歌 →</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 声调区 -->
+  <view class="section tone-section">
+    <view class="section-head">
+      <text class="section-kicker">可玩展项</text>
+      <text class="text-h2 section-title">用耳朵感受调值的走向</text>
+      <text class="text-sub section-desc">选择一个琴键，声调曲线与说明会同步聚焦。声音为合成调值轮廓示意，并非真实示例词录音。</text>
+    </view>
+
+    <!-- 声调钢琴 -->
+    <view class="tone-piano">
+      <view class="tone-keys">
+        <view
+          wx:for="{{tones}}"
+          wx:key="value"
+          class="tone-key {{selectedToneIndex === index ? 'is-selected' : ''}}"
+          data-index="{{index}}"
+          bindtap="selectTone"
+        >
+          <text class="tone-key-index">{{index + 1}}</text>
+          <text class="tone-key-name">{{item.name}}</text>
+          <text class="tone-key-value">{{item.value}}</text>
+          <text wx:if="{{playingTone === index}}" class="tone-key-playing">♪</text>
+        </view>
+      </view>
+      <view class="tone-detail">
+        <text class="tone-detail-strong">{{tones[selectedToneIndex].name}} · {{tones[selectedToneIndex].value}}</text>
+        <text class="text-sub">{{tones[selectedToneIndex].description}}</text>
+      </view>
+    </view>
+
+    <!-- 调值曲线图 canvas -->
+    <view class="tone-chart card">
+      <view class="tone-chart-head">
+        <text class="section-kicker">调值观察</text>
+        <text class="text-h3">六个舒声调</text>
+      </view>
+      <canvas type="2d" id="toneChart" class="tone-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- 纹样卡网格 -->
+  <view class="section pattern-section">
+    <view class="section-head">
+      <text class="section-kicker">可展开资料</text>
+      <text class="text-h2 section-title">纹样是进入资料的门把手</text>
+      <text class="text-sub section-desc">点击纹样，阅读经来源核验的工艺或音乐说明。</text>
+    </view>
+
+    <view class="pattern-grid">
+      <view
+        wx:for="{{patterns}}"
+        wx:key="id"
+        class="pattern-card"
+        data-pattern="{{item}}"
+        bindtap="openPattern"
+      >
+        <image class="pattern-card-img" src="{{item.image}}" mode="aspectFill" lazy-load></image>
+        <text class="pattern-card-label">{{item.label}}</text>
+        <text class="text-h3 pattern-card-title">{{item.title}}</text>
+        <text class="text-sub pattern-card-summary">{{item.summary}}</text>
+        <text class="pattern-card-action">展开资料 ↗</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 资料使用说明 -->
+  <view class="source-note card">
+    <text class="text-h3">资料使用说明</text>
+    <text class="text-sub">文化页的扩展说明优先引用中国非物质文化遗产网公开条目；页面保留原有项目图片，不下载或复用外部资料图片。详情中的链接可直接查阅原始出处。</text>
+  </view>
+
+  <!-- 纹样详情弹窗 -->
+  <view wx:if="{{selectedPattern}}" class="pattern-dialog-mask" bindtap="closePattern" catchtouchmove="noop">
+    <view class="pattern-dialog" catchtap="noop">
+      <view class="pattern-dialog-close" bindtap="closePattern">×</view>
+      <image class="pattern-dialog-img" src="{{selectedPattern.image}}" mode="aspectFill"></image>
+      <view class="pattern-dialog-body">
+        <text class="pattern-card-label">{{selectedPattern.label}}</text>
+        <text class="text-h2 pattern-dialog-title">{{selectedPattern.title}}</text>
+        <text class="text-sub pattern-dialog-summary">{{selectedPattern.summary}}</text>
+        <text class="text-sub pattern-dialog-detail">{{selectedPattern.detail}}</text>
+        <view class="pattern-dialog-source" data-url="{{selectedPattern.sourceUrl}}" bindtap="copySourceUrl">
+          <text class="source-icon">🔗</text>
+          <text class="source-text">复制出处链接：{{selectedPattern.sourceTitle}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

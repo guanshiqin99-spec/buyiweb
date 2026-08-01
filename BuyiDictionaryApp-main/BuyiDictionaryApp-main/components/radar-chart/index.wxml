@@ -1,0 +1,58 @@
+<!-- 学习侧重雷达图组件：5 维度（词汇/短语/谚语/民歌/答题） -->
+<view class="radar-container">
+  <view class="radar-title">{{title}}</view>
+
+  <view class="radar-canvas" style="width:{{canvasWidth}}px;height:{{canvasHeight}}px;">
+    <!-- 同心五边形网格（5 层 × 5 边 = 25 条线段） -->
+    <view
+      wx:for="{{gridLines}}"
+      wx:key="index"
+      class="radar-grid-line"
+      style="left:{{item.left}}px;top:{{item.top}}px;width:{{item.width}}px;transform:rotate({{item.angle}}deg);"
+    ></view>
+
+    <!-- 5 条轴线（中心到外层顶点） -->
+    <view
+      wx:for="{{axisLines}}"
+      wx:key="index"
+      class="radar-axis-line"
+      style="left:{{item.left}}px;top:{{item.top}}px;width:{{item.width}}px;transform:rotate({{item.angle}}deg);"
+    ></view>
+
+    <!-- 数据面填充：clip-path: polygon + rgba 品牌色 0.25 -->
+    <view
+      wx:if="{{hasData}}"
+      class="radar-data-face"
+      style="clip-path:{{dataFaceClip}};-webkit-clip-path:{{dataFaceClip}};"
+    ></view>
+
+    <!-- 数据面描边：1px solid 品牌色（由 5 条边线拼接，等效 polygon stroke） -->
+    <view
+      wx:if="{{hasData}}"
+      wx:for="{{dataEdges}}"
+      wx:key="index"
+      class="radar-data-edge"
+      style="left:{{item.left}}px;top:{{item.top}}px;width:{{item.width}}px;transform:rotate({{item.angle}}deg);"
+    ></view>
+
+    <!-- 数据顶点圆点 -->
+    <view
+      wx:if="{{hasData}}"
+      wx:for="{{dataPoints}}"
+      wx:key="index"
+      class="radar-data-point"
+      style="left:{{item.left}}px;top:{{item.top}}px;"
+    ></view>
+
+    <!-- 顶点标签：词汇/短语/谚语/民歌/答题 + 达成度 -->
+    <view
+      wx:for="{{labels}}"
+      wx:key="index"
+      class="radar-label radar-label--{{item.align}}"
+      style="left:{{item.left}}px;top:{{item.top}}px;"
+    >{{item.text}}</view>
+
+    <!-- 全零数据提示（不渲染数据面与顶点） -->
+    <view wx:if="{{!hasData}}" class="radar-empty">暂无数据</view>
+  </view>
+</view>

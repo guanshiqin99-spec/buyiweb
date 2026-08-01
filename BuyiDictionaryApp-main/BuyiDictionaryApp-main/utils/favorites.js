@@ -58,8 +58,23 @@ module.exports = {
 
   async toggle(item) {
     const app = getApp();
-    if (!app.ensureLogin()) {
-      return { isFavorited: false, skipped: true };
+    if (!app.ensureLogin({ redirect: false })) {
+      // 未登录：弹窗确认后引导去登录页，各页面 await 的 skipped 回滚逻辑不受影响
+      return new Promise((resolve) => {
+        wx.showModal({
+          title: '需要登录',
+          content: '登录后可以把内容加入收藏，是否前往登录？',
+          confirmText: '去登录',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              wx.navigateTo({ url: '/pages/login/login' });
+            }
+            resolve({ isFavorited: false, skipped: true });
+          },
+          fail: () => resolve({ isFavorited: false, skipped: true }),
+        });
+      });
     }
 
     const contentType = item.contentType || item.type;

@@ -43,13 +43,22 @@
         <text class="feature-desc">从短句里理解布依语文化与表达节奏。</text>
       </view>
 
-      <view class="feature-card accent" bindtap="goToVocabulary">
+      <view class="feature-card accent" bindtap="goToLearn">
         <view class="feature-top">
-          <view class="feature-icon">音</view>
+          <view class="feature-icon">学</view>
           <text class="feature-arrow">→</text>
         </view>
-        <text class="feature-title">词汇发音</text>
-        <text class="feature-desc">聚焦带音频的词汇，适合做跟读训练和纠音。</text>
+        <text class="feature-title">单词卡学习</text>
+        <text class="feature-desc">翻转卡片记单词，发音、收藏、复习一步到位。</text>
+      </view>
+
+      <view class="feature-card full" bindtap="goToCulture">
+        <view class="feature-icon">文</view>
+        <view class="feature-full-body">
+          <text class="feature-title">文化馆</text>
+          <text class="feature-desc">声调体验与非遗纹样展项，内容均带资料来源。</text>
+        </view>
+        <text class="feature-arrow">→</text>
       </view>
     </view>
 

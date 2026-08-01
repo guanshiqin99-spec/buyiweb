@@ -151,6 +151,26 @@
   background: linear-gradient(180deg, rgba(14, 30, 52, 0.95) 0%, rgba(10, 24, 43, 0.95) 100%);
 }
 
+/* 文化馆入口跨两列成横向卡，避免单独一行右侧留白 */
+.feature-card.full {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 24rpx;
+  min-height: 0;
+}
+
+.feature-card.full .feature-full-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.feature-card.full .feature-desc {
+  margin-top: 0;
+}
+
 .feature-top, .feature-title, .feature-desc {
   position: relative;
   z-index: 1;

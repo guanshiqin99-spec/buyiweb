@@ -159,3 +159,76 @@
   margin-top: 32rpx;
   width: 240rpx;
 }
+
+/* ================= 可视化区块 ================= */
+.viz-section {
+  margin-bottom: 48rpx;
+}
+
+/* 可视化卡片：复用 .card，仅微调圆角与内边距 */
+.viz-card {
+  padding: 24rpx;
+  border-radius: 24rpx;
+}
+
+.viz-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+  padding: 0 8rpx;
+}
+
+.viz-header .text-h3 {
+  margin-top: 0;
+}
+
+/* 学习建议卡 */
+.suggestion-card {
+  padding: 24rpx 0;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 24rpx;
+  transition: background-color 0.2s;
+}
+
+.suggestion-item:active {
+  background-color: rgba(22, 100, 217, 0.06);
+}
+
+.suggestion-icon {
+  font-size: 36rpx;
+  margin-right: 20rpx;
+  line-height: 1;
+}
+
+.suggestion-text {
+  flex: 1;
+  font-size: 30rpx;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.suggestion-arrow {
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  color: var(--color-text-secondary);
+}
+
+/* 深色模式下可视化卡片颜色适配 */
+.page.dark .suggestion-item:active {
+  background-color: rgba(90, 169, 255, 0.10);
+}
+
+.page.dark .viz-card {
+  border-color: var(--color-card-border);
+}
+

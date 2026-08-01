@@ -89,6 +89,23 @@
         <text class="text-sub result-phonetic" wx:if="{{item.ipa}}">国际音标: [{{item.ipa}}]</text>
         <text wx:if="{{item.contentType === 'song'}}" class="text-sub result-note">来源: 民歌《{{item.title}}》</text>
 
+        <!-- 由词入馆：关联文化展项 -->
+        <view wx:if="{{item.relatedExhibits && item.relatedExhibits.length}}" class="exhibit-links">
+          <text class="text-sub exhibit-links-label">由词入馆</text>
+          <view
+            class="exhibit-link"
+            wx:for="{{item.relatedExhibits}}"
+            wx:key="slug"
+            wx:for-item="exhibit"
+            data-slug="{{exhibit.slug}}"
+            catchtap="goToExhibit"
+          >
+            <text class="exhibit-kicker">{{exhibit.kicker || '文化展项'}}</text>
+            <text class="exhibit-title">{{exhibit.title}}</text>
+            <text class="exhibit-arrow">→</text>
+          </view>
+        </view>
+
         <!-- AI 工具区：造句 + 关联推荐 -->
         <view wx:if="{{item.contentType === 'dictionary'}}" class="ai-tools">
           <view class="ai-tools-btns">
