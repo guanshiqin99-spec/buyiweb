@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { favoritesApi } from '@/utils/api'
+import { AUTH_SESSION_CLEARED_EVENT } from '@/utils/authInterceptor'
 
 export const useFavoritesStore = defineStore('favorites', () => {
   const favorites = ref([])
@@ -66,6 +67,11 @@ export const useFavoritesStore = defineStore('favorites', () => {
       const result = await favoritesApi.toggle(contentType, contentId)
       // 兼容当前 NestJS 的 isFavorited 与旧接口的 favorited 字段。
       const favorited = result?.isFavorited ?? result?.favorited ?? result?.data?.isFavorited ?? result?.data?.favorited
+      if (favorited === undefined) {
+        // 后端返回体缺失字段，回退到全量拉取以真实状态为准
+        await fetchFavorites()
+        return result
+      }
       if (favorited) {
         favorites.value = favorites.value.filter(
           (item) => !(item.contentType === contentType && String(item.contentId) === String(contentId))
@@ -91,6 +97,14 @@ export const useFavoritesStore = defineStore('favorites', () => {
       console.error('清空收藏失败:', error)
       throw error
     }
+  }
+
+  // 会话清除（登出/401 失败）时同步清空收藏，避免跨账号残留；
+  // 与 auth.js 的监听模式一致，Pinia setup store 工厂仅执行一次，无重复注册
+  if (typeof window !== 'undefined') {
+    window.addEventListener(AUTH_SESSION_CLEARED_EVENT, () => {
+      favorites.value = []
+    })
   }
 
   return {

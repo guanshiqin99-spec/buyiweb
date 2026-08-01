@@ -27,6 +27,15 @@ Page({
     this.loadHomeData();
   },
 
+  onUnload() {
+    clearTimeout(this.suggestTimer);
+    clearTimeout(this.hideSuggestTimer);
+  },
+
+  onHide() {
+    clearTimeout(this.suggestTimer);
+  },
+
   async loadHomeData() {
     try {
       const payload = await homeApi.get();
@@ -118,7 +127,9 @@ Page({
   },
 
   onHideSuggestions() {
-    this.setData({ showSuggestions: false });
+    this.hideSuggestTimer = setTimeout(() => {
+      this.setData({ showSuggestions: false });
+    }, 150);
   },
 
   onSelectSuggestion(e) {

@@ -410,7 +410,7 @@ App({
     }
 
     const player = wx.createInnerAudioContext();
-    player.obeyMuteSwitch = true;
+    player.obeyMuteSwitch = false;
     this._player = player;
     this.globalData.player = player;
 
@@ -452,6 +452,13 @@ App({
           this.eventBus.emit('player:state', { ...this.globalData.playerState });
         }
       }, 200);
+    });
+
+    player.onError((err) => {
+      console.error('Player error:', err);
+      this.globalData.playerState.isPlaying = false;
+      wx.showToast({ title: '播放失败，请稍后重试', icon: 'none' });
+      this.eventBus.emit('player:state', { ...this.globalData.playerState });
     });
 
     return player;

@@ -37,17 +37,30 @@ export class MiniappLearningRecordsService {
       items.map(async (item) => {
         try {
           const content = await this.contentService.getPublishedDetail(item.contentType, item.contentId);
+          const serialized = this.contentService.serialize(content, item.contentType);
           return {
             id: item.id,
+            contentType: item.contentType,
+            contentId: item.contentId,
             actionType: item.actionType,
             createdAt: item.createdAt,
-            content: this.contentService.serialize(content, item.contentType),
+            title: serialized.title || null,
+            buyiText: serialized.buyiText,
+            zhText: serialized.zhText,
+            enText: serialized.enText,
+            content: serialized,
           };
         } catch {
           return {
             id: item.id,
+            contentType: item.contentType,
+            contentId: item.contentId,
             actionType: item.actionType,
             createdAt: item.createdAt,
+            title: null,
+            buyiText: null,
+            zhText: null,
+            enText: null,
             content: null,
           };
         }

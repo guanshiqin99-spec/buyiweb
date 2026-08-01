@@ -20,7 +20,7 @@ app.use(pinia)
 
 // 鉴权拦截器需在 pinia 安装后、router 安装前注册
 const authStore = useAuthStore()
-installAuthInterceptor(api, authStore)
+installAuthInterceptor(api, authStore, router)
 
 app.use(router)
 app.directive('pointer-glow', pointerGlow)

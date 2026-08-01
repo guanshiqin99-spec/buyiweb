@@ -42,6 +42,7 @@ export class JwtAuthGuard implements CanActivate {
       }>(token, {
         // 安全实践：JWT 密钥无默认兜底，未设置时启动失败
         secret: this.configService.get<string>('jwt.secret'),
+        algorithms: ['HS256'],
       });
 
       if (payload.tokenKind !== 'access') {

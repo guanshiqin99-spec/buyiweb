@@ -69,6 +69,8 @@ export const useAuthStore = defineStore('auth', () => {
       // 忽略登出请求失败，前端仍然要清理本地状态
     } finally {
       setSession('', '', null)
+      // 通知其它 store（如 favorites）同步清空，与 401 清除路径一致
+      window.dispatchEvent(new CustomEvent(AUTH_SESSION_CLEARED_EVENT))
     }
   }
 

@@ -5,20 +5,33 @@ export const AUTH_SESSION_CLEARED_EVENT = 'buyi:auth-session-cleared'
 let isRefreshing = false
 let pendingQueue = []
 
+// 重定向去重：并发 401 期间只跳一次；router 由 installAuthInterceptor 注入
+let isRedirecting = false
+let injectedRouter = null
+
 // TODO: 理想情况下 localStorage 应由 auth store 唯一写入；
 // 此处在重定向前直接清理，确保页面刷新前状态已清除
 function clearAuthAndRedirect() {
-  localStorage.removeItem('token')
-  localStorage.removeItem('refreshToken')
-  localStorage.removeItem('userInfo')
-  window.dispatchEvent(new CustomEvent(AUTH_SESSION_CLEARED_EVENT))
-  if (window.location.pathname !== '/login') {
-    window.location.href = '/login'
+  if (isRedirecting) return
+  isRedirecting = true
+  try {
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('userInfo')
+    window.dispatchEvent(new CustomEvent(AUTH_SESSION_CLEARED_EVENT))
+    const currentPath = injectedRouter.currentRoute.value.fullPath
+    if (injectedRouter.currentRoute.value.name !== 'login') {
+      injectedRouter.push({ name: 'login', query: { redirect: currentPath } })
+    }
+  } finally {
+    // 在下一个事件循环重置，确保并发 401 期间都被拦截
+    setTimeout(() => { isRedirecting = false }, 0)
   }
 }
 
 // 安装鉴权响应拦截器：处理 401 自动刷新、队列重放、失败清理
-export function installAuthInterceptor(axiosInstance, authStore) {
+export function installAuthInterceptor(axiosInstance, authStore, router) {
+  injectedRouter = router
   function settlePendingRequests(error, accessToken = '') {
     pendingQueue.forEach(({ resolve, reject, request }) => {
       if (error) {

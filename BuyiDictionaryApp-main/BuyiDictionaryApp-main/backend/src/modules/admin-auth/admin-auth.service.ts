@@ -155,6 +155,7 @@ export class AdminAuthService {
         tokenKind: string;
       }>(refreshToken, {
         secret: this.configService.get<string>('jwt.secret'),
+        algorithms: ['HS256'],
       });
 
       if (payload.tokenType !== 'admin' || payload.tokenKind !== 'refresh') {

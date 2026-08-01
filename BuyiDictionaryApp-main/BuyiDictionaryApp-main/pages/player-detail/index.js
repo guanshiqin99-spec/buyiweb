@@ -29,6 +29,20 @@ Page({
       audio: options.audio ? decodeURIComponent(options.audio) : '',
     };
     const state = app.globalData.playerState || {};
+    // 从分享链接打开时，若当前播放器歌曲与分享歌曲不一致，仅注入 currentSong 并准备 src，不自动播放，
+    // 确保点击播放按钮时 togglePlay 操作的是分享的歌曲
+    const currentSong = state.currentSong;
+    if (song.audio && (!currentSong || currentSong.audio !== song.audio)) {
+      const player = app._initPlayer && app._initPlayer();
+      app.globalData.playerState.currentSong = song;
+      if (player) {
+        player.src = song.audio;
+      }
+      app.globalData.playerState.isPlaying = false;
+      try {
+        app.eventBus.emit('player:state', { ...app.globalData.playerState });
+      } catch (error) {}
+    }
     this.setData({
       song: song.title ? song : (state.currentSong || {}),
       isPlaying: !!state.isPlaying,

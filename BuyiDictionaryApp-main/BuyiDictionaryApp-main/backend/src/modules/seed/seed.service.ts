@@ -78,7 +78,8 @@ export class SeedService implements OnApplicationBootstrap {
     }
 
     const password = this.configService.get<string>('seed.adminPassword', 'Admin@123456');
-    const passwordHash = await bcrypt.hash(password, 6);
+    // 安全：bcrypt cost 对齐 webRegister 的 10，避免 seed 账号哈希强度弱于正常注册
+    const passwordHash = await bcrypt.hash(password, 10);
     await this.adminRepository.save(
       this.adminRepository.create({
         username,

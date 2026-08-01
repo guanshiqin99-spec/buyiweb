@@ -4,7 +4,7 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(payload.title || '今天也来学一点布依语吧', {
     body: payload.body || '打开布依词典，复习几个词或完成一轮文化答题。',
     tag: 'buyi-daily-learning-reminder',
-    data: { url: payload.url || '/learn' }
+    data: { url: payload.url || './#/learn' }
   }))
 })
 
@@ -13,13 +13,13 @@ self.addEventListener('periodicsync', (event) => {
   event.waitUntil(self.registration.showNotification('今天也来学一点布依语吧', {
     body: '打开布依词典，复习几个词或完成一轮文化答题。',
     tag: 'buyi-daily-learning-reminder',
-    data: { url: '/learn' }
+    data: { url: './#/learn' }
   }))
 })
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const targetUrl = event.notification.data?.url || '/learn'
+  const targetUrl = event.notification.data?.url || './#/learn'
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       const existing = clients.find((client) => 'focus' in client)

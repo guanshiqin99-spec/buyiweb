@@ -239,6 +239,7 @@ export class MiniappAuthService {
         tokenKind: string;
       }>(refreshToken, {
         secret: this.configService.get<string>('jwt.secret'),
+        algorithms: ['HS256'],
       });
 
       if (payload.tokenType !== 'miniapp' || payload.tokenKind !== 'refresh') {

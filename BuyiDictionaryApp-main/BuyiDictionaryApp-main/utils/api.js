@@ -57,13 +57,20 @@ function extractMessage(payload) {
   return payload.message || payload.error || payload.msg || '';
 }
 
+let isRedirecting = false;
+
 function redirectToLogin() {
+  if (isRedirecting) return;
   const pages = getCurrentPages();
   const current = pages[pages.length - 1];
   if (current && current.route === 'pages/login/login') {
     return;
   }
-  wx.navigateTo({ url: '/pages/login/login' });
+  isRedirecting = true;
+  wx.navigateTo({
+    url: '/pages/login/login',
+    complete: () => { isRedirecting = false; }
+  });
 }
 
 function handleUnauthorized(options = {}) {

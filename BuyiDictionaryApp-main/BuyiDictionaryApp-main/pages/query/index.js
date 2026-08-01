@@ -28,8 +28,17 @@ Page({
   onLoad(options) {
     const word = decodeURIComponent((options && options.word) || '');
     syncAppearance(this, { word });
-    
-    // 初始化 audioContext
+
+    this.initAudio();
+
+    if (word) {
+      this.fetchResults(word);
+    }
+  },
+
+  // 惰性初始化 audioContext：onHide 销毁后 onShow/播放入口可重建
+  initAudio() {
+    if (this.audioContext) return;
     this.audioContext = wx.createInnerAudioContext();
     this.audioContext.onEnded(() => {
       this.setData({ playingIndex: -1 });
@@ -42,15 +51,29 @@ Page({
     this.audioContext.onStop(() => {
       this.setData({ playingIndex: -1 });
     });
-
-    if (word) {
-      this.fetchResults(word);
-    }
   },
 
   onUnload() {
     if (this.audioContext) {
       this.audioContext.destroy();
+    }
+    clearTimeout(this.suggestTimer);
+    clearTimeout(this.hideSuggestTimer);
+  },
+
+  onHide() {
+    if (this.audioContext) {
+      try { this.audioContext.stop(); } catch (e) {}
+      try { this.audioContext.destroy(); } catch (e) {}
+      this.audioContext = null;
+    }
+    if (this.suggestTimer) {
+      clearTimeout(this.suggestTimer);
+      this.suggestTimer = null;
+    }
+    if (this.hideSuggestTimer) {
+      clearTimeout(this.hideSuggestTimer);
+      this.hideSuggestTimer = null;
     }
   },
 
@@ -58,7 +81,7 @@ Page({
     const index = e.currentTarget.dataset.index;
     const item = this.data.results[index];
     const audioUrl = item.audio || item.audioUrl;
-    
+
     if (!audioUrl) {
       wx.showToast({
         title: '录音资源暂时不存在',
@@ -66,6 +89,9 @@ Page({
       });
       return;
     }
+
+    // 防御性重建：onShow 已处理，此处兜底以防极端时序
+    this.initAudio();
 
     if (this.data.playingIndex === index) {
       // 当前词条正在播放，停止
@@ -78,6 +104,8 @@ Page({
 
   onShow() {
     syncAppearance(this);
+    // onHide 销毁 audioContext 后，返回页面时惰性重建
+    this.initAudio();
   },
 
   onInput(e) {
@@ -121,7 +149,9 @@ Page({
   },
 
   onHideSuggestions() {
-    this.setData({ showSuggestions: false });
+    this.hideSuggestTimer = setTimeout(() => {
+      this.setData({ showSuggestions: false });
+    }, 150);
   },
 
   onClear() {

@@ -23,6 +23,17 @@ function buildTargetUrl(path) {
   return `${BACKEND_BASE}${normalizedPath}`;
 }
 
+function buildQueryString(data) {
+  if (!data || typeof data !== 'object') return '';
+  const parts = [];
+  for (const key of Object.keys(data)) {
+    const v = data[key];
+    if (v === null || v === undefined || v === '') continue;
+    parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(v)}`);
+  }
+  return parts.length ? '?' + parts.join('&') : '';
+}
+
 function isStreamPath(path) {
   const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
   return normalizedPath.indexOf(STREAM_PATH_PREFIX) === 0;
@@ -30,8 +41,9 @@ function isStreamPath(path) {
 
 function request(targetUrl, method, data, headers) {
   return new Promise((resolve, reject) => {
-    const parsed = url.parse(targetUrl);
     const isGet = String(method).toUpperCase() === 'GET';
+    const finalUrl = isGet && data ? targetUrl + buildQueryString(data) : targetUrl;
+    const parsed = url.parse(finalUrl);
     const isHttps = parsed.protocol === 'https:';
     let body = '';
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createHash } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 import { Repository } from 'typeorm';
 import { AuthSession } from '../../entities/auth-session.entity';
 
@@ -79,7 +79,10 @@ export class AuthSessionsService {
       return null;
     }
 
-    if (session.refreshTokenHash !== this.hashRefreshToken(params.refreshToken)) {
+    // 安全：恒定时间比较 refresh token 哈希，避免时序侧信道
+    const expectedHash = Buffer.from(session.refreshTokenHash);
+    const actualHash = Buffer.from(this.hashRefreshToken(params.refreshToken));
+    if (expectedHash.length !== actualHash.length || !timingSafeEqual(expectedHash, actualHash)) {
       return null;
     }
 

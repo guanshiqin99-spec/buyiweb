@@ -6,6 +6,7 @@ import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
 import { settingsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
+import { configureLearningReminder } from '@/utils/learningReminder'
 
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
@@ -59,6 +60,16 @@ function handleLogout() {
 // 主题切换即时生效
 watch(() => settings.value.theme, (mode) => {
   themeStore.setMode(mode)
+})
+
+// 学习提醒开关即时生效
+watch(() => settings.value.notifications, async (enabled) => {
+  try {
+    await configureLearningReminder(enabled, { requestPermission: true })
+  } catch (e) {
+    // 权限被拒或不支持 Notification API 时静默处理
+    console.warn('学习提醒切换失败：', e?.message || e)
+  }
 })
 </script>
 

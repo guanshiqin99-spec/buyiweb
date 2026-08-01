@@ -35,6 +35,10 @@ export function validateEnvironmentOrThrow(env: EnvMap = process.env) {
   if (!jwtSecret || jwtSecret === 'change-me') {
     errors.push('生产环境必须设置安全的 JWT_SECRET');
   }
+  // 安全：JWT_SECRET 长度不足时告警（不阻断启动，避免影响当前运行，但提醒运维加固）
+  if (jwtSecret && jwtSecret !== 'change-me' && jwtSecret.length < 32) {
+    console.warn('⚠️ JWT_SECRET 长度不足 32 字符，建议使用更长的随机密钥以防离线破解');
+  }
   if (dbType !== 'mysql') {
     errors.push('生产环境只允许使用 MySQL');
   }

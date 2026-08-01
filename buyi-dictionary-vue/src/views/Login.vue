@@ -2,11 +2,13 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useFavoritesStore } from '@/stores/favorites'
 import imgBg from '@/assets/images/generated/login-river-bridge.png'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const favoritesStore = useFavoritesStore()
 
 const mode = ref('login') // 'login' | 'register'
 const isLoading = ref(false)
@@ -70,9 +72,13 @@ async function handleSubmit() {
         nickname: form.value.nickname || form.value.username
       })
     }
+    // 登录/注册成功后拉取收藏列表，保证各页面收藏态同步
+    favoritesStore.fetchFavorites().catch(() => {})
     // 跳转回源页，避免登录后丢失原访问路径
+    // 安全：拒绝协议相对 URL（//evil.com）和反斜杠路径（/\evil.com），防开放重定向
     const redirect = route.query.redirect
-    router.push(typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/')
+    const safeRedirect = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//') && !redirect.startsWith('/\\') ? redirect : '/'
+    router.push(safeRedirect)
   } catch (error) {
     // 安全：只展示后端返回的业务 message，不暴露技术堆栈
     const msg = error.response?.data?.message

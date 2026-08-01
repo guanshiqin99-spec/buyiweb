@@ -34,7 +34,7 @@
       <view class="suggestions-dropdown" wx:if="{{showSuggestions}}">
         <view class="suggestion-item" wx:for="{{suggestions}}" wx:key="id" data-item="{{item}}" catchtap="onSelectSuggestion">
           <view class="suggestion-main">
-            <text class="suggestion-mark">[{{item.type === 'dictionary' ? '词' : item.type === 'phrase' ? '句' : '谚'}}]</text>
+            <text class="suggestion-mark">[{{item.type === 'dictionary' ? '词' : item.type === 'phrase' ? '句' : item.type === 'song' ? '歌' : '谚'}}]</text>
             <text class="suggestion-zh text-body" style="font-weight:bold;">{{item.zhText}}</text>
             <text class="suggestion-buyi text-sub" style="margin-left: 10rpx;">{{item.buyiText}}</text>
           </view>

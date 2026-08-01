@@ -29,9 +29,9 @@ services:
       NODE_ENV: production
       PORT: 3000
       APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:-http://localhost}
-      ENABLE_SWAGGER: true
-      JWT_SECRET: ${JWT_SECRET:-your-production-jwt-secret-change-me}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      ENABLE_SWAGGER: false
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET required}
+      CORS_ORIGIN: ${CORS_ORIGIN:?CORS_ORIGIN required}
       DB_TYPE: mysql
       DB_HOST: mysql
       DB_PORT: 3306
@@ -42,14 +42,14 @@ services:
       DB_LOGGING: false
       WECHAT_APP_ID: ${WECHAT_APP_ID:-}
       WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
-      WECHAT_MOCK_MODE: ${WECHAT_MOCK_MODE:-true}
-      MEDIA_DRIVER: local
+      WECHAT_MOCK_MODE: false
+      MEDIA_DRIVER: cos
       MEDIA_MAX_FILE_SIZE: 10485760
       MEDIA_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:-http://localhost}/uploads
       MEDIA_LOCAL_UPLOAD_DIR: /app/backend/uploads
-      SEED_ON_BOOT: ${SEED_ON_BOOT:-true}
+      SEED_ON_BOOT: false
       DEFAULT_ADMIN_USERNAME: ${DEFAULT_ADMIN_USERNAME:-admin}
-      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-Admin@123456}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:?DEFAULT_ADMIN_PASSWORD required}
       AI_PROVIDER: ${AI_PROVIDER:-deepseek}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       AI_BASE_URL: ${AI_BASE_URL:-https://api.deepseek.com}

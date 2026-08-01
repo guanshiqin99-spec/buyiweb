@@ -6,7 +6,7 @@ import {
   AUTH_SESSION_CLEARED_EVENT
 } from '../src/utils/authInterceptor.js'
 
-// 组装测试所需的全局环境：localStorage + window（含 location 与事件派发）
+// 组装测试所需的全局环境：localStorage + window（含事件派发）+ mock router
 function setupEnv() {
   const store = new Map()
   globalThis.localStorage = {
@@ -17,11 +17,9 @@ function setupEnv() {
   }
 
   const events = []
-  const location = { pathname: '/home', href: '' }
   globalThis.window = {
     dispatchEvent: (event) => events.push(event),
-    addEventListener: () => {},
-    location
+    addEventListener: () => {}
   }
 
   // Node 24 已内置 CustomEvent，这里做兜底以防运行环境差异
@@ -34,7 +32,14 @@ function setupEnv() {
     }
   }
 
-  return { store, events, location }
+  // mock router：记录 push 调用，模拟 hash 路由当前路径
+  const pushes = []
+  const mockRouter = {
+    currentRoute: { value: { fullPath: '/miniapp/me', name: 'me' } },
+    push: (to) => { pushes.push(to) }
+  }
+
+  return { store, events, pushes, mockRouter }
 }
 
 function unauthorized(config) {
@@ -51,18 +56,24 @@ function tick() {
 }
 
 test('401 且本地无 refreshToken 时清理会话并重定向登录页', async () => {
-  const { store, events, location } = setupEnv()
+  const { store, events, pushes, mockRouter } = setupEnv()
   store.set('token', 'old')
 
   const instance = axios.create()
   const authStore = { tryRefresh: async () => { throw new Error('不应调用 tryRefresh') } }
-  installAuthInterceptor(instance, authStore)
+  installAuthInterceptor(instance, authStore, mockRouter)
 
   instance.defaults.adapter = (config) => Promise.reject(unauthorized(config))
   await assert.rejects(() => instance.get('/miniapp/me'))
+  await tick() // 等待 isRedirecting 重置，避免影响后续测试
 
   assert.equal(localStorage.getItem('token'), null, '应清理本地 token')
-  assert.equal(location.href, '/login', '应重定向到登录页')
+  assert.equal(pushes.length, 1, '应通过 router.push 重定向一次')
+  assert.deepEqual(
+    pushes[0],
+    { name: 'login', query: { redirect: '/miniapp/me' } },
+    '应携带 redirect query 跳转到 login 路由'
+  )
   assert.ok(
     events.some((e) => e.type === AUTH_SESSION_CLEARED_EVENT),
     '应派发会话清理事件'
@@ -70,12 +81,12 @@ test('401 且本地无 refreshToken 时清理会话并重定向登录页', async
 })
 
 test('401 且 tryRefresh 成功后用新 token 重放原请求', async () => {
-  const { store } = setupEnv()
+  const { store, mockRouter } = setupEnv()
   store.set('refreshToken', 'rt')
 
   const instance = axios.create()
   const authStore = { tryRefresh: async () => 'newToken' }
-  installAuthInterceptor(instance, authStore)
+  installAuthInterceptor(instance, authStore, mockRouter)
 
   let callCount = 0
   instance.defaults.adapter = (config) => {
@@ -94,24 +105,25 @@ test('401 且 tryRefresh 成功后用新 token 重放原请求', async () => {
 })
 
 test('401 且 tryRefresh 失败时清理会话并以刷新错误向外抛出', async () => {
-  const { store, location } = setupEnv()
+  const { store, pushes, mockRouter } = setupEnv()
   store.set('refreshToken', 'rt')
   store.set('token', 'old')
 
   const instance = axios.create()
   const refreshError = new Error('refresh failed')
   const authStore = { tryRefresh: async () => { throw refreshError } }
-  installAuthInterceptor(instance, authStore)
+  installAuthInterceptor(instance, authStore, mockRouter)
 
   instance.defaults.adapter = (config) => Promise.reject(unauthorized(config))
   await assert.rejects(() => instance.get('/miniapp/me'), refreshError)
+  await tick() // 等待 isRedirecting 重置，避免影响后续测试
 
   assert.equal(localStorage.getItem('token'), null, '刷新失败也应清理本地 token')
-  assert.equal(location.href, '/login', '刷新失败应重定向到登录页')
+  assert.equal(pushes.length, 1, '刷新失败应通过 router.push 重定向到登录页')
 })
 
 test('刷新进行中时并发的 401 请求挂起队列，刷新成功后一并重放', async () => {
-  const { store } = setupEnv()
+  const { store, mockRouter } = setupEnv()
   store.set('refreshToken', 'rt')
 
   const instance = axios.create()
@@ -119,7 +131,7 @@ test('刷新进行中时并发的 401 请求挂起队列，刷新成功后一并
   const authStore = {
     tryRefresh: () => new Promise((resolve) => { resolveRefresh = resolve })
   }
-  installAuthInterceptor(instance, authStore)
+  installAuthInterceptor(instance, authStore, mockRouter)
 
   let callCount = 0
   instance.defaults.adapter = (config) => {
@@ -148,15 +160,15 @@ test('刷新进行中时并发的 401 请求挂起队列，刷新成功后一并
 })
 
 test('非 401 错误直接透传，不触发刷新或重定向', async () => {
-  const { location } = setupEnv()
+  const { pushes, mockRouter } = setupEnv()
 
   const instance = axios.create()
   const authStore = { tryRefresh: async () => { throw new Error('不应调用 tryRefresh') } }
-  installAuthInterceptor(instance, authStore)
+  installAuthInterceptor(instance, authStore, mockRouter)
 
   const error = { config: {}, response: { status: 500, data: {} }, message: 'server error' }
   instance.defaults.adapter = () => Promise.reject(error)
 
   await assert.rejects(() => instance.get('/miniapp/me'), error)
-  assert.equal(location.href, '', '非鉴权错误不应重定向')
+  assert.equal(pushes.length, 0, '非鉴权错误不应重定向')
 })

@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 @Entity('auth_sessions')
 @Index(['sessionId'], { unique: true })
@@ -23,6 +24,7 @@ export class AuthSession {
   userId!: number;
 
   @Column({ type: 'varchar', length: 128 })
+  @Exclude()
   refreshTokenHash!: string;
 
   @Column({ default: true })

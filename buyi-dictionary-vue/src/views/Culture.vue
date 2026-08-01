@@ -12,6 +12,14 @@ import imgDrum from '@/assets/images/bouyei-craft.jpg'
 import { buyiTones } from '@/data/tones'
 import { cultureExhibitsApi } from '@/utils/api'
 
+// 安全：URL 协议白名单，阻止 javascript: 等危险协议的存储型 XSS
+function sanitizeUrl(url) {
+  if (!url || typeof url !== 'string') return '#'
+  const trimmed = url.trim()
+  if (/^(https?:|mailto:)/i.test(trimmed)) return trimmed
+  return '#'
+}
+
 const route = useRoute()
 const selectedToneIndex = ref(0)
 const dialogRef = ref(null)
@@ -164,7 +172,7 @@ onUnmounted(() => {
         </ol>
         <div class="linked-exhibit__tone"><TonePiano :tones="tones" :selected-index="selectedToneIndex" @select="selectTone" /><ToneChart :tones="tones" :selected-index="selectedToneIndex" /></div>
         <footer>
-          <a v-if="linkedExhibit.sourceUrl" :href="linkedExhibit.sourceUrl" target="_blank" rel="noreferrer">查看出处：{{ linkedExhibit.sourceTitle || '原始资料' }} <span aria-hidden="true">↗</span></a>
+          <a v-if="linkedExhibit.sourceUrl" :href="sanitizeUrl(linkedExhibit.sourceUrl)" target="_blank" rel="noreferrer">查看出处：{{ linkedExhibit.sourceTitle || '原始资料' }} <span aria-hidden="true">↗</span></a>
           <RouterLink v-if="linkedExhibit.featuredSongId" :to="{ path: '/songs', query: { song: linkedExhibit.featuredSongId } }">前往关联民歌 <span aria-hidden="true">→</span></RouterLink>
         </footer>
       </section>
@@ -222,7 +230,7 @@ onUnmounted(() => {
           <p>{{ selectedPattern.label }}</p>
           <h2>{{ selectedPattern.title }}</h2>
           <p>{{ selectedPattern.detail }}</p>
-          <a :href="selectedPattern.sourceUrl" target="_blank" rel="noreferrer">查看出处：{{ selectedPattern.sourceTitle }} <span aria-hidden="true">↗</span></a>
+          <a :href="sanitizeUrl(selectedPattern.sourceUrl)" target="_blank" rel="noreferrer">查看出处：{{ selectedPattern.sourceTitle }} <span aria-hidden="true">↗</span></a>
           <RouterLink to="/songs">听相关民歌 <span aria-hidden="true">→</span></RouterLink>
         </div>
       </article>

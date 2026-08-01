@@ -31,6 +31,14 @@ Page({
     }
   },
 
+  onHide() {
+    if (this._audioCtx) {
+      try { this._audioCtx.stop(); } catch (e) {}
+      try { this._audioCtx.destroy(); } catch (e) {}
+      this._audioCtx = null;
+    }
+  },
+
   async loadItems(page = 1) {
     this.setData(page === 1 ? { loading: true, errorText: '' } : { loadingMore: true, errorText: '' });
     try {
@@ -86,7 +94,7 @@ Page({
   initAudio() {
     if (!this._audioCtx) {
       this._audioCtx = wx.createInnerAudioContext();
-      this._audioCtx.obeyMuteSwitch = true;
+      this._audioCtx.obeyMuteSwitch = false;
       this._audioCtx.onEnded(() => this.setData({ playingIndex: -1 }));
       this._audioCtx.onError(() => {
         this.setData({ playingIndex: -1 });

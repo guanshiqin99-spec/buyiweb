@@ -116,11 +116,16 @@ Page({
         avatarUrl: cloudAvatarUrl || avatarUrl,
         openid: payload.user.openid || ''
       };
-      loginState.userInfo = finalUserInfo;
       loginState.isLogin = true;
-      
-      app.globalData.userInfo = finalUserInfo;
+      // 仅合并 openid，避免用 finalUserInfo 整体覆盖丢失 id 等字段
+      if (finalUserInfo.openid && loginState.userInfo && !loginState.userInfo.openid) {
+        loginState.userInfo.openid = finalUserInfo.openid;
+      }
+
       app.globalData.isLogin = true;
+      if (finalUserInfo.openid && app.globalData.userInfo && !app.globalData.userInfo.openid) {
+        app.globalData.userInfo.openid = finalUserInfo.openid;
+      }
       wx.setStorageSync('loginState', loginState);
       
       wx.hideLoading();

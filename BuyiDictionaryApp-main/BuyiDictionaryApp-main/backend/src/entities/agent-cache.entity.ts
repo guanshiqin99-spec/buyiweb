@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 // 智能体高频问答缓存：相同问题命中后直接返回，不再调用 DeepSeek API
 @Entity('agent_cache')
@@ -20,10 +21,12 @@ export class AgentCache {
 
   // 用户原始问题文本
   @Column({ type: 'varchar', length: 500 })
+  @Exclude()
   question!: string;
 
   // 模型返回的完整答案
   @Column({ type: 'text' })
+  @Exclude()
   answer!: string;
 
   // 命中次数，体现"高频"程度

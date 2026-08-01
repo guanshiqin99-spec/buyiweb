@@ -171,8 +171,8 @@ function formatDate(dateStr) {
         >
           <span class="record-type-tag">{{ getContentLabel(record.contentType) }}</span>
           <div class="record-info">
-            <p class="record-title">{{ record.title || record.buyiText || `#${record.contentId}` }}</p>
-            <p class="record-time">{{ formatDate(record.createdAt || record.learnedAt) }}</p>
+            <p class="record-title">{{ record.title || record.buyiText || record.zhText || record.enText || `#${record.contentId || record.id}` }}</p>
+            <p class="record-time">{{ formatDate(record.createdAt) }}</p>
             <SourceBadge class="record-source" source="布依词典数据库" />
           </div>
         </article>
