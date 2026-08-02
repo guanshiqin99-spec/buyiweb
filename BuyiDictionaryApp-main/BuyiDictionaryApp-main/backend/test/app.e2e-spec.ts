@@ -60,6 +60,25 @@ describe('Buyi Dictionary Backend (e2e)', () => {
       }),
     );
     await app.init();
+
+    // seed 为异步执行（onApplicationBootstrap 未 await），
+    // 轮询等待默认管理员就绪，避免首个用例撞上登录竞态
+    const server = app.getHttpServer();
+    const deadline = Date.now() + 8000;
+    let ready = false;
+    while (Date.now() < deadline) {
+      const probe = await request(server)
+        .post('/api/admin/auth/login')
+        .send({ username: 'admin', password: 'Admin@123456' });
+      if (probe.status === 201) {
+        ready = true;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    if (!ready) {
+      throw new Error('admin seed did not become ready within 8s');
+    }
   });
 
   afterAll(async () => {

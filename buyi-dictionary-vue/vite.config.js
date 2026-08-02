@@ -1,11 +1,10 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { viteSingleFile } from 'vite-plugin-singlefile'
 
 export default defineConfig({
   base: './',
-  plugins: [vue(), viteSingleFile()],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -15,7 +14,25 @@ export default defineConfig({
     target: 'esnext',
     rollupOptions: {
       output: {
-        inlineDynamicImports: true
+        // 路由已按页面懒加载（() => import），保留动态导入实现按需拆分；
+        // 不要加 inlineDynamicImports，否则所有页面会被压回单个 bundle。
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (
+              id.includes('/vue/') ||
+              id.includes('/vue-router/') ||
+              id.includes('/pinia/') ||
+              id.includes('@vue') ||
+              id.includes('/vue-demi/')
+            ) {
+              return 'vue-vendor'
+            }
+            if (id.includes('/axios/')) {
+              return 'axios'
+            }
+            return 'vendor'
+          }
+        }
       }
     }
   },

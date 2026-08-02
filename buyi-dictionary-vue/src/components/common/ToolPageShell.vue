@@ -100,7 +100,9 @@ defineProps({
 .tool-page__heading {
   position: relative;
   z-index: 1;
-  width: min(100%, 820px);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 820px;
   margin: 0 auto;
 }
 
@@ -164,7 +166,9 @@ defineProps({
 .tool-page__content {
   position: relative;
   z-index: 2;
-  width: min(100%, 820px);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 820px;
   margin: 0 auto;
   padding: 40px 24px 120px;
   opacity: 0;

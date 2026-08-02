@@ -1,5 +1,13 @@
 const { askStream } = require('../../utils/agentStream');
 
+// 将模型常见的 Markdown 星号列表转换为适合聊天气泡的中文项目符号。
+function normalizeAgentText(text) {
+  return String(text || '')
+    .replace(/(^|\n)\s*\*\s+/g, '$1• ')
+    .replace(/(^|\n)\s*[-+]\s+/g, '$1• ')
+    .replace(/\*/g, '');
+}
+
 Component({
   properties: {},
 
@@ -48,10 +56,9 @@ Component({
           app.eventBus.emit(visible ? 'tabbar:show' : 'tabbar:hide');
         }
       } catch (e) {}
-      const method = visible ? wx.showTabBar : wx.hideTabBar;
-      if (typeof method === 'function') {
-        method.call(wx, { animation: true, fail: () => {} });
-      }
+      // 注意：小程序已使用自定义 tabBar（app.json 中 "custom": true），
+      // 不能再调用 wx.showTabBar / wx.hideTabBar，否则会额外显示系统原生 tabBar，
+      // 导致关闭 AI 导览员后出现两层底部导航栏。
     },
 
     onInput(e) {
@@ -83,7 +90,7 @@ Component({
 
       askStream(question, this._history.slice(-6), {
         onDelta: (chunk) => {
-          accumulated += chunk;
+          accumulated = normalizeAgentText(accumulated + chunk);
           const next = this.data.messages.slice();
           next[messageIndex] = { role: 'assistant', content: accumulated, loading: false };
           this.setData({ messages: next });

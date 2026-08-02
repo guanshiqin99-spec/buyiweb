@@ -3,7 +3,7 @@ import { ref, computed, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFavoritesStore } from '@/stores/favorites'
-import imgBg from '@/assets/images/generated/login-river-bridge.png'
+import imgBg from '@/assets/images/generated/login-river-bridge.webp'
 
 const router = useRouter()
 const route = useRoute()

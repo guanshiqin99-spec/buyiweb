@@ -55,7 +55,7 @@ export class MiniappAgentController {
 
   /**
    * 智能体问答（SSE 流式）
-   * 需登录，硬约束关键词预检 + DeepSeek 流式转发
+   * 需登录，话题相关性交由系统提示词软约束，DeepSeek 流式转发
    */
   @Post('ask')
   @HttpCode(200)
@@ -94,18 +94,6 @@ export class MiniappAgentController {
         /* noop */
       }
     };
-
-    // 硬约束：关键词预检，不命中直接拒绝（不消耗 token）
-    if (!this.agentService.isProjectRelated(question)) {
-      send({
-        type: 'delta',
-        content:
-          '抱歉，我是布依文化导览员，只能回答与布依族文化相关的问题（如布依语词汇、声调、民歌、谚语、蜡染、铜鼓、民俗节日等）。请尝试向我提问布依文化相关的内容。',
-      });
-      send({ type: 'done' });
-      finish();
-      return;
-    }
 
     if (!this.agentService.isConfigured()) {
       send({ type: 'error', message: '智能体服务暂未配置，请联系管理员' });

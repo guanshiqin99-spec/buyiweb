@@ -9,7 +9,7 @@ import { generateStream } from '@/utils/agentStream'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useAuthStore } from '@/stores/auth'
 import { useAgentStore } from '@/stores/agent'
-import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
+import imgBg from '@/assets/images/generated/dictionary-archive-study.webp'
 import { getContentLabel } from '../utils/contentTypes'
 
 const route = useRoute()

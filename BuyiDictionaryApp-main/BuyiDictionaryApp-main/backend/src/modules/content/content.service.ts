@@ -24,6 +24,25 @@ import { ContentSortService } from './content-sort.service';
 type ContentEntity = DictionaryEntry | Phrase | Proverb | Song;
 type ImportStatus = 'create' | 'update' | 'skip';
 
+// serialize() 的统一返回类型：各内容类型的可选字段全部置为可选，
+// 调用方无需类型收窄即可安全访问（如学习记录里的 title）。
+export type SerializedContent = {
+  id: number;
+  type: ContentType;
+  buyiText: string;
+  zhText: string;
+  enText: string | null;
+  description: string | null;
+  culturalNote: string | null;
+  zhSortKey: string;
+  title?: string | null;
+  artist?: string | null;
+  coverUrl?: string | null;
+  audioUrl?: string | null;
+  lyrics?: string | null;
+  duration?: number | null;
+};
+
 type ImportPreviewRow = {
   rowNumber: number;
   status: ImportStatus;
@@ -84,18 +103,29 @@ export class ContentService {
     }
   }
 
-  private buildKeywordWhere<T extends ContentEntity>(keyword?: string): FindOptionsWhere<T>[] | FindOptionsWhere<T> {
+  private buildKeywordWhere<T extends ContentEntity>(keyword?: string, type?: ContentType): FindOptionsWhere<T>[] | FindOptionsWhere<T> {
     if (!keyword) {
       return {} as FindOptionsWhere<T>;
     }
 
     const value = `%${keyword}%`;
-    return [
+    const base = [
       { buyiText: Like(value) } as FindOptionsWhere<T>,
       { zhText: Like(value) } as FindOptionsWhere<T>,
       { enText: Like(value) } as FindOptionsWhere<T>,
       { description: Like(value) } as FindOptionsWhere<T>,
     ];
+
+    // 民歌需额外命中标题与演唱者，否则搜歌名/歌手会空结果
+    if (type === ContentType.SONG) {
+      return [
+        ...base,
+        { title: Like(value) } as unknown as FindOptionsWhere<T>,
+        { artist: Like(value) } as unknown as FindOptionsWhere<T>,
+      ];
+    }
+
+    return base;
   }
 
   private listOrder() {
@@ -201,7 +231,7 @@ export class ContentService {
     const repository = this.getRepository(type);
     const page = Number(query.page ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
-    const keywordWhere = this.buildKeywordWhere(query.keyword);
+    const keywordWhere = this.buildKeywordWhere(query.keyword, type);
 
     const [items, total] = await repository.findAndCount({
       where: (
@@ -232,7 +262,7 @@ export class ContentService {
     const page = Number(query.page ?? 1);
     const pageSize = Number(query.pageSize ?? 10);
     const [items, total] = await repository.findAndCount({
-      where: this.buildKeywordWhere(query.keyword) as FindOptionsWhere<ContentEntity>,
+      where: this.buildKeywordWhere(query.keyword, type) as FindOptionsWhere<ContentEntity>,
       order: this.listOrder(),
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -376,7 +406,7 @@ export class ContentService {
 
   async suggestAll(keyword: string) {
     if (!keyword || !keyword.trim()) {
-      return { dictionary: [], phrases: [], proverbs: [] };
+      return { dictionary: [], phrases: [], proverbs: [], songs: [] };
     }
     
     const kw = `%${keyword.trim()}%`;
@@ -394,13 +424,26 @@ export class ContentService {
       return items.map((item) => this.serialize(item, type));
     };
 
-    const [dictionary, phrases, proverbs] = await Promise.all([
+    // 民歌需额外命中标题与演唱者，否则搜歌名/歌手联想为空
+    const querySongRepo = async () => {
+      const items = await this.songRepository.createQueryBuilder('item')
+        .where('item.isPublished = :isPublished', { isPublished: true })
+        .andWhere('(item.zhText LIKE :kw OR item.buyiText LIKE :kw OR item.enText LIKE :kw OR item.title LIKE :kw OR item.artist LIKE :kw)', { kw })
+        .orderBy('CASE WHEN item.zhText LIKE :kw THEN 1 ELSE 2 END', 'ASC')
+        .addOrderBy('item.sortOrder', 'ASC')
+        .take(takeAmount)
+        .getMany();
+      return items.map((item) => this.serialize(item, ContentType.SONG));
+    };
+
+    const [dictionary, phrases, proverbs, songs] = await Promise.all([
       queryRepo(this.dictionaryRepository, ContentType.DICTIONARY),
       queryRepo(this.phraseRepository, ContentType.PHRASE),
       queryRepo(this.proverbRepository, ContentType.PROVERB),
+      querySongRepo(),
     ]);
 
-    return { dictionary, phrases, proverbs };
+    return { dictionary, phrases, proverbs, songs };
   }
 
   async getMiniappHomeData() {
@@ -444,7 +487,7 @@ export class ContentService {
     };
   }
 
-  serialize(item: ContentEntity, type: ContentType) {
+  serialize(item: ContentEntity, type: ContentType): SerializedContent {
     const base = {
       id: item.id,
       type,

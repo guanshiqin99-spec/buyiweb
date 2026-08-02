@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
 import SourceBadge from '@/components/common/SourceBadge.vue'
-import imgBg from '@/assets/images/generated/dictionary-archive-study.png'
+import imgBg from '@/assets/images/generated/dictionary-archive-study.webp'
 import { settingsApi } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'

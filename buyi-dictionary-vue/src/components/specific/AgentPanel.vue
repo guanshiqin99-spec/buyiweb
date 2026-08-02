@@ -6,6 +6,31 @@ import { useAgentStore } from '@/stores/agent'
 const route = useRoute()
 const agentStore = useAgentStore()
 
+// 将导览员返回的轻量 Markdown 渲染为 HTML
+// 处理：代码块/行内代码、加粗、斜体、标题、无序列表、换行
+// 输入来自受控系统提示词下的 DeepSeek，先转义 HTML 再还原标题/加粗等标签
+function renderMarkdown(text) {
+  if (!text) return ''
+  let html = String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+  // 行内代码 `code`
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
+  // 加粗 **text** 或 __text__
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>')
+  // 斜体 *text*（避开已处理的 **）
+  html = html.replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g, '$1<em>$2</em>')
+  // 标题 ### / ## / # → 加粗
+  html = html.replace(/^#{1,6}\s+(.+)$/gm, '<strong>$1</strong>')
+  // 无序列表 * / - / + → 项目符号
+  html = html.replace(/^\s*[-*+]\s+/gm, '• ')
+  // 换行
+  html = html.replace(/\n/g, '<br>')
+  return html
+}
+
 const inputRef = ref(null)
 const listRef = ref(null)
 const panelRef = ref(null)
@@ -147,7 +172,7 @@ onUnmounted(() => {
           :class="msg.role === 'user' ? 'msg-user' : 'msg-agent'"
         >
           <p class="msg-text">
-            <template v-if="msg.text">{{ msg.text }}</template>
+            <template v-if="msg.text"><span class="msg-text-content" v-html="renderMarkdown(msg.text)"></span></template>
             <span
               v-else-if="agentStore.loading && i === agentStore.messages.length - 1"
               class="typing"
@@ -378,6 +403,22 @@ onUnmounted(() => {
 .msg-text {
   margin: 0;
   word-break: break-word;
+}
+
+.msg-text-content :deep(strong) {
+  font-weight: 600;
+}
+
+.msg-text-content :deep(em) {
+  font-style: italic;
+}
+
+.msg-text-content :deep(code) {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(58, 107, 140, 0.12);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.92em;
 }
 
 .msg-agent {

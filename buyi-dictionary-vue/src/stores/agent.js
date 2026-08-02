@@ -7,6 +7,14 @@ const AGENT_ROLE = {
   intro: '我是布依文化导览员，可以为你讲解布依语词汇、声调、民歌、谚语、纹样与民俗。'
 }
 
+// 将模型常见的 Markdown 星号列表转换为适合聊天气泡的中文项目符号。
+function normalizeAgentText(text) {
+  return String(text || '')
+    .replace(/(^|\n)\s*\*\s+/g, '$1• ')
+    .replace(/(^|\n)\s*[-+]\s+/g, '$1• ')
+    .replace(/\*/g, '')
+}
+
 // 各页面的场景化快捷提问模板
 const CONTEXT_TEMPLATES = {
   '/dictionary': ['这个词的来源是什么？', '布依语声调怎么读？', '举一个布依语例句'],
@@ -69,7 +77,7 @@ export const useAgentStore = defineStore('agent', {
         question: text,
         history,
         onDelta: (chunk) => {
-          this.messages[agentIndex].text += chunk
+          this.messages[agentIndex].text = normalizeAgentText(this.messages[agentIndex].text + chunk)
         },
         onDone: () => {
           this.loading = false

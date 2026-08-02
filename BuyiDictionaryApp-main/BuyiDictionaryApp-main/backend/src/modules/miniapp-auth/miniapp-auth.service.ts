@@ -211,6 +211,8 @@ export class MiniappAuthService {
       {
         secret: this.configService.get<string>('jwt.secret'),
         expiresIn: this.configService.get<string>('jwt.refreshExpiresIn', '30d') as never,
+        // 每次签发注入随机 jti，确保同一秒内多次签发的 refresh token 也不同（轮换才能生效）
+        jwtid: randomUUID(),
       },
     );
 

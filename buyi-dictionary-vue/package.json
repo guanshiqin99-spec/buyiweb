@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node --import=./tests/setup.mjs --test tests/playableSongs.test.js tests/player.test.js tests/tones.test.js tests/quiz.test.js tests/contentTypes.test.js tests/api.test.js tests/auth.test.js tests/navTonePolicy.test.js",
+    "test": "node --import=./tests/setup.mjs --test tests/playableSongs.test.js tests/player.test.js tests/tones.test.js tests/quiz.test.js tests/contentTypes.test.js tests/api.test.js tests/auth.test.js tests/navTonePolicy.test.js tests/agentStream.test.js tests/agent.test.js tests/favorites.test.js tests/dailyTasks.test.js tests/userProgress.test.js tests/learningSuggestion.test.js",
+    "test:unit": "node --import=./tests/setup.mjs --test tests/api.test.js tests/auth.test.js tests/contentTypes.test.js tests/navTonePolicy.test.js tests/playableSongs.test.js tests/player.test.js tests/quiz.test.js tests/tones.test.js",
+    "test:new": "node --import=./tests/setup.mjs --test tests/agentStream.test.js tests/agent.test.js tests/favorites.test.js tests/dailyTasks.test.js tests/userProgress.test.js tests/learningSuggestion.test.js",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix",
     "format": "prettier --write src/"
@@ -22,6 +24,7 @@
     "eslint": "^8.50.0",
     "eslint-plugin-vue": "^9.17.0",
     "prettier": "^3.0.0",
+    "sharp": "^0.35.3",
     "vite": "^5.0.0",
     "vite-plugin-singlefile": "^2.3.3"
   }

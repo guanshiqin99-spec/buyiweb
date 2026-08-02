@@ -20,7 +20,13 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap">
+    <!-- 字体 CSS 非阻塞加载：media=print + onload 回切。
+         国内移动网络访问 fonts.googleapis.com 大概率失败（被墙），
+         若用渲染阻塞的 link，页面会一直白屏等待。此写法页面先用系统字体渲染，字体可用再替换。 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap">
+    </noscript>
     <title>布依族词典</title>
   </head>
   <body>

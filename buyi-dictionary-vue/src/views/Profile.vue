@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
-import imgBg from '@/assets/images/generated/profile-learning-journal.png'
+import imgBg from '@/assets/images/generated/profile-learning-journal.webp'
 import BarChart from '@/components/specific/BarChart.vue'
 import RadarChart from '@/components/specific/RadarChart.vue'
 import ShareCard from '@/components/specific/ShareCard.vue'

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import ToolPageShell from '@/components/common/ToolPageShell.vue'
-import imgBg from '@/assets/images/generated/favorites-archive-shelf.png'
+import imgBg from '@/assets/images/generated/favorites-archive-shelf.webp'
 import { useFavoritesStore } from '@/stores/favorites'
 import IconHeartFilled from '@/components/icons/IconHeartFilled.vue'
 import IconHeart from '@/components/icons/IconHeart.vue'
