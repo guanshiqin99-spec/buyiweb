@@ -95,19 +95,21 @@ export class SeedService implements OnApplicationBootstrap {
       return;
     }
 
+    // 布依文以 1985 年《布依文方案（修订案）》望谟标准音为准
+    // 完整权威数据集请运行 npm run seed:verified
     const dictionaries = [
-      { buyiText: 'noi', zhText: '你好', zhSortKey: 'ni hao', enText: 'Hello', description: '基础问候语', isPublished: true, sortOrder: 1 },
-      { buyiText: 'do', zhText: '爸爸', zhSortKey: 'ba ba', enText: 'Father', description: '亲属称呼', isPublished: true, sortOrder: 2 },
-      { buyiText: 'mo', zhText: '妈妈', zhSortKey: 'ma ma', enText: 'Mother', description: '亲属称呼', isPublished: true, sortOrder: 3 },
+      { buyiText: 'boh', zhText: '父亲', zhSortKey: 'fu qin', enText: 'Father', description: '亲属称谓｜D2', isPublished: true, sortOrder: 1 },
+      { buyiText: 'meeh', zhText: '母亲', zhSortKey: 'mu qin', enText: 'Mother', description: '亲属称谓｜D2', isPublished: true, sortOrder: 2 },
+      { buyiText: 'gul', zhText: '我', zhSortKey: 'wo', enText: 'I; me', description: '人称代词｜D2', isPublished: true, sortOrder: 3 },
     ];
 
     const phrases = [
-      { buyiText: 'nang bux', zhText: '你好吗？', zhSortKey: 'ni hao ma', enText: 'How are you?', description: '日常问候', isPublished: true, sortOrder: 1 },
-      { buyiText: 'yo bux', zhText: '我很好', zhSortKey: 'wo hen hao', enText: "I'm fine", description: '回答问候', isPublished: true, sortOrder: 2 },
+      { buyiText: 'Mengz ndil!', zhText: '你好！', zhSortKey: 'ni hao', enText: 'Hello!', description: '问候｜D2', isPublished: true, sortOrder: 1 },
+      { buyiText: 'Mengz genl haux fih?', zhText: '你吃饭了吗？', zhSortKey: 'ni chi fan le ma', enText: 'Have you eaten?', description: '问候｜D2', isPublished: true, sortOrder: 2 },
     ];
 
     const proverbs = [
-      { buyiText: 'nga zi ni ma', zhText: '说话像唱歌', zhSortKey: 'shuo hua xiang chang ge', enText: 'Speak like singing', description: '布依族文化表达', isPublished: true, sortOrder: 1 },
+      { buyiText: 'Joongl ndil mizxac ros nagt, wenz gvaail mizxac nauz leeux.', zhText: '响鼓不用重锤敲，智者不用话挑明。', zhSortKey: 'xiang gu bu yong zhong chui qiao', enText: 'A good drum needs no heavy beat; the wise need no plain words.', description: '智慧｜D3', isPublished: true, sortOrder: 1 },
     ];
 
     await Promise.all([
@@ -135,14 +137,14 @@ export class SeedService implements OnApplicationBootstrap {
     }));
 
     const songs = [
-      { title: '布依迎客歌', artist: '布依文化采集', buyiText: 'hau mbou', zhText: '欢迎远方客人的民歌', zhSortKey: 'huan ying yuan fang ke ren de min ge', enText: 'Welcome song of Buyi people', description: '首页轮播与民歌列表示例数据', isPublished: true, sortOrder: 1 },
-      { title: '山歌对唱', artist: '黔南山歌队', buyiText: 'gaen hau', zhText: '山谷之间的对唱', zhSortKey: 'shan gu zhi jian de dui chang', enText: 'Valley antiphonal singing', description: '用于首页展示布依语韵律与文化气质', isPublished: true, sortOrder: 2 },
-      { title: '田间节奏', artist: '布依青年合唱', buyiText: 'mbou ra', zhText: '田间劳作时的节奏民歌', zhSortKey: 'tian jian lao zuo shi de jie zou min ge', enText: 'Rhythm of farming folk song', description: '作为小程序首页精选民歌示例', isPublished: true, sortOrder: 3 },
+      { title: '布依迎客歌', artist: '布依文化采集', buyiText: 'raanz gais gvaangl', zhText: '欢迎远方客人的民歌', zhSortKey: 'huan ying yuan fang ke ren de min ge', enText: 'Welcome song of Buyi people', description: '首页轮播与民歌列表示例数据', isPublished: true, sortOrder: 1 },
+      { title: '山歌对唱', artist: '黔南山歌队', buyiText: 'weanl beangz', zhText: '山谷之间的对唱', zhSortKey: 'shan gu zhi jian de dui chang', enText: 'Valley antiphonal singing', description: '用于首页展示布依语韵律与文化气质', isPublished: true, sortOrder: 2 },
+      { title: '田间节奏', artist: '布依青年合唱', buyiText: 'weanl gueh hoongl', zhText: '田间劳作时的节奏民歌', zhSortKey: 'tian jian lao zuo shi de jie zou min ge', enText: 'Rhythm of farming folk song', description: '作为小程序首页精选民歌示例', isPublished: true, sortOrder: 3 },
     ];
 
     await this.songRepository.save(songs.map(s => this.songRepository.create(s)));
 
-    const proverb = await this.proverbRepository.findOne({ where: { buyiText: 'nga zi ni ma' } });
+    const proverb = await this.proverbRepository.findOne({ where: { buyiText: 'Joongl ndil mizxac ros nagt, wenz gvaail mizxac nauz leeux.' } });
     if (proverb) {
       await this.cultureLinkRepository.save(this.cultureLinkRepository.create({
         contentType: ContentType.PROVERB,

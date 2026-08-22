@@ -22,6 +22,7 @@ import { WechatAccount } from '../entities/wechat-account.entity';
 import { BaselineSchema1710000000000 } from '../migrations/1710000000000-baseline-schema';
 import { AddCultureExhibits1721000000000 } from '../migrations/1721000000000-add-culture-exhibits';
 import { AddQuizAttempts1722000000000 } from '../migrations/1722000000000-add-quiz-attempts';
+import { AddQuizAttemptMode1731000000000 } from '../migrations/1731000000000-add-quiz-attempt-mode';
 
 export const entities = [
   Admin,
@@ -43,7 +44,12 @@ export const entities = [
   ContentCultureLink,
 ];
 
-export const migrations = [BaselineSchema1710000000000, AddCultureExhibits1721000000000, AddQuizAttempts1722000000000];
+export const migrations = [
+  BaselineSchema1710000000000,
+  AddCultureExhibits1721000000000,
+  AddQuizAttempts1722000000000,
+  AddQuizAttemptMode1731000000000,
+];
 
 export function buildTypeOrmOptions(config: {
   db: {

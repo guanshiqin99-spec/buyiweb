@@ -10,6 +10,7 @@
     <text class="text-sub">由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。每题 10 分，成绩保存在本机，登录后同步到账号。</text>
     <text wx:if="{{lastAttempt}}" class="text-sub last-attempt">最近成绩：{{lastAttempt.score}} 分（答对 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题）</text>
     <button class="btn btn-primary" loading="{{generatingAI}}" disabled="{{generatingAI}}" bindtap="startQuiz">{{generatingAI ? 'AI 出题中...' : '开始答题'}}</button>
+    <button class="btn btn-secondary quiz-secondary-btn" bindtap="onGoPronunciation">发音闯关</button>
     <text wx:if="{{aiQuizError}}" class="text-sub ai-quiz-error">{{aiQuizError}}</text>
   </view>
 

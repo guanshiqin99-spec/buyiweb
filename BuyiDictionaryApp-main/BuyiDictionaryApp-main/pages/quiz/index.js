@@ -119,8 +119,13 @@ Page({
         } else {
           wx.switchTab({ url: '/pages/home/index' });
         }
-      }
+      },
     });
+  },
+
+  // 跳转发音闯关：AI 语音跟读评测
+  onGoPronunciation() {
+    wx.navigateTo({ url: '/pages/pronunciation/index' });
   },
 
   // 开始答题：AI 为主，先尝试 AI 五题挑战，失败时降级到经典十题库

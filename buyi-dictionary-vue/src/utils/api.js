@@ -125,6 +125,11 @@ export const quizApi = {
   }
 }
 
+export const pronunciationApi = {
+  questions(params) { return api.get('/miniapp/pronunciation/questions', { params }) },
+  score(data) { return api.post('/miniapp/pronunciation/score', data) }
+}
+
 export const badgesApi = {
   async list() {
     return normalizeBadgesResponse(await api.get('/miniapp/badges'))

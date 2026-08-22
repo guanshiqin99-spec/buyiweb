@@ -1,0 +1,102 @@
+<view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page pronunciation-page">
+  <custom-nav title="发音闯关"></custom-nav>
+
+  <view class="abandon-bar" wx:if="{{phase === 'question'}}">
+    <view class="abandon-btn" bindtap="onAbandon">放弃本场</view>
+  </view>
+
+  <!-- 阶段一：玩法介绍 -->
+  <view wx:if="{{phase === 'intro'}}" class="card pronunciation-intro">
+    <text class="text-h1">发音闯关</text>
+    <text class="text-sub">跟着布依语词句开口读，AI 为你的发音打分；每题 10 分，成绩保存在本机，登录后同步到账号。</text>
+    <text wx:if="{{!pluginReady}}" class="text-sub plugin-tip">语音识别插件不可用，暂时无法进行跟读评测，可先浏览其他内容。</text>
+    <text wx:if="{{lastAttempt}}" class="text-sub last-attempt">最近成绩：{{lastAttempt.score}} 分（通过 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题）</text>
+    <button class="btn btn-primary" loading="{{loadingQuestions}}" disabled="{{loadingQuestions}}" bindtap="startChallenge">开始闯关</button>
+  </view>
+
+  <!-- 阶段二：逐题跟读评测 -->
+  <view wx:elif="{{phase === 'question' && currentQuestion}}" class="pronunciation-question">
+    <view class="quiz-meta">
+      <text class="text-sub">第 {{currentIndex + 1}} / {{questions.length}} 题</text>
+      <text class="text-h3 primary-text">{{score}} 分</text>
+    </view>
+    <view class="progress-track"><view class="progress-bar" style="width: {{(currentIndex + 1) * 100 / questions.length}}%;"></view></view>
+
+    <view class="card question-card">
+      <view class="question-head">
+        <text class="tag kind-tag">{{currentQuestion.kind === 'phrase' ? '常用短语' : '基础词汇'}}</text>
+        <button wx:if="{{currentQuestion.audioUrl}}" class="btn btn-secondary audio-btn" bindtap="playAudio">🔊 听发音</button>
+      </view>
+      <text class="text-h2 buyi-text">{{currentQuestion.buyiText}}</text>
+      <text class="text-sub zh-text">{{currentQuestion.zhText}}</text>
+      <text wx:if="{{currentQuestion.description}}" class="text-sub desc-text">{{currentQuestion.description}}</text>
+
+      <!-- 按住跟读区域 -->
+      <view class="record-area">
+        <view
+          wx:if="{{!lastResult && !evaluating}}"
+          class="record-btn {{recording ? 'recording' : ''}} {{pluginReady ? '' : 'record-disabled'}}"
+          bindtouchstart="onRecordStart"
+          bindtouchend="onRecordEnd"
+          bindtouchcancel="onRecordEnd"
+        >
+          <text class="record-btn-text">{{recording ? '松开结束' : '按住跟读'}}</text>
+          <text class="record-btn-sub">{{recording ? '正在听你读…' : '按住朗读，最长 6 秒'}}</text>
+        </view>
+        <view wx:if="{{evaluating}}" class="record-btn evaluating">
+          <text class="record-btn-text">AI 评测中…</text>
+          <text class="record-btn-sub">正在为你的发音打分</text>
+        </view>
+        <view wx:if="{{recording}}" class="transient-box">
+          <text class="text-sub transient-text">{{transientStr || '请开口跟读…'}}</text>
+        </view>
+        <text wx:if="{{!pluginReady}}" class="text-sub plugin-tip">语音识别插件不可用，跟读评测暂不可用。</text>
+        <text wx:if="{{recognizeError}}" class="text-sub recognize-error">{{recognizeError}}</text>
+      </view>
+
+      <!-- 评分结果 -->
+      <view wx:if="{{lastResult && !evaluating}}" class="pronunciation-feedback">
+        <view class="result-head">
+          <text class="score-badge">{{lastResult.score}} 分</text>
+          <text class="points-badge {{lastResult.correct ? 'passed' : 'failed'}}">本题 {{lastResult.points}} 分 · {{lastResult.correct ? '通过' : '未通过'}}</text>
+        </view>
+        <text wx:if="{{lastResult.feedback}}" class="text-sub feedback-text">{{lastResult.feedback}}</text>
+        <view class="syllable-section">
+          <text class="text-sub syllable-label">目标发音</text>
+          <view class="syllable-row">
+            <text
+              wx:for="{{lastResult.targetMarks}}"
+              wx:key="idx"
+              class="syllable {{item.match ? 'match' : 'diff'}}"
+            >{{item.text}}</text>
+          </view>
+          <text class="text-sub syllable-label">你的发音</text>
+          <view class="syllable-row">
+            <text
+              wx:for="{{lastResult.recognizedMarks}}"
+              wx:key="idx"
+              class="syllable {{item.match ? 'match' : 'diff'}}"
+            >{{item.text}}</text>
+          </view>
+        </view>
+        <text class="text-sub recognized-text">识别内容：{{lastResult.recognizedText}}</text>
+        <view class="result-actions">
+          <button class="btn btn-secondary retry-btn" bindtap="retryQuestion">再试一次</button>
+          <button class="btn btn-primary next-btn" bindtap="nextQuestion">{{currentIndex === questions.length - 1 ? '查看成绩' : '下一题'}}</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 阶段三：成绩汇总 -->
+  <view wx:else class="card pronunciation-result">
+    <text class="text-sub">本轮完成</text>
+    <text class="score-value">{{score}} 分</text>
+    <text class="text-h3">通过 {{correctCount}} / {{questions.length}} 题</text>
+    <text class="text-sub save-message">{{saveMsg}}</text>
+    <button class="btn btn-primary" disabled="{{saving}}" bindtap="startChallenge">再来一轮</button>
+  </view>
+
+  <!-- AI 导览员悬浮入口 -->
+  <agent-panel></agent-panel>
+</view>

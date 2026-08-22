@@ -16,8 +16,15 @@
     "pages/quiz/index",
     "pages/learn/index",
     "pages/culture/index",
-    "pages/setting/index"
+    "pages/setting/index",
+    "pages/pronunciation/index"
   ],
+  "plugins": {
+    "WechatSI": {
+      "version": "0.3.5",
+      "provider": "wx069ba97219f66d99"
+    }
+  },
   "darkmode": true,
   "themeLocation": "theme.json",
   "window": {

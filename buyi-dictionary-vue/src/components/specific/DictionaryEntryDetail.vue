@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { formatAiSentence } from '@/utils/aiSentenceFormat'
 import SourceBadge from '@/components/common/SourceBadge.vue'
 import IconHeart from '@/components/icons/IconHeart.vue'
 import IconVolume from '@/components/icons/IconVolume.vue'
@@ -80,7 +81,7 @@ function getContentLabel(type) {
     >
       <strong>AI 学习辅助</strong>
       <p v-if="aiSentenceState.status === 'error'">AI 造句暂不可用</p>
-      <p v-else>{{ aiSentenceState.content || '正在组织例句…' }}</p>
+      <p v-else>{{ formatAiSentence(aiSentenceState.content) || '正在组织例句…' }}</p>
     </div>
 
     <section v-if="item.relatedExhibits?.length" class="culture-links" aria-labelledby="culture-links-title">

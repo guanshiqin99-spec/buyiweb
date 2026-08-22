@@ -208,7 +208,7 @@ describe('Buyi Dictionary Backend (e2e)', () => {
 
     const searchResponse = await request(app.getHttpServer())
       .get('/api/miniapp/search')
-      .query({ keyword: 'noi' })
+      .query({ keyword: 'gul' })
       .expect(200);
 
     expect(searchResponse.body.dictionary.length).toBeGreaterThan(0);
@@ -319,7 +319,7 @@ describe('Buyi Dictionary Backend (e2e)', () => {
     const worksheet = XLSX.utils.json_to_sheet([
       {
         [excelHeaders.buyiText]: 'alpha',
-        [excelHeaders.zhText]: '\u4e0a\u6d77',
+        [excelHeaders.zhText]: `\u4e0a\u6d77-${importKeyword}`,
         [excelHeaders.enText]: 'Shanghai',
         [excelHeaders.description]: importKeyword,
         [excelHeaders.sortOrder]: 0,
@@ -327,7 +327,7 @@ describe('Buyi Dictionary Backend (e2e)', () => {
       },
       {
         [excelHeaders.buyiText]: 'beta',
-        [excelHeaders.zhText]: '\u5317\u4eac',
+        [excelHeaders.zhText]: `\u5317\u4eac-${importKeyword}`,
         [excelHeaders.enText]: 'Beijing',
         [excelHeaders.description]: importKeyword,
         [excelHeaders.sortOrder]: 0,
@@ -335,7 +335,7 @@ describe('Buyi Dictionary Backend (e2e)', () => {
       },
       {
         [excelHeaders.buyiText]: 'gamma',
-        [excelHeaders.zhText]: '\u5e7f\u5dde',
+        [excelHeaders.zhText]: `\u5e7f\u5dde-${importKeyword}`,
         [excelHeaders.enText]: 'Guangzhou',
         [excelHeaders.description]: importKeyword,
         [excelHeaders.sortOrder]: 0,
@@ -362,7 +362,7 @@ describe('Buyi Dictionary Backend (e2e)', () => {
       .expect(200);
 
     const orderedZh = listResponse.body.items.map((item: { zhText: string }) => item.zhText);
-    expect(orderedZh).toEqual(['\u5317\u4eac', '\u5e7f\u5dde', '\u4e0a\u6d77']);
+    expect(orderedZh).toEqual([`\u5317\u4eac-${importKeyword}`, `\u5e7f\u5dde-${importKeyword}`, `\u4e0a\u6d77-${importKeyword}`]);
   });
 
   it('downloads import templates and supports upsert mode', async () => {

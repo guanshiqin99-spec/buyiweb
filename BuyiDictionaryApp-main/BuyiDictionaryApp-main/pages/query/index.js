@@ -292,6 +292,43 @@ Page({
     this.setData({ results: list });
   },
 
+  // 格式化 AI 造句返回内容：兼容 JSON / Markdown 代码围栏，统一为多行纯文本
+  _formatAiSentence(content) {
+    if (!content || typeof content !== 'string') return '';
+
+    // 剥离 Markdown 代码围栏（```json ... ``` 或 ``` ... ```）
+    let text = content.trim();
+    const fence = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+    if (fence) text = fence[1].trim();
+
+    // 尝试按 JSON 解析，提取例句 / 翻译 / 语法说明（兼容中英文键名变体）
+    try {
+      const obj = JSON.parse(text);
+      if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        const pick = (...keys) => {
+          for (const k of keys) {
+            const v = obj[k];
+            if (typeof v === 'string' && v.trim()) return v.trim();
+          }
+          return '';
+        };
+        const sentence = pick('sentence', '例句');
+        const translation = pick('translation', '翻译');
+        const grammar = pick('grammar_note', 'grammarNote', 'grammar', '语法说明');
+        const lines = [];
+        if (sentence) lines.push(`例句：${sentence}`);
+        if (translation) lines.push(`翻译：${translation}`);
+        if (grammar) lines.push(`语法说明：${grammar}`);
+        if (lines.length) return lines.join('\n');
+      }
+    } catch (e) {
+      // 非 JSON 内容，回退原文
+    }
+
+    // 解析失败或无已知字段时，返回剥离围栏后的原文
+    return text;
+  },
+
   // AI 造句
   onAISentence(e) {
     const index = e.currentTarget.dataset.index;
@@ -315,7 +352,7 @@ Page({
     generateStream('sentence', word, {
       onDelta: (chunk) => {
         accumulated += chunk;
-        this._patchResult(index, { aiSentence: accumulated });
+        this._patchResult(index, { aiSentence: this._formatAiSentence(accumulated) });
       },
       onDone: () => {
         if (!accumulated) {
@@ -325,7 +362,7 @@ Page({
           });
           return;
         }
-        this._patchResult(index, { aiSentenceLoading: false, aiSentence: accumulated });
+        this._patchResult(index, { aiSentenceLoading: false, aiSentence: this._formatAiSentence(accumulated) });
       },
       onError: (err) => {
         this._patchResult(index, {

@@ -23,6 +23,10 @@ export class QuizAttempt {
   @Column({ type: 'integer' })
   totalQuestions!: number;
 
+  // 答题模式:culture=文化知识答题(默认,兼容旧客户端);pronunciation=发音闯关
+  @Column({ type: 'varchar', length: 20, default: 'culture' })
+  mode!: string;
+
   @Column({ type: 'text' })
   answersJson!: string;
 

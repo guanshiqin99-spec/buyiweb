@@ -255,6 +255,16 @@ const quizApi = {
   },
 };
 
+// 发音闯关：拉取跟读题目与 AI 发音评分
+const pronunciationApi = {
+  questions(count = 5) {
+    return get('/miniapp/pronunciation/questions', { count }, { showError: true });
+  },
+  score(payload) {
+    return post('/miniapp/pronunciation/score', payload, { showError: false });
+  },
+};
+
 const homeApi = {
   get() {
     return get('/miniapp/home', null, { showError: false });
@@ -347,5 +357,6 @@ module.exports = {
   recordsApi,
   badgesApi,
   quizApi,
+  pronunciationApi,
   extractMessage,
 };

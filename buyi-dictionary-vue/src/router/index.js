@@ -57,6 +57,12 @@ const router = createRouter({
       meta: { navTone: 'immersive', navContrast: 'on-dark' }
     },
     {
+      path: '/pronunciation',
+      name: 'pronunciation',
+      component: () => import('../views/Pronunciation.vue'),
+      meta: { navTone: 'immersive', navContrast: 'on-dark' }
+    },
+    {
       path: '/learn',
       name: 'learn',
       component: () => import('../views/Learn.vue'),

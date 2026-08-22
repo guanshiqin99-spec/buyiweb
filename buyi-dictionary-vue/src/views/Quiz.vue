@@ -224,9 +224,13 @@ onUnmounted(() => {
     <section v-if="phase === 'intro'" class="quiz-intro">
       <p>趣味闯关</p>
       <h1>把刚刚看见的文化线索，变成一次轻松回顾。</h1>
-      <span>由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。答对得 10 分。</span>
+      <span>由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。答对得 10 分。也可以试试发音闯关：跟读布依语词句，AI 为你的发音打分。</span>
       <small v-if="lastAttempt" class="quiz-intro__last">最近成绩：{{ lastAttempt.score }} 分（答对 {{ lastAttempt.correctCount }} / {{ lastAttempt.totalQuestions }} 题）</small>
       <button v-pointer-glow="{ tone: 'accent', size: 'lg' }" type="button" :disabled="isGeneratingAIQuiz" @click="startQuiz">{{ isGeneratingAIQuiz ? '生成中…' : '开始答题' }} <b aria-hidden="true">→</b></button>
+      <!-- 发音闯关次按钮：custom 插槽渲染真实 button，直接复用 .quiz-intro button + button 次按钮样式 -->
+      <RouterLink to="/pronunciation" custom v-slot="{ navigate }">
+        <button type="button" @click="navigate">发音闯关</button>
+      </RouterLink>
       <RouterLink to="/culture">先去文化页看看</RouterLink>
     </section>
 

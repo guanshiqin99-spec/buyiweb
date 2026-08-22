@@ -109,11 +109,12 @@ export class ContentService {
     }
 
     const value = `%${keyword}%`;
+    // 仅匹配词条本体文本，不把 description（例句/描述）作为搜索条件，
+    // 避免例句中的字命中无关词条，与联想接口的匹配范围保持一致
     const base = [
       { buyiText: Like(value) } as FindOptionsWhere<T>,
       { zhText: Like(value) } as FindOptionsWhere<T>,
       { enText: Like(value) } as FindOptionsWhere<T>,
-      { description: Like(value) } as FindOptionsWhere<T>,
     ];
 
     // 民歌需额外命中标题与演唱者，否则搜歌名/歌手会空结果
@@ -383,25 +384,58 @@ export class ContentService {
   }
 
   async searchAll(query: SearchQueryDto) {
+    // 搜索需取全量匹配再做相关性排序，不能用默认分页（否则真正相关的条目可能被截断）
+    const searchQuery = { ...query, page: 1, pageSize: 500 };
     const [dictionary, phrases, proverbs, songs] = await Promise.all([
-      this.listPublished(ContentType.DICTIONARY, query),
-      this.listPublished(ContentType.PHRASE, query),
-      this.listPublished(ContentType.PROVERB, query),
-      this.listPublished(ContentType.SONG, query),
+      this.listPublished(ContentType.DICTIONARY, searchQuery),
+      this.listPublished(ContentType.PHRASE, searchQuery),
+      this.listPublished(ContentType.PROVERB, searchQuery),
+      this.listPublished(ContentType.SONG, searchQuery),
     ]);
 
+    const kw = (query.keyword || '').trim();
+    const rankedDictionary = this.rankByKeyword(await Promise.all(dictionary.items.map((item) => this.serializeWithRelatedExhibits(item, ContentType.DICTIONARY))), kw);
+    const rankedPhrases = this.rankByKeyword(await Promise.all(phrases.items.map((item) => this.serializeWithRelatedExhibits(item, ContentType.PHRASE))), kw);
+    const rankedProverbs = this.rankByKeyword(await Promise.all(proverbs.items.map((item) => this.serializeWithRelatedExhibits(item, ContentType.PROVERB))), kw);
+    const rankedSongs = this.rankByKeyword(songs.items.map((item) => this.serialize(item, ContentType.SONG)), kw);
+
     return {
-      dictionary: await Promise.all(dictionary.items.map((item) => this.serializeWithRelatedExhibits(item, ContentType.DICTIONARY))),
-      phrases: await Promise.all(phrases.items.map((item) => this.serializeWithRelatedExhibits(item, ContentType.PHRASE))),
-      proverbs: await Promise.all(proverbs.items.map((item) => this.serializeWithRelatedExhibits(item, ContentType.PROVERB))),
-      songs: songs.items.map((item) => this.serialize(item, ContentType.SONG)),
+      dictionary: rankedDictionary,
+      phrases: rankedPhrases,
+      proverbs: rankedProverbs,
+      songs: rankedSongs,
       pagination: {
-        page: dictionary.page,
-        pageSize: dictionary.pageSize,
-        total: dictionary.total + phrases.total + proverbs.total + songs.total,
-        totalPages: Math.max(dictionary.totalPages, phrases.totalPages, proverbs.totalPages, songs.totalPages),
+        page: 1,
+        pageSize: 500,
+        total: rankedDictionary.length + rankedPhrases.length + rankedProverbs.length + rankedSongs.length,
+        totalPages: 1,
       },
     };
+  }
+
+  // 搜索相关性排序：汉义/标题精确匹配 > 前缀 > 包含 > 布依文 > 英文 > 说明（例句），
+  // 避免“例句里碰巧含关键词”的条目排在真正释义之前（如搜“吃”时 xoongh 排在 genl 前）
+  private rankByKeyword<T extends { zhText?: string; buyiText?: string; enText?: string | null; description?: string | null; title?: string | null }>(
+    items: T[],
+    keyword: string,
+  ): T[] {
+    const kw = keyword.toLowerCase();
+    if (!kw) return items;
+    const score = (item: T): number => {
+      const zh = (item.zhText || '').toLowerCase();
+      const title = (item.title || '').toLowerCase();
+      const buyi = (item.buyiText || '').toLowerCase();
+      const en = (item.enText || '').toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      if (zh === kw || (title !== '' && title === kw)) return 0;
+      if (zh.startsWith(kw) || (title !== '' && title.startsWith(kw)) || buyi === kw) return 1;
+      if (zh.includes(kw) || (title !== '' && title.includes(kw)) || buyi.startsWith(kw)) return 2;
+      if (buyi.includes(kw)) return 3;
+      if (en.includes(kw)) return 4;
+      if (desc.includes(kw)) return 5;
+      return 6;
+    };
+    return [...items].sort((a, b) => score(a) - score(b));
   }
 
   async suggestAll(keyword: string) {

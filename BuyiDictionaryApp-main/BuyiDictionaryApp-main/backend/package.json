@@ -14,6 +14,8 @@
     "admin:init": "ts-node src/scripts/init-admin.ts",
     "db:migrate": "typeorm-ts-node-commonjs migration:run -d src/typeorm-cli.config.ts",
     "seed:data": "ts-node --transpile-only src/scripts/seed-data.ts",
+    "seed:verified": "ts-node --transpile-only src/scripts/seed-verified-data.ts",
+    "gen:import-xlsx": "node scripts/generate-buyi-import-xlsx.cjs",
     "db:revert": "typeorm-ts-node-commonjs migration:revert -d src/typeorm-cli.config.ts",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",

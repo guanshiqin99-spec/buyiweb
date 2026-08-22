@@ -62,18 +62,19 @@ if not exist "buyi-local.sqlite" (
     echo buyi-local.sqlite already exists. Using existing database.
     echo To force re-copy from %SOURCE_DB%, delete buyi-local.sqlite first.
 )
-if not exist "%RUNTIME_DB%" (
-    if exist "buyi-local.sqlite" (
-        echo Preparing writable runtime database...
-        copy /Y "buyi-local.sqlite" "%RUNTIME_DB%" >nul
-        if errorlevel 1 (
-            echo ERROR: Failed to prepare runtime database.
-            pause
-            exit /b 1
-        )
-    ) else (
-        echo No seed database found. Backend will create %RUNTIME_DB%.
+rem Auto-refresh the writable runtime copy when the seed database is newer.
+rem xcopy /D copies only when the source is newer, so runtime data created
+rem during a demo (registrations, favorites) is never overwritten.
+if exist "buyi-local.sqlite" (
+    echo Checking runtime database refresh...
+    xcopy /D /Y "buyi-local.sqlite" "%RUNTIME_DB%*" >nul 2>&1
+    if errorlevel 2 (
+        echo ERROR: Failed to prepare runtime database.
+        pause
+        exit /b 1
     )
+) else (
+    echo No seed database found. Backend will create %RUNTIME_DB%.
 )
 echo.
 

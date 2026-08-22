@@ -28,7 +28,7 @@ const hasSuggestions = computed(() => suggestions.value.length > 0)
 const showSuggestions = computed(() => isInputFocused.value && (hasSuggestions.value || isSuggestionsLoading.value))
 
 function flattenSuggestions(payload) {
-  const groups = [payload?.dictionary, payload?.phrases, payload?.proverbs]
+  const groups = [payload?.dictionary, payload?.phrases, payload?.proverbs, payload?.songs]
   return groups.flatMap((items) => Array.isArray(items) ? items : []).slice(0, 8)
 }
 

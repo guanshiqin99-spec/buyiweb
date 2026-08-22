@@ -1,0 +1,85 @@
+/* 发音闯关页：结构与配色对齐文化答题页（quiz） */
+.pronunciation-page { padding-bottom: 96rpx; }
+.abandon-bar {
+  padding: 16rpx 32rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+.abandon-btn {
+  padding: 12rpx 32rpx;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-capsule);
+}
+.pronunciation-intro, .pronunciation-result { display: flex; flex-direction: column; align-items: flex-start; gap: 24rpx; padding: 48rpx 36rpx; }
+.pronunciation-intro .text-sub { line-height: 1.8; }
+.pronunciation-intro .last-attempt { color: var(--color-primary-dark); font-weight: 600; }
+.pronunciation-result { align-items: center; text-align: center; }
+.primary-text { color: var(--color-primary); }
+.score-value { color: var(--color-primary-dark); font-size: 112rpx; font-weight: 700; line-height: 1; }
+.save-message { min-height: 44rpx; line-height: 1.6; }
+
+.quiz-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20rpx; }
+.progress-track { height: 8rpx; margin-bottom: 28rpx; overflow: hidden; border-radius: 999rpx; background: rgba(92, 134, 197, .16); }
+.progress-bar { height: 100%; border-radius: inherit; background: var(--color-primary); transition: width 220ms ease; }
+
+.question-card { padding: 36rpx 28rpx; }
+.question-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin-bottom: 24rpx; }
+.kind-tag { flex-shrink: 0; }
+.audio-btn { height: 64rpx; min-height: 64rpx; padding: 0 28rpx; margin: 0; font-size: 26rpx; font-weight: 600; border-radius: var(--radius-capsule); }
+.buyi-text { display: block; margin-bottom: 14rpx; line-height: 1.4; font-size: 60rpx; letter-spacing: 2rpx; color: var(--color-primary-dark); }
+.zh-text { display: block; margin-bottom: 10rpx; color: var(--color-text-primary); }
+.desc-text { display: block; line-height: 1.7; }
+
+/* 按住跟读区域 */
+.record-area { display: flex; flex-direction: column; align-items: stretch; gap: 18rpx; margin-top: 30rpx; padding-top: 28rpx; border-top: 2rpx solid rgba(92, 134, 197, .14); }
+.record-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  height: 176rpx;
+  border-radius: 24rpx;
+  border: 2rpx dashed rgba(22, 100, 217, 0.45);
+  background: rgba(22, 100, 217, 0.06);
+  transition: background 200ms ease, border-color 200ms ease;
+}
+.record-btn-text { font-size: 34rpx; font-weight: 700; color: var(--color-primary); }
+.record-btn-sub { font-size: 24rpx; color: var(--color-text-secondary); }
+.record-btn.recording { border-color: var(--color-error); background: rgba(217, 83, 79, 0.08); }
+.record-btn.recording .record-btn-text { color: var(--color-error); }
+.record-btn.evaluating { border-style: solid; border-color: rgba(22, 100, 217, 0.3); background: rgba(22, 100, 217, 0.04); }
+.record-btn.record-disabled { border-color: var(--color-card-border); background: rgba(148, 163, 184, 0.08); }
+.record-btn.record-disabled .record-btn-text { color: var(--color-text-secondary); }
+.transient-box { padding: 18rpx 24rpx; border-radius: 18rpx; background: rgba(92, 134, 197, .1); }
+.transient-text { line-height: 1.6; word-break: break-all; }
+.plugin-tip { color: var(--color-warning); line-height: 1.6; }
+.recognize-error { color: var(--color-error); line-height: 1.6; }
+
+/* 评分结果 */
+.pronunciation-feedback { display: flex; flex-direction: column; gap: 18rpx; margin-top: 30rpx; padding-top: 28rpx; border-top: 2rpx solid rgba(92, 134, 197, .14); }
+.result-head { display: flex; align-items: center; gap: 20rpx; }
+.score-badge { font-size: 56rpx; font-weight: 700; line-height: 1.1; color: var(--color-primary-dark); }
+.points-badge { padding: 8rpx 22rpx; border-radius: var(--radius-capsule); font-size: 26rpx; font-weight: 600; }
+.points-badge.passed { color: #176238; background: #e8f6ed; }
+.points-badge.failed { color: #8b2f2f; background: #faeaea; }
+.feedback-text { line-height: 1.7; }
+.syllable-section { display: flex; flex-direction: column; gap: 12rpx; padding: 20rpx 24rpx; border-radius: 18rpx; background: rgba(92, 134, 197, .08); }
+.syllable-label { font-weight: 600; }
+.syllable-row { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.syllable {
+  min-width: 56rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 10rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #173B6C;
+}
+.syllable.match { color: #176238; background: #e8f6ed; border: 1rpx solid #2f8f57; }
+.syllable.diff { color: #8b2f2f; background: #f1f3f6; border: 1rpx solid #c65b5b; }
+.recognized-text { line-height: 1.6; word-break: break-all; }
+.result-actions { display: flex; gap: 20rpx; margin-top: 6rpx; }
+.result-actions .btn { flex: 1; }

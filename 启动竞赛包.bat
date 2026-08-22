@@ -43,23 +43,24 @@ if errorlevel 1 (
 )
 
 rem --- [3/5] Prepare writable runtime database ---
-if not exist "%RUNTIME_DB%" (
-  if exist "%BACKEND%\buyi-local.sqlite" (
-    echo Preparing writable local SQLite database...
-    copy /Y "%BACKEND%\buyi-local.sqlite" "%RUNTIME_DB%" >nul
-    if errorlevel 1 (
-      echo ERROR: Failed to prepare writable local SQLite database.
-      pause
-      exit /b 1
-    )
-  ) else if exist "%SOURCE_DB%" (
-    echo Preparing writable local SQLite database from root seed...
-    copy /Y "%SOURCE_DB%" "%RUNTIME_DB%" >nul
-    if errorlevel 1 (
-      echo ERROR: Failed to prepare writable local SQLite database.
-      pause
-      exit /b 1
-    )
+rem Auto-refresh the writable runtime copy when the seed database is newer.
+rem xcopy /D copies only when the source is newer, so runtime data created
+rem during a demo (registrations, favorites) is never overwritten.
+if exist "%BACKEND%\buyi-local.sqlite" (
+  echo Checking runtime database refresh...
+  xcopy /D /Y "%BACKEND%\buyi-local.sqlite" "%RUNTIME_DB%*" >nul 2>&1
+  if errorlevel 2 (
+    echo ERROR: Failed to prepare writable local SQLite database.
+    pause
+    exit /b 1
+  )
+) else if exist "%SOURCE_DB%" (
+  echo Preparing writable local SQLite database from root seed...
+  xcopy /D /Y "%SOURCE_DB%" "%RUNTIME_DB%*" >nul 2>&1
+  if errorlevel 2 (
+    echo ERROR: Failed to prepare writable local SQLite database.
+    pause
+    exit /b 1
   )
 )
 

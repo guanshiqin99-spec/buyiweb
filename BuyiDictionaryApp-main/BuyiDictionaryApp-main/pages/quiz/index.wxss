@@ -38,3 +38,6 @@
 .ai-quiz-icon { font-size: 32rpx; }
 .ai-quiz-tip { color: var(--color-text-secondary); font-size: 22rpx; line-height: 1.5; text-align: center; }
 .ai-quiz-error { color: var(--color-error); font-size: 24rpx; line-height: 1.5; text-align: center; }
+
+/* 发音闯关入口次按钮 */
+.quiz-secondary-btn { margin-top: 4rpx; }

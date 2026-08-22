@@ -27,7 +27,7 @@ const requestError = ref('')
 const serviceState = ref('unknown')
 const actionMsg = ref('')
 const cacheNotice = ref('')
-// 浏览全部模式：用户在无搜索词时主动翻阅短语/谚语，与搜索流程互斥
+// 浏览模式：无搜索词时按当前分类分页展示全部词条，与关键词搜索互斥
 const requestMode = ref('search') // 'search' | 'browse'
 const browsePage = ref(1)
 const browseTotalPages = ref(1)
@@ -77,8 +77,14 @@ function mapResults(data) {
   add(data.dictionary, 'dictionary')
   add(data.phrases, 'phrase')
   add(data.proverbs, 'proverb')
+  add(data.songs, 'song')
   return mapped
 }
+
+// 浏览模式每页条数：单分类走后端分页，“全部”聚合后在前端按同尺寸切片
+const BROWSE_PAGE_SIZE = 20
+// “全部”浏览的聚合缓存：词条+短语+谚语全量条目，同会话内复用；收藏标注每次分页时现算
+let browseAllCache = null
 
 // 浏览全部模式下，contentApi.list 返回 {items, total, totalPages}，
 // 与搜索返回的 {dictionary, phrases, proverbs} 结构不同，这里按相同字段映射成 result-row 可用的条目。
@@ -141,11 +147,17 @@ async function runSearch() {
   clearTimeout(debounceTimer)
   router.replace({ query: { ...route.query, q: searchQuery.value.trim() || undefined, mode: undefined } })
   const sequence = ++requestSequence
+  const keyword = searchQuery.value.trim()
+  if (!keyword) {
+    // 无搜索词时自动进入浏览模式，分页展示当前分类的全部词条，
+    // 避免后端默认分页内容被当作“搜索结果”展示
+    return runBrowse(1)
+  }
   requestState.value = 'loading'
   requestError.value = ''
   cacheNotice.value = ''
   try {
-    const data = await searchApi.search({ keyword: searchQuery.value.trim() })
+    const data = await searchApi.search({ keyword })
     if (sequence !== requestSequence) return
     saveCachedSearch(searchQuery.value, data)
     allResults.value = mapResults(data)
@@ -172,30 +184,74 @@ async function runSearch() {
   }
 }
 
-// 浏览全部模式：拉取某一类型的分页列表。短语/谚语的公开列表接口不返回收藏状态，
-// 登录态下用收藏 store 补标注，与搜索模式（/mine 接口自带标注）行为一致。
+// 登录态下补标注收藏状态：短语/谚语的公开列表接口不返回收藏字段，
+// 与搜索模式（/mine 接口自带标注）行为一致。
+async function annotateFavorites(items) {
+  if (!authStore.isLoggedIn) return items
+  if (!favoritesStore.favorites.length && !favoritesStore.isLoading) {
+    await favoritesStore.fetchFavorites().catch(() => {})
+  }
+  return items.map((item) => ({
+    ...item,
+    isFavorited: favoritesStore.isFavorite(item.type, item.rawId)
+  }))
+}
+
+// “全部”浏览：并行拉取词条/短语/谚语的完整列表（后端 pageSize 上限 100，按 totalPages 补拉），
+// 按词条→短语→谚语顺序合并，供前端统一分页，总数即三类内容的总和。
+async function fetchBrowseAllItems() {
+  if (browseAllCache) return browseAllCache
+  const types = ['dictionary', 'phrase', 'proverb']
+  const pageSize = 100
+  const firstPages = await Promise.all(types.map((type) => contentApi.list(type, { page: 1, pageSize })))
+  const followUpRequests = []
+  types.forEach((type, index) => {
+    const totalPages = Number(firstPages[index].totalPages || 1)
+    for (let page = 2; page <= totalPages; page++) {
+      followUpRequests.push(contentApi.list(type, { page, pageSize }))
+    }
+  })
+  const followUpPages = await Promise.all(followUpRequests)
+  const items = []
+  types.forEach((type, index) => {
+    items.push(...mapBrowseResults(firstPages[index], type))
+    const totalPages = Number(firstPages[index].totalPages || 1)
+    for (let page = 2; page <= totalPages; page++) {
+      items.push(...mapBrowseResults(followUpPages.shift(), type))
+    }
+  })
+  browseAllCache = items
+  return items
+}
+
+// 浏览全部模式：单分类拉取对应类型的分页列表；“全部”聚合词条/短语/谚语三类，
+// 拉全量后在前端统一分页，总数展示三类内容总和。
 async function runBrowse(page = 1) {
   requestMode.value = 'browse'
   requestState.value = 'loading'
   requestError.value = ''
   cacheNotice.value = ''
   try {
-    const apiType = activeFilter.value === 'word' ? 'dictionary' : activeFilter.value
-    const data = await contentApi.list(apiType, { page, pageSize: 20 })
-    let items = mapBrowseResults(data, apiType)
-    if (authStore.isLoggedIn) {
-      if (!favoritesStore.favorites.length && !favoritesStore.isLoading) {
-        await favoritesStore.fetchFavorites().catch(() => {})
-      }
-      items = items.map((item) => ({
-        ...item,
-        isFavorited: favoritesStore.isFavorite(item.type, item.rawId)
-      }))
+    if (activeFilter.value === 'all') {
+      const merged = await fetchBrowseAllItems()
+      const totalPages = Math.max(1, Math.ceil(merged.length / BROWSE_PAGE_SIZE))
+      const safePage = Math.min(Math.max(1, page), totalPages)
+      const pagedItems = await annotateFavorites(
+        merged.slice((safePage - 1) * BROWSE_PAGE_SIZE, safePage * BROWSE_PAGE_SIZE)
+      )
+      allResults.value = pagedItems
+      browsePage.value = safePage
+      browseTotalPages.value = totalPages
+      browseTotal.value = merged.length
+    } else {
+      const apiType = activeFilter.value === 'word' ? 'dictionary' : activeFilter.value
+      const data = await contentApi.list(apiType, { page, pageSize: BROWSE_PAGE_SIZE })
+      const items = await annotateFavorites(mapBrowseResults(data, apiType))
+      allResults.value = items
+      browsePage.value = Number(data.page || page)
+      browseTotalPages.value = Number(data.totalPages || Math.max(1, Math.ceil(Number(data.total || 0) / BROWSE_PAGE_SIZE)))
+      browseTotal.value = Number(data.total || 0)
     }
-    allResults.value = items
-    browsePage.value = Number(data.page || page)
-    browseTotalPages.value = Number(data.totalPages || Math.max(1, Math.ceil(Number(data.total || 0) / 20)))
-    browseTotal.value = Number(data.total || 0)
     selectedId.value = filteredResults.value[0]?.id || null
     requestState.value = allResults.value.length ? 'ready' : 'empty'
     recordSearchView(filteredResults.value[0])
@@ -205,12 +261,6 @@ async function runBrowse(page = 1) {
     requestState.value = 'error'
     requestError.value = '暂时无法加载浏览列表。'
   }
-}
-
-function enterBrowse() {
-  browsePage.value = 1
-  router.replace({ query: { ...route.query, mode: 'browse' } })
-  return runBrowse(1)
 }
 
 function browsePrev() {
@@ -241,17 +291,11 @@ function scheduleSearch() {
 
 function setFilter(key) {
   activeFilter.value = key
-  // 浏览模式：切到短语/谚语按新类型重拉；切到“全部”或“词汇”退出浏览回搜索态，避免旧列表挂在错误标签下
+  // 浏览模式：切换分类按新分类重拉列表（“全部”聚合词条/短语/谚语三类）
   if (requestMode.value === 'browse') {
-    if (key === 'phrase' || key === 'proverb') {
-      router.replace({ query: { ...route.query, type: key, mode: 'browse' } })
-      runBrowse(1)
-      return
-    }
-    requestMode.value = 'search'
-    allResults.value = []
-    selectedId.value = null
-    requestState.value = 'idle'
+    router.replace({ query: { ...route.query, type: key === 'all' ? undefined : key, mode: 'browse' } })
+    runBrowse(1)
+    return
   }
   selectedId.value = filteredResults.value[0]?.id || null
   router.replace({ query: { ...route.query, type: key === 'all' ? undefined : key, mode: undefined } })
@@ -513,13 +557,8 @@ function handleModalKeydown(event) {
 }
 
 onMounted(async () => {
-  // 刷新/直达链接携带 mode=browse 时恢复浏览模式，避免退回搜索空态
-  if (route.query.mode === 'browse' && (route.query.type === 'phrase' || route.query.type === 'proverb')) {
-    activeFilter.value = String(route.query.type)
-    await enterBrowse()
-  } else {
-    await runSearch()
-  }
+  // 无搜索词时 runSearch 会自动进入浏览模式，携带 type 的直达链接也能恢复对应分类
+  await runSearch()
   if (route.query.focus) {
     await nextTick()
     document.querySelector('.dictionary-search input')?.focus()
@@ -586,14 +625,8 @@ onUnmounted(() => {
             :aria-pressed="activeFilter === filter.key"
             @click="setFilter(filter.key)"
           >{{ filter.label }}</button>
-          <button
-            v-if="(activeFilter === 'phrase' || activeFilter === 'proverb') && !searchQuery.trim() && requestMode !== 'browse'"
-            type="button"
-            class="browse-all-btn"
-            @click="enterBrowse"
-          >浏览全部</button>
         </div>
-        <p aria-live="polite">{{ requestState === 'ready' ? `${filteredResults.length} 条结果` : '查询结果会显示在这里' }}</p>
+        <p aria-live="polite">{{ requestState === 'ready' ? (requestMode === 'browse' ? `共 ${browseTotal} 条内容` : `${filteredResults.length} 条结果`) : '查询结果会显示在这里' }}</p>
       </div>
     </section>
 
@@ -617,9 +650,9 @@ onUnmounted(() => {
         </div>
         <div v-else-if="requestState === 'empty'" class="state-panel">
           <strong v-if="requestMode === 'browse'">该分类暂无已发布内容</strong>
-          <strong v-else>{{ hasQuery ? '没有找到匹配词条' : '词典还没有可显示的词条' }}</strong>
+          <strong v-else>{{ hasQuery ? '没有找到匹配词条' : '输入布依语、汉字或拼音开始查询' }}</strong>
           <p v-if="requestMode === 'browse'">换个分类浏览，或使用关键词搜索。</p>
-          <p v-else>{{ hasQuery ? '换一个汉字、拼音或布依语拼写再试。' : '请确认后端词库已启动并包含已发布内容。' }}</p>
+          <p v-else>{{ hasQuery ? '换一个汉字、拼音或布依语拼写再试。' : '也可以切换上方分类，翻阅对应词库。' }}</p>
         </div>
         <div v-else-if="!filteredResults.length" class="state-panel">
           <strong>「{{ activeFilterLabel }}」分类下暂无匹配结果</strong>
@@ -727,10 +760,6 @@ onUnmounted(() => {
 .recruit-banner__contact:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; border-radius: 2px; }
 /* 搜索区：hero 玻璃外壳。内部 SearchBar 自带 content 玻璃会被下面 :deep 抹平，避免双层玻璃叠糊。 */
 .dictionary-search { padding: 24px; }.dictionary-search :deep(.search-bar) { border-color: transparent; background: var(--c-glass); box-shadow: none; }.dictionary-search :deep(.search-bar:focus-within) { box-shadow: 0 0 0 4px var(--c-brand-08); }.dictionary-search__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }.dictionary-search__meta p { margin: 0; color: var(--c-text-60); font-size: .875rem; }.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }.filter-pills button { min-height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; color: var(--c-text-70); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.filter-pills button:hover { color: var(--c-text); background: var(--c-brand-06); }.filter-pills button.active { color: var(--c-white); background: var(--c-brand); }.filter-pills button:focus-visible, .entry-actions button:focus-visible, .state-panel button:focus-visible, .result-row:focus-visible, .culture-links a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
-/* 浏览全部按钮：与普通 pill 区分，使用 brand 描边和 brand 文字色。前缀 .filter-pills 用于压过 .filter-pills button 的默认 pill 样式。 */
-.filter-pills .browse-all-btn { min-height: 36px; padding: 0 14px; border: 1px solid var(--c-brand-40); border-radius: 999px; color: var(--c-brand); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }
-.filter-pills .browse-all-btn:hover { background: var(--c-brand-06); }
-.filter-pills .browse-all-btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
 /* 浏览模式分页条：紧贴列表顶部，与 cache-notice 同区 */
 .browse-pager { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--c-divider); color: var(--c-text-70); font-size: .8125rem; }
 .browse-pager button { min-height: 32px; padding: 0 12px; border: 1px solid var(--c-divider); border-radius: 999px; background: transparent; color: var(--c-text-70); cursor: pointer; font: 600 .8125rem var(--font-sans); }
