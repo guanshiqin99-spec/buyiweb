@@ -279,10 +279,10 @@ describe('Content Query APIs (e2e)', () => {
 
       expect(Array.isArray(res.body.banners)).toBe(true);
       expect(Array.isArray(res.body.suggestions)).toBe(true);
-      // banners 只取自含封面的歌曲
+      // banners 取前 5 首已发布歌曲，image 可能为 null（由前端兜底）
       for (const banner of res.body.banners) {
-        expect(banner.image).toBeTruthy();
         expect(banner.contentType).toBe('song');
+        expect(banner.targetUrl).toBe('/pages/song/index');
       }
       // suggestions 为去重后的字符串
       const unique = new Set(res.body.suggestions);

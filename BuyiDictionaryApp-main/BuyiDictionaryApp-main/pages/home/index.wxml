@@ -1,5 +1,5 @@
 <view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
-  <custom-nav title="布依语词典"></custom-nav>
+  <custom-nav title=""></custom-nav>
   <!-- 首页专属青花渲染渐变背景 -->
   <view class="home-hero-bg"></view>
 

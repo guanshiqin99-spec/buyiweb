@@ -17,8 +17,8 @@ const CLOUD_FUNCTION_CONFIG = {
 const LOCAL_DEV_API_BASE = 'http://127.0.0.1:3000/api';
 
 const DEFAULT_API_BASES = {
-  development: 'https://casting-object-link-hide.trycloudflare.com/api',
-  production: 'https://casting-object-link-hide.trycloudflare.com/api',
+  development: 'https://api.buyitech.asia/api',
+  production: 'https://api.buyitech.asia/api',
 };
 
 function normalizeUrl(url) {
@@ -67,7 +67,7 @@ function mapEnvVersionToMode(envVersion) {
 
 function isLegacyApiBase(url) {
   if (!url) return false;
-  return url.includes('10.70.153.97') || url.includes('47.114.114.135');
+  return url.includes('10.70.153.97') || url.includes('47.114.114.135') || url.includes('trycloudflare.com');
 }
 
 function getStoredApiBases() {

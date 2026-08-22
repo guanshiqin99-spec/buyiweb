@@ -2,7 +2,6 @@
   <custom-nav title="常用语"></custom-nav>
   <!-- 标题区 -->
   <view class="header-section">
-    <text class="text-h1">常用语</text>
     <text class="text-sub">高频实用的日常交流短句</text>
   </view>
 

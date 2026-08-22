@@ -472,7 +472,6 @@ export class ContentService {
 
     return {
       banners: songs
-        .filter((item) => !!item.coverUrl)
         .slice(0, 5)
         .map((item) => ({
           id: item.id,
@@ -482,6 +481,7 @@ export class ContentService {
           image: item.coverUrl,
           buyiText: item.buyiText,
           zhText: item.zhText,
+          targetUrl: '/pages/song/index',
         })),
       suggestions: this.buildMiniappSuggestions([...dictionary, ...phrases, ...proverbs, ...songs]),
     };

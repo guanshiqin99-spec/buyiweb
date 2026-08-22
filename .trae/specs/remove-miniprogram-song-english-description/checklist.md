@@ -1,0 +1,7 @@
+- [x] `pages/song/index.wxml` 的 `record-meta` 块已删除 `play-count` 标签元素，仅保留 `duration` 文本
+- [x] 列表中 9 首歌曲均不再显示英文 description 整句（如 "Buyi ethnic song by Lu Longhua..."）
+- [x] 歌曲时长（`item.durationText`）仍正常显示，空值回退为 `--:--`
+- [x] 英雄卡片仍显示固定中文文案，未受影响
+- [x] 点击歌曲可正常跳转 player-detail 并播放
+- [x] 收藏按钮、加载更多、分享功能正常
+- [x] 未修改后端代码、数据库、`content-mapper.js` 及其他页面

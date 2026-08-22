@@ -2,7 +2,6 @@
   <custom-nav title="学习记录"></custom-nav>
   <!-- 标题区 -->
   <view class="header-section">
-    <text class="text-h1">学习记录</text>
     <view class="text-sub clear-text" bindtap="clearRecords">清空全部</view>
   </view>
 

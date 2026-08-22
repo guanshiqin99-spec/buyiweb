@@ -198,4 +198,5 @@ module.exports = {
   mapLearningRecordsResponse,
   getFavoriteKey,
   getTypeLabel,
+  resolveMediaUrl,
 };

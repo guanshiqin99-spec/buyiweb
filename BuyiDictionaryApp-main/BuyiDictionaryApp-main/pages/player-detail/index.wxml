@@ -1,36 +1,46 @@
 <view class="page {{currentTheme}} {{fontSizeClass}} player-page">
-  <custom-nav title="播放"></custom-nav>
+  <custom-nav title="播放" textColor="#fff"></custom-nav>
   <!-- 模糊背景 -->
   <image class="bg" src="{{song.image || '/assets/images/banner1.jpg'}}" mode="aspectFill" />
   <view class="bg-mask"></view>
 
   <view class="content">
+    <!-- 顶部信息 -->
     <view class="top">
-      <text class="text-h1 song-title">{{song.title || '正在播放'}}</text>
-      <text class="text-sub song-artist">{{song.artist || '布依族民歌'}}</text>
-    </view>
-
-    <!-- 唱片封面 -->
-    <view class="cover-wrap">
-      <view class="cover-border">
-        <image class="cover {{isPlaying ? 'spin' : ''}}" src="{{song.image || '/assets/images/banner1.jpg'}}" mode="aspectFill" />
+      <view class="now-playing {{isPlaying ? 'is-playing' : ''}}">
+        <view class="pulse-dot"></view>
+        <text class="now-playing-text">正在播放</text>
+      </view>
+      <text class="song-title">{{song.title || '正在播放'}}</text>
+      <view class="artist-tag">
+        <text class="song-artist">{{song.artist || '布依族民歌'}}</text>
       </view>
     </view>
 
-    <!-- 歌词或说明区域 (简版) -->
-    <view class="lyric-box">
-      <text class="lyric-text" wx:if="{{song.buyi}}">{{song.buyi}}</text>
-      <text class="lyric-text" wx:if="{{song.ch}}">{{song.ch}}</text>
+    <!-- 黑胶唱片 -->
+    <view class="cover-wrap">
+      <view class="cover-border {{isPlaying ? 'is-playing' : ''}}">
+        <image class="cover spin" src="{{song.image || '/assets/images/banner1.jpg'}}" mode="aspectFill" />
+        <view class="disc-center"></view>
+      </view>
     </view>
 
-    <!-- 控制面板 -->
+    <!-- 歌词玻璃卡 -->
+    <view class="lyric-box" wx:if="{{song.buyi || song.ch}}">
+      <text class="lyric-text" wx:if="{{song.buyi}}">{{song.buyi}}</text>
+      <text class="lyric-text lyric-text--cn" wx:if="{{song.ch}}">{{song.ch}}</text>
+    </view>
+
+    <!-- 控制区 -->
     <view class="controls">
-      <slider class="progress" min="0" max="{{duration}}" value="{{currentTime}}" activeColor="#1664D9" backgroundColor="rgba(255,255,255,0.3)" block-color="#fff" block-size="20" bindchanging="onSeekChanging" bindchange="onSeek" />
+      <slider class="progress" min="0" max="{{duration}}" value="{{currentTime}}"
+        activeColor="#5AA9FF" backgroundColor="rgba(255,255,255,0.18)"
+        block-color="#fff" block-size="24"
+        bindchanging="onSeekChanging" bindchange="onSeek" />
       <view class="time-row">
         <text>{{currentTimeText}}</text>
         <text>{{durationText}}</text>
       </view>
-
       <view class="btn-row">
         <view class="ctrl-btn sub-btn" bindtap="onPrev">⏮</view>
         <view class="ctrl-btn play-btn" bindtap="onTogglePlay">{{isPlaying ? '⏸' : '▶'}}</view>

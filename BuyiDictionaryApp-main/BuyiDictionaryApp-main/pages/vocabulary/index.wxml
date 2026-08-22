@@ -1,5 +1,5 @@
 <view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
-  <custom-nav title="词汇"></custom-nav>
+  <custom-nav title=""></custom-nav>
   <!-- 标题区 -->
   <view class="header-section">
     <text class="text-h1">词汇发音</text>

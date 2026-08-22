@@ -267,7 +267,7 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .agent-fab {
     right: 16px;
-    bottom: 88px;
+    bottom: 150px;
   }
 }
 

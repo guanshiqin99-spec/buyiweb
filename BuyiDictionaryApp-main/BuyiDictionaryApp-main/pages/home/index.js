@@ -1,5 +1,6 @@
 const { homeApi, contentApi } = require('../../utils/api');
 const { syncAppearance } = require('../../utils/view');
+const { resolveMediaUrl } = require('../../utils/content-mapper');
 
 Page({
   data: {
@@ -39,7 +40,7 @@ Page({
   async loadHomeData() {
     try {
       const payload = await homeApi.get();
-      const bannerItems = Array.isArray(payload && payload.banners) ? payload.banners : [
+      const bannerItems = Array.isArray(payload && payload.banners) && payload.banners.length > 0 ? payload.banners : [
         {
           id: 1,
           title: '布依迎客歌',
@@ -49,6 +50,13 @@ Page({
           targetUrl: '/pages/song/index' // 歌谣页改为switchTab还是navigateTo? 因为歌谣页是tabbar页面，所以应当特殊处理
         }
       ];
+      bannerItems.forEach((item) => {
+        // 后端返回的相对路径(/uploads/...)需补全为完整 URL，本地包内图片(/assets/...)保持原样
+        if (item.image && !/^https?:\/\//i.test(item.image) && !item.image.startsWith('/assets/')) {
+          item.image = resolveMediaUrl(item.image);
+        }
+        item.image = item.image || '/assets/images/banner1.jpg';
+      });
       this.setData({ bannerItems });
     } catch (error) {
       this.setData({ bannerItems: [

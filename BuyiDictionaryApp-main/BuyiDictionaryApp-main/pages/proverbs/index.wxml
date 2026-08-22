@@ -1,5 +1,5 @@
 <view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page">
-  <custom-nav title="谚语"></custom-nav>
+  <custom-nav title=""></custom-nav>
   <!-- 标题区 -->
   <view class="header-section">
     <text class="text-h1">趣味谚语</text>

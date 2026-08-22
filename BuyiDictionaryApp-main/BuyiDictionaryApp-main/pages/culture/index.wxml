@@ -1,5 +1,5 @@
 <view class="page {{currentTheme}} {{fontSizeClass}} culture-page porcelain-bg-page">
-  <custom-nav title="文化馆"></custom-nav>
+  <custom-nav title=""></custom-nav>
 
   <!-- Hero 区 -->
   <view class="hero">

@@ -65,7 +65,6 @@
           </view>
           <text class="record-artist">{{item.artist || item.ch || '布依青年合唱团  黔西南'}}</text>
           <view class="record-meta">
-            <text class="play-count">{{item.genre || item.description || '布依民歌'}}</text>
             <text class="duration">{{item.durationText || '--:--'}}</text>
           </view>
         </view>
