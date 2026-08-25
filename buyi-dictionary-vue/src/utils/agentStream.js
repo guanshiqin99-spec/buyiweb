@@ -2,7 +2,7 @@ import { apiBaseURL } from './api'
 
 // 智能体 SSE 流式问答：POST + fetch reader 解析 data: 分片
 // agentStream 与 axios 实例解耦，需要自己从 localStorage 读取 token
-export function askStream({ question, history, onDelta, onDone, onError }) {
+export function askStream({ question, history, onDelta, onDone, onError, onCitations }) {
   const controller = new AbortController()
   const token = localStorage.getItem('token')
 
@@ -40,7 +40,9 @@ export function askStream({ question, history, onDelta, onDone, onError }) {
           if (!data) continue
           try {
             const payload = JSON.parse(data)
-            if (payload.type === 'delta' && payload.content) {
+            if (payload.type === 'citations' && Array.isArray(payload.items)) {
+              onCitations?.(payload.items)
+            } else if (payload.type === 'delta' && payload.content) {
               onDelta?.(payload.content)
             } else if (payload.type === 'done') {
               onDone?.()

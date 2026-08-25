@@ -133,6 +133,7 @@ function requestStream(targetUrl, method, data, headers) {
     const req = requestModule.request(options, (res) => {
       let fullContent = '';
       let errorMessage = '';
+      let citations = null;
       let buffer = '';
       let receivedDone = false;
 
@@ -156,6 +157,8 @@ function requestStream(targetUrl, method, data, headers) {
                 receivedDone = true;
               } else if (evt.type === 'error') {
                 errorMessage = evt.message || '智能体响应失败';
+              } else if (evt.type === 'citations' && Array.isArray(evt.items)) {
+                citations = evt.items;
               }
             } catch (e) {
               // 忽略无法解析的分片
@@ -178,6 +181,8 @@ function requestStream(targetUrl, method, data, headers) {
                 receivedDone = true;
               } else if (evt.type === 'error') {
                 errorMessage = evt.message || '智能体响应失败';
+              } else if (evt.type === 'citations' && Array.isArray(evt.items)) {
+                citations = evt.items;
               }
             } catch (e) {}
           }
@@ -198,6 +203,7 @@ function requestStream(targetUrl, method, data, headers) {
             type: 'done',
             content: fullContent,
             receivedDone,
+            ...(citations ? { citations } : {}),
           },
           headers: res.headers,
         });

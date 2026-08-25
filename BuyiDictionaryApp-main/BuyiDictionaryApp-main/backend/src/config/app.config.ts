@@ -53,6 +53,7 @@ export interface AppConfig {
     apiKey: string;
     baseURL: string;
     model: string;
+    ragEnabled: boolean;
   };
 }
 
@@ -117,5 +118,6 @@ export const appConfig = (): AppConfig => ({
     apiKey: process.env.DEEPSEEK_API_KEY ?? '',
     baseURL: process.env.AI_BASE_URL ?? 'https://api.deepseek.com',
     model: process.env.AI_MODEL ?? 'deepseek-chat',
+    ragEnabled: (process.env.AGENT_RAG_ENABLED ?? 'true') === 'true',
   },
 });

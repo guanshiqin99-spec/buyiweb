@@ -110,7 +110,7 @@ CORS_ORIGIN=https://buyi-dictionary.pages.dev
 
 - **ORM 防注入**：所有数据库操作通过 TypeORM 参数化查询，禁止字符串拼接 SQL
 - **密码哈希**：使用 bcryptjs，cost factor = 10
-- **生产环境建议禁用 synchronize**：通过 migration 管理结构。**注意**：当前生产 `.env` 实际仍写 `DB_SYNCHRONIZE=true`（见 [docs/handover/02-重大漏洞与修复清单.md](docs/handover/02-重大漏洞与修复清单.md) V5），赛前最稳做法是不改代码仅在 `.env` 显式写 `DB_SYNCHRONIZE=false` 关闭
+- **生产环境建议禁用 synchronize**：通过 migration 管理结构。**注意**：当前生产 `.env` 实际仍写 `DB_SYNCHRONIZE=true`，赛前最稳做法是不改代码仅在 `.env` 显式写 `DB_SYNCHRONIZE=false` 关闭
 - **生产环境禁用 seed**：避免覆盖真实数据
 
 ---

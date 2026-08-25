@@ -4,6 +4,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppConfig } from '../../config/app.config';
 import { AgentCache } from '../../entities/agent-cache.entity';
+import { ContentType } from '../../common/enums/content-type.enum';
+import { DictionaryEntry } from '../../entities/dictionary-entry.entity';
+import { Phrase } from '../../entities/phrase.entity';
+import { Proverb } from '../../entities/proverb.entity';
+import { Song } from '../../entities/song.entity';
 
 const PROJECT_KEYWORDS = [
   '布依', '布依族', '布依语', '词典', '方言', '声调', '舒声', '促声',
@@ -36,8 +41,29 @@ const SYSTEM_PROMPT = [
   '- 仅当问题与布依文化完全无关（如纯编程、实时天气、当日新闻、股市行情、纯闲聊寒暄、违法违规内容）时，才简短说明并礼貌引导回布依文化话题；',
   '- 不要编造无法确认的事实或权威来源，不确定时坦诚说明，可建议用户查阅更专业的资料；',
   '- 使用简体中文回答，语气亲切、专业；',
-  '- 回答控制在 800 字以内，信息量较大时用“1. 2. 3.”或“•”分点列出；不要使用 Markdown 星号（*）作为项目符号。',
+  '- 回答控制在 800 字以内，信息量较大时用“1. 2. 3.”或“•”分点列出；不要使用 Markdown 星号（*）作为项目符号；分点与段落之间不要输出空行，排版紧凑。',
 ].join('\n');
+
+/** RAG 检索命中后下发给前端的引用条目 */
+export interface CitationItem {
+  ref: number;
+  id: number;
+  type: ContentType;
+  buyiText: string;
+  zhText: string;
+  title: string | null;
+  brief: string;
+}
+
+// 2-gram 切分后无检索价值的停用片段（疑问词、语气词、高频动词等）
+const STOP_WORDS = new Set([
+  '什么', '怎么', '怎样', '如何', '为何', '为什', '哪些', '哪个', '是谁', '多少',
+  '请问', '一下', '可以', '没有', '是不', '不是', '关于', '介绍', '讲解', '讲讲',
+  '告诉', '解释', '意思', '含义', '区别', '特点', '这个', '那个', '这些', '那些',
+  '他们', '我们', '你们', '自己', '还有', '以及', '就是', '还是', '表示', '象征',
+  '由来', '起源', '来历', '相关', '有关', '属于', '包含', '举例', '说说', '看看',
+  '一样', '一些', '非常', '特别', '真的', '需要', '应该', '可能', '已经', '或者',
+]);
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -52,6 +78,14 @@ export class MiniappAgentService {
     private readonly configService: ConfigService<AppConfig, true>,
     @InjectRepository(AgentCache)
     private readonly cacheRepo: Repository<AgentCache>,
+    @InjectRepository(DictionaryEntry)
+    private readonly dictionaryRepo: Repository<DictionaryEntry>,
+    @InjectRepository(Phrase)
+    private readonly phraseRepo: Repository<Phrase>,
+    @InjectRepository(Proverb)
+    private readonly proverbRepo: Repository<Proverb>,
+    @InjectRepository(Song)
+    private readonly songRepo: Repository<Song>,
   ) {}
 
   isProjectRelated(question: string): boolean {
@@ -76,9 +110,27 @@ export class MiniappAgentService {
     onDelta: (chunk: string) => void,
     onDone: () => void,
     onError: (err: Error) => void,
+    onCitations?: (items: CitationItem[]) => void,
   ): Promise<void> {
-    // 1. 先查缓存
-    const useCache = !history || history.length === 0;
+    // 0. RAG 检索增强：命中则注入参考资料并下发引用；失败降级为纯 API 直调
+    // 与布依文化完全无关的问题直接跳过检索，避免无关词条混入引用
+    let ragItems: CitationItem[] = [];
+    const ragEnabled = this.configService.get('ai.ragEnabled', { infer: true });
+    if (ragEnabled && this.isProjectRelated(question)) {
+      try {
+        ragItems = await this.retrieveContext(question);
+      } catch (err) {
+        this.logger.warn(`RAG 检索失败，已降级为直连 API: ${err instanceof Error ? err.message : String(err)}`);
+        ragItems = [];
+      }
+    }
+    const useRag = ragItems.length > 0;
+    if (useRag && onCitations) {
+      onCitations(ragItems);
+    }
+
+    // 1. 先查缓存（RAG 命中时绕过缓存，保证引用与数据库实时一致）
+    const useCache = !useRag && (!history || history.length === 0);
     if (useCache) {
       const key = this.normalizeKey(question);
       try {
@@ -116,7 +168,7 @@ export class MiniappAgentService {
     }));
 
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: useRag ? this.buildRagPrompt(ragItems) : SYSTEM_PROMPT },
       ...recentHistory,
       { role: 'user', content: question },
     ];
@@ -159,7 +211,9 @@ export class MiniappAgentService {
           if (!trimmed || !trimmed.startsWith('data:')) continue;
           const data = trimmed.slice(5).trim();
           if (data === '[DONE]') {
-            await this.saveCache(question, fullAnswer);
+            if (!useRag) {
+              await this.saveCache(question, fullAnswer);
+            }
             onDone();
             return;
           }
@@ -175,7 +229,9 @@ export class MiniappAgentService {
           }
         }
       }
-      await this.saveCache(question, fullAnswer);
+      if (!useRag) {
+        await this.saveCache(question, fullAnswer);
+      }
       onDone();
     } catch (err) {
       this.logger.error(`DeepSeek 流式调用失败: ${err instanceof Error ? err.message : String(err)}`);
@@ -298,6 +354,121 @@ export class MiniappAgentService {
     } catch (err) {
       this.logger.warn(`缓存写入失败: ${err instanceof Error ? err.message : String(err)}`);
     }
+  }
+
+  /** 从问题中提取 2-gram 关键词（去标点、滤停用词、去重，上限 12 个） */
+  private extractKeywords(question: string): string[] {
+    const clean = (question || '').replace(/[\s\?\?!？!。，、；：""''（）\[\]{}·~,.!?;:'"()]/g, '');
+    if (clean.length < 2) {
+      return [];
+    }
+    const grams = new Set<string>();
+    for (let i = 0; i < clean.length - 1; i += 1) {
+      const gram = clean.slice(i, i + 2);
+      if (!STOP_WORDS.has(gram)) {
+        grams.add(gram);
+      }
+    }
+    return Array.from(grams).slice(0, 12);
+  }
+
+  /** 检索 4 张内容表（仅已发布），加权评分取 top 6 作为 RAG 参考资料 */
+  private async retrieveContext(question: string): Promise<CitationItem[]> {
+    const keywords = this.extractKeywords(question);
+    if (!keywords.length) {
+      return [];
+    }
+
+    const textFields = ['zhText', 'buyiText', 'description', 'culturalNote'];
+    const sources = [
+      { repo: this.dictionaryRepo as unknown as Repository<Record<string, unknown>>, type: ContentType.DICTIONARY, extraFields: [] as string[] },
+      { repo: this.phraseRepo as unknown as Repository<Record<string, unknown>>, type: ContentType.PHRASE, extraFields: [] as string[] },
+      { repo: this.proverbRepo as unknown as Repository<Record<string, unknown>>, type: ContentType.PROVERB, extraFields: [] as string[] },
+      { repo: this.songRepo as unknown as Repository<Record<string, unknown>>, type: ContentType.SONG, extraFields: ['title', 'artist'] },
+    ];
+
+    const scored: Array<{ item: Record<string, unknown>; type: ContentType; score: number }> = [];
+
+    for (const source of sources) {
+      const fields = [...textFields, ...source.extraFields];
+      const conditions: string[] = [];
+      const params: Record<string, unknown> = { isPublished: true };
+      keywords.forEach((kw, ki) => {
+        fields.forEach((field, fi) => {
+          const param = `kw${ki}_${fi}`;
+          conditions.push(`item.${field} LIKE :${param}`);
+          params[param] = `%${kw}%`;
+        });
+      });
+
+      const items = await (source.repo as Repository<Record<string, unknown>>)
+        .createQueryBuilder('item')
+        .where('item.isPublished = :isPublished', { isPublished: true })
+        .andWhere(`(${conditions.join(' OR ')})`, params)
+        .take(50)
+        .getMany();
+
+      for (const item of items) {
+        let score = 0;
+        for (const kw of keywords) {
+          if (String(item.zhText ?? '').includes(kw)) score += 3;
+          if (String(item.buyiText ?? '').includes(kw)) score += 3;
+          if (String(item.title ?? '').includes(kw)) score += 2;
+          if (String(item.artist ?? '').includes(kw)) score += 1;
+          if (String(item.description ?? '').includes(kw)) score += 1;
+          if (String(item.culturalNote ?? '').includes(kw)) score += 1;
+        }
+        scored.push({ item, type: source.type, score });
+      }
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    // 仅保留强相关命中（正文/布依文/标题命中），过滤仅简介沾边的弱相关条目；最多下发 3 条
+    return scored.filter((entry) => entry.score >= 2).slice(0, 3).map((entry, index) => ({
+      ref: index + 1,
+      id: Number(entry.item.id ?? 0),
+      type: entry.type,
+      buyiText: String(entry.item.buyiText ?? ''),
+      zhText: String(entry.item.zhText ?? ''),
+      title: entry.item.title ? String(entry.item.title) : null,
+      brief: this.buildBrief(entry.item),
+    }));
+  }
+
+  /** 组装引用摘要：优先 description/culturalNote，兜底中文释义 */
+  private buildBrief(item: Record<string, unknown>): string {
+    const parts = [item.description, item.culturalNote]
+      .filter(Boolean)
+      .map(String)
+      .filter((s) => s.trim());
+    const text = parts.length ? parts.join(' ') : String(item.zhText ?? item.buyiText ?? '');
+    return text.replace(/\s+/g, ' ').slice(0, 80);
+  }
+
+  /** 把 SYSTEM_PROMPT 与检索到的参考资料拼成 RAG 增强版 system prompt */
+  private buildRagPrompt(items: CitationItem[]): string {
+    const typeLabels: Record<string, string> = {
+      [ContentType.DICTIONARY]: '词条',
+      [ContentType.PHRASE]: '短语',
+      [ContentType.PROVERB]: '谚语',
+      [ContentType.SONG]: '民歌',
+    };
+    const lines = items.map((item) => {
+      const label = item.title ? `${item.title}（${item.zhText}）` : `${item.buyiText} — ${item.zhText}`;
+      return `[${item.ref}] 类型：${typeLabels[item.type] ?? '内容'} | ${label} | 摘要：${item.brief}`;
+    });
+    return [
+      SYSTEM_PROMPT,
+      '',
+      '【参考资料】以下是从「布依词典」数据库检索到的真实条目，回答时优先采用：',
+      ...lines,
+      '',
+      '【使用规则】',
+      '1. 回答优先采用上述资料中的真实内容，保证与词典库一致；',
+      '2. 若资料不足以完整回答：先基于资料作答，再以"以下为词典库之外的补充说明"引出通用知识；',
+      '3. 资料与问题无关时可忽略资料，正常作答；',
+      '4. 回答中不要出现"[1]"这类编号角标，相关内容会由界面以"相关内容"形式自动展示。',
+    ].join('\n');
   }
 
   /** 把完整答案切成小块，模拟流式打字效果 */

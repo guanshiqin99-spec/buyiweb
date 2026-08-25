@@ -61,6 +61,7 @@ function callAgentStream({
   onDelta,
   onDone,
   onError,
+  onCitations,
   chunkSize = 12,
   chunkDelay = 30,
 }) {
@@ -97,6 +98,10 @@ function callAgentStream({
           return;
         }
         const fullContent = typeof data.content === 'string' ? data.content : '';
+        // 云函数透传的 RAG 引用条目：先于打字动画下发给调用方
+        if (Array.isArray(data.citations) && data.citations.length && onCitations) {
+          onCitations(data.citations);
+        }
         if (!fullContent) {
           if (onDone) onDone();
           return;

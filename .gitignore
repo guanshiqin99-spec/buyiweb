@@ -41,6 +41,9 @@ design_concepts/ui-audit-2026-07-14/edge-profile/
 .trae/cache/
 .trae/tmp/
 
+# 软件著作权申请材料(含身份证复印件等个人证件,严禁入库)
+.trae/soft-copyright/
+
 # ---------- 系统文件 ----------
 .DS_Store
 Thumbs.db

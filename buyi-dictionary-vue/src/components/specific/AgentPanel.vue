@@ -26,6 +26,8 @@ function renderMarkdown(text) {
   html = html.replace(/^#{1,6}\s+(.+)$/gm, '<strong>$1</strong>')
   // 无序列表 * / - / + → 项目符号
   html = html.replace(/^\s*[-*+]\s+/gm, '• ')
+  // 压缩连续空行（模型分点输出常带 \n\n，避免气泡内出现大段空白）
+  html = html.replace(/(\s*\n){2,}/g, '\n')
   // 换行
   html = html.replace(/\n/g, '<br>')
   return html

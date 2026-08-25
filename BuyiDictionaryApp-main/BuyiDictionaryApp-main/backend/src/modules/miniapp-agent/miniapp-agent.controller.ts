@@ -114,6 +114,8 @@ export class MiniappAgentController {
         send({ type: 'error', message: '智能体响应失败，请稍后重试' });
         finish();
       },
+      // RAG 引用条目，作为独立 SSE 事件在首个 delta 之前下发
+      (items) => send({ type: 'citations', items }),
     );
   }
 

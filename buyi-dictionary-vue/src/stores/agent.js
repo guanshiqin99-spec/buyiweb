@@ -76,6 +76,10 @@ export const useAgentStore = defineStore('agent', {
       this._controller = askStream({
         question: text,
         history,
+        // RAG 引用条目：挂在当前 agent 消息上，渲染为可点击卡片
+        onCitations: (items) => {
+          this.messages[agentIndex].citations = items
+        },
         onDelta: (chunk) => {
           this.messages[agentIndex].text = normalizeAgentText(this.messages[agentIndex].text + chunk)
         },

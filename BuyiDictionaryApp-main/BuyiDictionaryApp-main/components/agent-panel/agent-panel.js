@@ -5,6 +5,8 @@ function normalizeAgentText(text) {
   return String(text || '')
     .replace(/(^|\n)\s*\*\s+/g, '$1• ')
     .replace(/(^|\n)\s*[-+]\s+/g, '$1• ')
+    // 压缩连续空行，避免气泡内出现大段空白
+    .replace(/(\s*\n){2,}/g, '\n')
     .replace(/\*/g, '');
 }
 
@@ -92,16 +94,16 @@ Component({
         onDelta: (chunk) => {
           accumulated = normalizeAgentText(accumulated + chunk);
           const next = this.data.messages.slice();
-          next[messageIndex] = { role: 'assistant', content: accumulated, loading: false };
+          next[messageIndex] = { ...next[messageIndex], role: 'assistant', content: accumulated, loading: false };
           this.setData({ messages: next });
           this._scrollToBottom();
         },
         onDone: () => {
           const next = this.data.messages.slice();
           if (!accumulated) {
-            next[messageIndex] = { role: 'assistant', content: '（未收到内容，请稍后重试）', loading: false };
+            next[messageIndex] = { ...next[messageIndex], role: 'assistant', content: '（未收到内容，请稍后重试）', loading: false };
           } else {
-            next[messageIndex] = { role: 'assistant', content: accumulated, loading: false };
+            next[messageIndex] = { ...next[messageIndex], role: 'assistant', content: accumulated, loading: false };
           }
           this._history.push({ role: 'user', content: question });
           this._history.push({ role: 'assistant', content: accumulated });
@@ -111,6 +113,7 @@ Component({
         onError: (err) => {
           const next = this.data.messages.slice();
           next[messageIndex] = {
+            ...next[messageIndex],
             role: 'assistant',
             content: `抱歉，${err.message || '智能体响应失败，请稍后重试'}`,
             loading: false,
