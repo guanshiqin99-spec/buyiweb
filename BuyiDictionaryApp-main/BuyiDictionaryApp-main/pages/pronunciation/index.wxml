@@ -5,13 +5,119 @@
     <view class="abandon-btn" bindtap="onAbandon">放弃本场</view>
   </view>
 
-  <!-- 阶段一：玩法介绍 -->
-  <view wx:if="{{phase === 'intro'}}" class="card pronunciation-intro">
-    <text class="text-h1">发音闯关</text>
-    <text class="text-sub">跟着布依语词句开口读，AI 为你的发音打分；每题 10 分，成绩保存在本机，登录后同步到账号。</text>
-    <text wx:if="{{!pluginReady}}" class="text-sub plugin-tip">语音识别插件不可用，暂时无法进行跟读评测，可先浏览其他内容。</text>
-    <text wx:if="{{lastAttempt}}" class="text-sub last-attempt">最近成绩：{{lastAttempt.score}} 分（通过 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题）</text>
-    <button class="btn btn-primary" loading="{{loadingQuestions}}" disabled="{{loadingQuestions}}" bindtap="startChallenge">开始闯关</button>
+  <!-- 阶段一：玩法介绍（青花声纹 · 朱砂启关） -->
+  <view wx:if="{{phase === 'intro'}}" class="pron-intro">
+    <!-- 瓷盘弧线背景装饰 -->
+    <view class="intro-deco arc-a"></view>
+    <view class="intro-deco arc-b"></view>
+
+    <view class="intro-hero">
+      <text class="intro-kicker">PRONUNCIATION CHALLENGE</text>
+      <view class="hero-title-row">
+        <view class="intro-title">
+          <text class="t-char c1">开</text>
+          <text class="t-char c2">口</text>
+          <text class="t-char c3">说</text>
+          <text class="t-char c4">布</text>
+          <text class="t-char c5">依</text>
+        </view>
+        <view class="voice-marks">
+          <view class="voice-bar v1"></view>
+          <view class="voice-bar v2"></view>
+          <view class="voice-bar v3"></view>
+          <view class="voice-bar v4"></view>
+          <view class="voice-bar v5"></view>
+          <view class="voice-bar v6"></view>
+        </view>
+      </view>
+      <view class="title-stroke"></view>
+      <text class="intro-desc">跟着布依语词句开口跟读，AI 为你的发音逐句打分；成绩保存在本机，登录后同步到账号。</text>
+    </view>
+
+    <!-- 声纹徽章：涟漪声波 + 青花瓷印 -->
+    <view class="voice-emblem-wrap">
+      <view class="voice-emblem">
+        <view class="emblem-ripple r1"></view>
+        <view class="emblem-ripple r2"></view>
+        <view class="emblem-ripple r3"></view>
+        <view class="emblem-ring"></view>
+        <view class="orbit o1"><view class="orbit-dot"></view></view>
+        <view class="orbit o2"><view class="orbit-dot alt"></view></view>
+        <view class="emblem-core">
+          <text class="emblem-char">读</text>
+          <view class="emblem-wave">
+            <view class="ew-bar b1"></view>
+            <view class="ew-bar b2"></view>
+            <view class="ew-bar b3"></view>
+            <view class="ew-bar b4"></view>
+            <view class="ew-bar b5"></view>
+          </view>
+        </view>
+        <view class="emblem-side-label">布依语跟读评测</view>
+      </view>
+      <view class="emblem-caption">
+        <view class="caption-line"></view>
+        <text class="caption-text">AI 声纹评测 · 逐句反馈</text>
+        <view class="caption-line flip"></view>
+      </view>
+    </view>
+
+    <!-- 玩法三步：看 → 读 → 评 -->
+    <view class="intro-steps">
+      <view class="step-item">
+        <view class="step-char">看</view>
+        <text class="step-label">布依词句</text>
+      </view>
+      <view class="step-sep"></view>
+      <view class="step-item">
+        <view class="step-char step-char-hot">读</view>
+        <text class="step-label">按住跟读</text>
+      </view>
+      <view class="step-sep"></view>
+      <view class="step-item">
+        <view class="step-char">评</view>
+        <text class="step-label">AI 打分</text>
+      </view>
+    </view>
+
+    <!-- 规则速览：一瓷三分 -->
+    <view class="intro-stats">
+      <view class="stat-cell">
+        <text class="stat-num">5</text>
+        <text class="stat-label">句跟读</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-cell">
+        <text class="stat-num">10</text>
+        <text class="stat-label">分每题</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-cell">
+        <text class="stat-num">AI</text>
+        <text class="stat-label">语音评分</text>
+      </view>
+    </view>
+
+    <view wx:if="{{lastAttempt}}" class="last-attempt-card">
+      <view class="last-attempt-dot"></view>
+      <text class="last-attempt-text">最近成绩：{{lastAttempt.score}} 分 · 通过 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题</text>
+    </view>
+
+    <view wx:if="{{!pluginReady}}" class="plugin-warning">
+      <view class="plugin-warning-icon">!</view>
+      <text class="plugin-warning-text">语音识别插件不可用，暂时无法进行跟读评测，可先浏览其他内容。</text>
+    </view>
+
+    <button class="btn btn-primary pron-start-btn" hover-class="start-pressed" loading="{{loadingQuestions}}" disabled="{{loadingQuestions}}" bindtap="startChallenge">
+      <view class="start-sheen"></view>
+      <view class="start-voice" wx:if="{{!loadingQuestions}}">
+        <view class="sv-bar b1"></view>
+        <view class="sv-bar b2"></view>
+        <view class="sv-bar b3"></view>
+      </view>
+      <text class="start-btn-label">{{loadingQuestions ? '题目准备中…' : '开始闯关'}}</text>
+    </button>
+    <text class="pron-start-hint">建议在安静环境中跟读，识别更准确</text>
   </view>
 
   <!-- 阶段二：逐题跟读评测 -->

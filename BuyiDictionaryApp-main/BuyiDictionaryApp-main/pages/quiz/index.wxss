@@ -1,9 +1,10 @@
+/* 文化闯关页：开场「靛染铜鼓 · 十二芒开卷」，全页以靛蓝蜡染为基调 */
 /* ========== 页面容器 ========== */
 .quiz-page { padding-bottom: 96rpx; }
 
 /* ========== 放弃按钮 ========== */
 .abandon-bar {
-  padding: 16rpx 32rpx;
+  padding: 16rpx 0;
   display: flex;
   justify-content: flex-end;
 }
@@ -22,46 +23,38 @@
 
 /* ========== 开场介绍 ========== */
 .quiz-intro {
+  position: relative;
   display: flex;
   flex-direction: column;
-  padding: 30rpx 32rpx 40rpx;
+  padding: 30rpx 0 40rpx;
+}
+
+/* 蜡染弧线底纹 */
+.intro-deco {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.intro-deco.arc-a {
+  width: 430rpx;
+  height: 430rpx;
+  top: -110rpx;
+  right: -150rpx;
+  border: 2rpx solid rgba(22, 100, 217, 0.1);
+}
+.intro-deco.arc-b {
+  width: 300rpx;
+  height: 300rpx;
+  left: -150rpx;
+  bottom: 420rpx;
+  border: 2rpx dashed rgba(22, 100, 217, 0.09);
 }
 
 .intro-hero {
   position: relative;
   padding: 34rpx 0 8rpx;
-  margin-bottom: 30rpx;
+  margin-bottom: 26rpx;
   animation: quiz-rise 0.5s ease backwards;
-}
-
-.intro-seal {
-  position: absolute;
-  top: 30rpx;
-  right: 6rpx;
-  width: 96rpx;
-  height: 96rpx;
-  background: linear-gradient(150deg, #CD5A40 0%, #B93E28 100%);
-  border-radius: 16rpx;
-  transform: rotate(6deg);
-  box-shadow: 0 12rpx 26rpx rgba(185, 62, 40, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.intro-seal::after {
-  content: '';
-  position: absolute;
-  inset: 6rpx;
-  border: 2rpx solid rgba(255, 246, 238, 0.55);
-  border-radius: 10rpx;
-}
-
-.intro-seal-char {
-  font-size: 48rpx;
-  color: #FFF6EE;
-  font-family: "STZhongsong", "SimSun", serif;
-  font-weight: 700;
 }
 
 .intro-kicker {
@@ -86,15 +79,19 @@
   font-family: "STZhongsong", "SimSun", serif;
 }
 
-/* 标题下的朱砂笔触 */
-.intro-title::after {
-  content: '';
-  display: block;
+/* 标题下的靛蓝笔触 */
+.title-stroke {
   width: 132rpx;
   height: 8rpx;
   margin-top: 14rpx;
   border-radius: 4rpx;
-  background: linear-gradient(90deg, rgba(194, 69, 45, 0.72), rgba(194, 69, 45, 0));
+  background: linear-gradient(90deg, rgba(22, 100, 217, 0.72), rgba(22, 100, 217, 0));
+  animation: stroke-grow 0.6s ease 0.25s backwards;
+}
+
+@keyframes stroke-grow {
+  from { width: 0; }
+  to { width: 132rpx; }
 }
 
 .intro-desc {
@@ -105,24 +102,60 @@
   color: var(--color-text-secondary);
 }
 
-/* 规则速览：三枚数据签 */
-.intro-stats {
+/* 题材一览：蜡染菱形签 */
+.topic-chips {
   display: flex;
-  gap: 20rpx;
+  flex-wrap: wrap;
+  gap: 14rpx 12rpx;
+  margin-bottom: 24rpx;
   animation: quiz-rise 0.5s ease 0.08s backwards;
 }
 
-.stat-chip {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.topic-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 24rpx 0 20rpx;
+  gap: 10rpx;
+  padding: 8rpx 18rpx;
+  border-radius: var(--radius-capsule);
+  background: rgba(22, 100, 217, 0.06);
+  border: 1rpx solid rgba(22, 100, 217, 0.2);
+}
+
+.topic-diamond {
+  width: 12rpx;
+  height: 12rpx;
+  transform: rotate(45deg);
+  border-radius: 2rpx;
+  background: rgba(22, 100, 217, 0.55);
+  flex-shrink: 0;
+}
+
+.topic-text {
+  font-size: 22rpx;
+  letter-spacing: 1rpx;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+/* 规则速览：一卷三分 */
+.intro-stats {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  padding: 26rpx 10rpx 22rpx;
   border-radius: 22rpx;
   background: var(--color-card-bg);
   border: 1rpx solid var(--color-card-border);
   box-shadow: 0 12rpx 26rpx rgba(45, 100, 176, 0.06);
+  animation: quiz-rise 0.5s ease 0.14s backwards;
+}
+
+.stat-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
 }
 
 .stat-num {
@@ -139,6 +172,12 @@
   color: var(--color-text-secondary);
 }
 
+.stat-divider {
+  width: 1rpx;
+  margin: 6rpx 0;
+  background: linear-gradient(180deg, rgba(22, 100, 217, 0), rgba(22, 100, 217, 0.2), rgba(22, 100, 217, 0));
+}
+
 /* 最近成绩 */
 .last-attempt-card {
   display: flex;
@@ -149,7 +188,7 @@
   border-radius: 20rpx;
   background: rgba(22, 100, 217, 0.06);
   border: 1rpx dashed rgba(22, 100, 217, 0.28);
-  animation: quiz-rise 0.5s ease 0.14s backwards;
+  animation: quiz-rise 0.5s ease 0.2s backwards;
 }
 
 .last-attempt-dot {
@@ -168,11 +207,23 @@
   color: var(--color-primary-dark);
 }
 
-/* 开始按钮 */
+/* 开始按钮：鼓心脉冲 */
 .quiz-start-btn {
+  position: relative;
+  overflow: hidden;
   margin-top: 34rpx;
-  animation: quiz-rise 0.5s ease 0.2s backwards;
+  background: linear-gradient(135deg, #2F7BE0 0%, #1664D9 46%, #0E4C9E 100%);
+  box-shadow: 0 16rpx 34rpx rgba(22, 100, 217, 0.32), inset 0 2rpx 4rpx rgba(255, 255, 255, 0.24);
+  transition: transform 150ms ease;
+  animation: quiz-rise 0.5s ease 0.26s backwards, drum-pulse 2.6s ease-in-out 1.2s infinite;
 }
+
+@keyframes drum-pulse {
+  0%, 100% { box-shadow: 0 16rpx 34rpx rgba(22, 100, 217, 0.32), inset 0 2rpx 4rpx rgba(255, 255, 255, 0.24); }
+  50% { box-shadow: 0 18rpx 46rpx rgba(22, 100, 217, 0.48), inset 0 2rpx 4rpx rgba(255, 255, 255, 0.24); }
+}
+
+.start-pressed { transform: scale(0.975); }
 
 /* 发音闯关：幽灵横条入口 */
 .quiz-ghost-btn {
@@ -186,6 +237,7 @@
   border: 2rpx dashed rgba(22, 100, 217, 0.3);
   line-height: 1.4;
   transition: background 0.2s ease;
+  animation: quiz-rise 0.5s ease 0.32s backwards;
 }
 
 .quiz-ghost-btn::after { border: none; }
@@ -234,7 +286,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 6rpx 32rpx 0;
+  padding: 6rpx 0 0;
   margin-bottom: 18rpx;
 }
 
@@ -259,34 +311,34 @@
   color: var(--color-text-secondary);
 }
 
-/* 得分徽章 */
+/* 得分徽章：靛蓝鼓面 */
 .score-badge {
   display: flex;
   align-items: baseline;
   gap: 6rpx;
   padding: 12rpx 26rpx;
   border-radius: var(--radius-capsule);
-  background: linear-gradient(150deg, rgba(194, 69, 45, 0.92) 0%, rgba(185, 62, 40, 0.92) 100%);
-  box-shadow: 0 10rpx 22rpx rgba(185, 62, 40, 0.25);
+  background: linear-gradient(150deg, rgba(22, 100, 217, 0.95) 0%, rgba(14, 76, 158, 0.95) 100%);
+  box-shadow: 0 10rpx 22rpx rgba(22, 100, 217, 0.25);
 }
 
 .score-badge-num {
   font-size: 36rpx;
   font-weight: 700;
   line-height: 1;
-  color: #FFF6EE;
+  color: #F5FAFF;
   font-family: "STZhongsong", "SimSun", serif;
 }
 
 .score-badge-unit {
   font-size: 22rpx;
-  color: rgba(255, 246, 238, 0.85);
+  color: rgba(245, 250, 255, 0.85);
 }
 
 /* 进度条 */
 .progress-track {
   height: 10rpx;
-  margin: 0 32rpx 28rpx;
+  margin: 0 0 28rpx;
   overflow: hidden;
   border-radius: 999rpx;
   background: rgba(92, 134, 197, 0.16);
@@ -302,7 +354,7 @@
 
 /* 题目卡 */
 .question-card {
-  margin: 0 32rpx;
+  margin: 0;
   padding: 36rpx 30rpx;
   border-radius: var(--radius-card-lg);
   background: var(--color-card-bg);
@@ -486,31 +538,49 @@
   animation: quiz-rise 0.45s ease backwards;
 }
 
+/* 铜鼓奖牌：外圈虚线缓转 */
+.result-medal-wrap {
+  position: relative;
+  width: 190rpx;
+  height: 190rpx;
+  margin-bottom: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-medal-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2rpx dashed rgba(22, 100, 217, 0.35);
+  animation: drum-spin 20s linear infinite;
+}
+
 .result-medal {
   position: relative;
   width: 150rpx;
   height: 150rpx;
-  background: linear-gradient(150deg, #CD5A40 0%, #B93E28 100%);
-  border-radius: 24rpx;
-  transform: rotate(6deg);
-  box-shadow: 0 16rpx 32rpx rgba(185, 62, 40, 0.3);
+  border-radius: 50%;
+  background: linear-gradient(150deg, #2F7BE0 0%, #1664D9 46%, #0E4C9E 100%);
+  box-shadow: 0 16rpx 32rpx rgba(22, 100, 217, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 40rpx;
 }
 
 .result-medal::after {
   content: '';
   position: absolute;
   inset: 8rpx;
-  border: 2rpx solid rgba(255, 246, 238, 0.55);
-  border-radius: 16rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
 }
 
 .result-medal-char {
   font-size: 72rpx;
-  color: #FFF6EE;
+  color: #F5FAFF;
   font-family: "STZhongsong", "SimSun", serif;
   font-weight: 700;
 }
@@ -596,6 +666,9 @@
 }
 
 /* ========== 深色模式 ========== */
+.dark .intro-deco.arc-a { border-color: rgba(127, 176, 247, 0.12); }
+.dark .intro-deco.arc-b { border-color: rgba(127, 176, 247, 0.1); }
+
 .dark .intro-kicker {
   border-color: rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.04);
@@ -604,13 +677,22 @@
 .dark .intro-title { color: #edf5ff; }
 .dark .intro-desc { color: #9fb8d8; }
 
-.dark .stat-chip {
+.dark .topic-chip {
+  background: rgba(90, 169, 255, 0.08);
+  border-color: rgba(127, 176, 247, 0.28);
+}
+
+.dark .topic-diamond { background: rgba(127, 176, 247, 0.6); }
+.dark .topic-text { color: #bdd7fa; }
+
+.dark .intro-stats {
   background: rgba(10, 24, 43, 0.9);
   border-color: rgba(255, 255, 255, 0.08);
 }
 
 .dark .stat-num { color: #edf5ff; }
 .dark .stat-label { color: #9fb8d8; }
+.dark .stat-divider { background: linear-gradient(180deg, rgba(127, 176, 247, 0), rgba(127, 176, 247, 0.24), rgba(127, 176, 247, 0)); }
 
 .dark .last-attempt-card {
   background: rgba(90, 169, 255, 0.08);
@@ -680,6 +762,13 @@
 .dark .feedback-good .feedback-title { color: #aee4c6; }
 .dark .feedback-bad .feedback-title { color: #f2c4c4; }
 .dark .feedback-explain { color: #9fb8d8; }
+
+.dark .result-medal-wrap::before { border-color: rgba(127, 176, 247, 0.35); }
+
+.dark .result-medal {
+  background: linear-gradient(160deg, #1C5FBE 0%, #14498F 50%, #0C3570 100%);
+  box-shadow: 0 16rpx 32rpx rgba(0, 0, 0, 0.5);
+}
 
 .dark .result-label,
 .dark .score-unit,

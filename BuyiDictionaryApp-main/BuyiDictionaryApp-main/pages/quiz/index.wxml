@@ -6,24 +6,39 @@
     <view class="abandon-btn" hover-class="abandon-pressed" bindtap="onAbandon">放弃本场</view>
   </view>
 
-  <!-- 开场介绍 -->
+  <!-- 开场介绍：靛染铜鼓 · 十二芒开卷 -->
   <view wx:if="{{phase === 'intro'}}" class="quiz-intro">
+    <view class="intro-deco arc-a"></view>
+    <view class="intro-deco arc-b"></view>
+
     <view class="intro-hero">
       <text class="intro-kicker">CULTURE CHALLENGE</text>
       <text class="intro-title">布依文化闯关</text>
+      <view class="title-stroke"></view>
       <text class="intro-desc">由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。成绩保存在本机，登录后同步到账号。</text>
     </view>
 
+    <!-- 题材一览 -->
+    <view class="topic-chips">
+      <view class="topic-chip"><view class="topic-diamond"></view><text class="topic-text">铜鼓十二调</text></view>
+      <view class="topic-chip"><view class="topic-diamond"></view><text class="topic-text">斗纹布</text></view>
+      <view class="topic-chip"><view class="topic-diamond"></view><text class="topic-text">布依服饰</text></view>
+      <view class="topic-chip"><view class="topic-diamond"></view><text class="topic-text">语言声调</text></view>
+    </view>
+
+    <!-- 规则速览：一卷三分 -->
     <view class="intro-stats">
-      <view class="stat-chip">
+      <view class="stat-cell">
         <text class="stat-num">5</text>
         <text class="stat-label">道题目</text>
       </view>
-      <view class="stat-chip">
+      <view class="stat-divider"></view>
+      <view class="stat-cell">
         <text class="stat-num">10</text>
         <text class="stat-label">分每题</text>
       </view>
-      <view class="stat-chip">
+      <view class="stat-divider"></view>
+      <view class="stat-cell">
         <text class="stat-num">AI</text>
         <text class="stat-label">实时出题</text>
       </view>
@@ -34,7 +49,7 @@
       <text class="last-attempt-text">最近成绩：{{lastAttempt.score}} 分 · 答对 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题</text>
     </view>
 
-    <button class="btn btn-primary quiz-start-btn" loading="{{generatingAI}}" disabled="{{generatingAI}}" bindtap="startQuiz">{{generatingAI ? 'AI 出题中...' : '开始答题'}}</button>
+    <button class="btn btn-primary quiz-start-btn" hover-class="start-pressed" loading="{{generatingAI}}" disabled="{{generatingAI}}" bindtap="startQuiz">{{generatingAI ? 'AI 出题中...' : '开始答题'}}</button>
     <button class="quiz-ghost-btn" hover-class="quiz-ghost-pressed" bindtap="onGoPronunciation">
       <text class="quiz-ghost-icon">声</text>
       <text class="quiz-ghost-text">发音闯关 · AI 语音跟读评测</text>
@@ -91,8 +106,10 @@
 
   <!-- 成绩页 -->
   <view wx:else class="quiz-result">
-    <view class="result-medal">
-      <text class="result-medal-char">绩</text>
+    <view class="result-medal-wrap">
+      <view class="result-medal">
+        <text class="result-medal-char">绩</text>
+      </view>
     </view>
     <text class="result-label">本轮完成</text>
     <view class="result-score">
