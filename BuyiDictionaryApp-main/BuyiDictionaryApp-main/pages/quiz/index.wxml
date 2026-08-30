@@ -1,27 +1,71 @@
 <view class="page {{currentTheme}} {{fontSizeClass}} container porcelain-bg-page quiz-page">
   <custom-nav title="文化答题"></custom-nav>
 
+  <!-- 答题中：顶部放弃入口 -->
   <view class="abandon-bar" wx:if="{{phase === 'question'}}">
-    <view class="abandon-btn" bindtap="onAbandon">放弃本场</view>
+    <view class="abandon-btn" hover-class="abandon-pressed" bindtap="onAbandon">放弃本场</view>
   </view>
 
-  <view wx:if="{{phase === 'intro'}}" class="card quiz-intro">
-    <text class="text-h1">布依文化闯关</text>
-    <text class="text-sub">由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。每题 10 分，成绩保存在本机，登录后同步到账号。</text>
-    <text wx:if="{{lastAttempt}}" class="text-sub last-attempt">最近成绩：{{lastAttempt.score}} 分（答对 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题）</text>
-    <button class="btn btn-primary" loading="{{generatingAI}}" disabled="{{generatingAI}}" bindtap="startQuiz">{{generatingAI ? 'AI 出题中...' : '开始答题'}}</button>
-    <button class="btn btn-secondary quiz-secondary-btn" bindtap="onGoPronunciation">发音闯关</button>
-    <text wx:if="{{aiQuizError}}" class="text-sub ai-quiz-error">{{aiQuizError}}</text>
-  </view>
-
-  <view wx:elif="{{phase === 'question' && currentQuestion}}" class="quiz-question">
-    <view class="quiz-meta">
-      <text class="text-sub">第 {{currentIndex + 1}} / {{questions.length}} 题</text>
-      <text class="text-h3 primary-text">{{score}} 分</text>
+  <!-- 开场介绍 -->
+  <view wx:if="{{phase === 'intro'}}" class="quiz-intro">
+    <view class="intro-hero">
+      <text class="intro-kicker">CULTURE CHALLENGE</text>
+      <text class="intro-title">布依文化闯关</text>
+      <text class="intro-desc">由 AI 实时生成 5 道布依文化题，每次都不一样；若 AI 暂不可用，则切换到经典十题库。成绩保存在本机，登录后同步到账号。</text>
     </view>
-    <view class="progress-track"><view class="progress-bar" style="width: {{(currentIndex + 1) * 100 / questions.length}}%;"></view></view>
-    <view class="card question-card">
-      <text class="text-h2">{{currentQuestion.prompt}}</text>
+
+    <view class="intro-stats">
+      <view class="stat-chip">
+        <text class="stat-num">5</text>
+        <text class="stat-label">道题目</text>
+      </view>
+      <view class="stat-chip">
+        <text class="stat-num">10</text>
+        <text class="stat-label">分每题</text>
+      </view>
+      <view class="stat-chip">
+        <text class="stat-num">AI</text>
+        <text class="stat-label">实时出题</text>
+      </view>
+    </view>
+
+    <view wx:if="{{lastAttempt}}" class="last-attempt-card">
+      <view class="last-attempt-dot"></view>
+      <text class="last-attempt-text">最近成绩：{{lastAttempt.score}} 分 · 答对 {{lastAttempt.correctCount}} / {{lastAttempt.totalQuestions}} 题</text>
+    </view>
+
+    <button class="btn btn-primary quiz-start-btn" loading="{{generatingAI}}" disabled="{{generatingAI}}" bindtap="startQuiz">{{generatingAI ? 'AI 出题中...' : '开始答题'}}</button>
+    <button class="quiz-ghost-btn" hover-class="quiz-ghost-pressed" bindtap="onGoPronunciation">
+      <text class="quiz-ghost-icon">声</text>
+      <text class="quiz-ghost-text">发音闯关 · AI 语音跟读评测</text>
+      <text class="quiz-ghost-arrow">→</text>
+    </button>
+
+    <text wx:if="{{aiQuizError}}" class="ai-quiz-error">{{aiQuizError}}</text>
+  </view>
+
+  <!-- 答题进行中 -->
+  <view wx:elif="{{phase === 'question' && currentQuestion}}" class="quiz-question">
+    <view class="quiz-top">
+      <view class="q-count">
+        <text class="q-current">{{currentIndex + 1}}</text>
+        <text class="q-total">/ {{questions.length}}</text>
+      </view>
+      <view class="score-badge">
+        <text class="score-badge-num">{{score}}</text>
+        <text class="score-badge-unit">分</text>
+      </view>
+    </view>
+    <view class="progress-track">
+      <view class="progress-bar" style="width: {{(currentIndex + 1) * 100 / questions.length}}%;"></view>
+    </view>
+
+    <view class="question-card">
+      <view class="q-tag">
+        <view class="q-tag-line"></view>
+        <text class="q-tag-text">第 {{currentIndex + 1}} 题</text>
+      </view>
+      <text class="q-prompt">{{currentQuestion.prompt}}</text>
       <view class="quiz-options">
         <button
           wx:for="{{currentQuestion.options}}"
@@ -29,23 +73,40 @@
           class="option-btn {{answered && item === currentQuestion.answer ? 'correct' : ''}} {{answered && item === selected && item !== currentQuestion.answer ? 'wrong' : ''}}"
           data-option="{{item}}"
           disabled="{{answered}}"
+          hover-class="option-pressed"
           bindtap="selectOption"
         >{{item}}</button>
       </view>
-      <view wx:if="{{answered}}" class="feedback">
-        <text class="text-h3">{{selected === currentQuestion.answer ? '回答正确' : '正确答案：' + currentQuestion.answer}}</text>
-        <text class="text-sub">{{currentQuestion.explanation}}</text>
-        <button class="btn btn-primary" bindtap="nextQuestion">{{currentIndex === questions.length - 1 ? '查看成绩' : '下一题'}}</button>
+
+      <view wx:if="{{answered}}" class="feedback {{selected === currentQuestion.answer ? 'feedback-good' : 'feedback-bad'}}">
+        <view class="feedback-head">
+          <text class="feedback-mark">{{selected === currentQuestion.answer ? '✓' : '✗'}}</text>
+          <text class="feedback-title">{{selected === currentQuestion.answer ? '回答正确 +10 分' : '正确答案：' + currentQuestion.answer}}</text>
+        </view>
+        <text class="feedback-explain">{{currentQuestion.explanation}}</text>
+        <button class="btn btn-primary feedback-next" bindtap="nextQuestion">{{currentIndex === questions.length - 1 ? '查看成绩' : '下一题'}}</button>
       </view>
     </view>
   </view>
 
-  <view wx:else class="card quiz-result">
-    <text class="text-sub">本轮完成</text>
-    <text class="score-value">{{score}} 分</text>
-    <text class="text-h3">答对 {{correctCount}} / {{questions.length}} 题</text>
-    <text class="text-sub save-message">{{saveMsg}}</text>
-    <button class="btn btn-primary" disabled="{{saving}}" bindtap="startQuiz">再来一轮</button>
+  <!-- 成绩页 -->
+  <view wx:else class="quiz-result">
+    <view class="result-medal">
+      <text class="result-medal-char">绩</text>
+    </view>
+    <text class="result-label">本轮完成</text>
+    <view class="result-score">
+      <text class="score-value">{{score}}</text>
+      <text class="score-unit">分</text>
+    </view>
+    <view class="result-stats">
+      <text class="result-stat-num">{{correctCount}}</text>
+      <text class="result-stat-sep">/</text>
+      <text class="result-stat-num">{{questions.length}}</text>
+      <text class="result-stat-label">题答对</text>
+    </view>
+    <text class="save-message">{{saveMsg}}</text>
+    <button class="btn btn-primary quiz-retry-btn" disabled="{{saving}}" bindtap="startQuiz">再来一轮</button>
   </view>
 
   <!-- AI 导览员悬浮入口 -->

@@ -158,7 +158,8 @@
 }
 
 /* ================= 深色模式适配 ================= */
-.page.dark .landscape-bg {
+/* landscape-bg 与 page.dark 在同一元素，选择器不能有空格 */
+.page.dark.landscape-bg {
   background:
     linear-gradient(to bottom, #1a2240 0%, #0f1428 30%, transparent 70%),
     linear-gradient(to top, #14203a 0%, #0f1428 30%, transparent 70%),
@@ -175,21 +176,21 @@
 }
 
 .page.dark .glass-card {
-  background: rgba(10, 24, 43, 0.5);
+  background: rgba(10, 24, 43, 0.72);
   border: 1rpx solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.3);
 }
 
-.page.dark .arrow-item text.arrow {
+.page.dark .setting-item text.arrow {
   color: rgba(255, 255, 255, 0.3);
 }
 
 .page.dark .divider {
-  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.06), rgba(255,255,255,0));
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.08), rgba(255,255,255,0));
 }
 
 .page.dark .capsule-group {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .page.dark .capsule-btn {
@@ -203,7 +204,7 @@
 }
 
 .page.dark .text-input {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
   border: 1rpx solid rgba(255, 255, 255, 0.1);
   color: var(--color-text-primary);
 }
@@ -215,7 +216,12 @@
 }
 
 .page.dark .seal-btn {
-  background: rgba(200, 70, 70, 0.1);
-  border: 1rpx solid rgba(181, 64, 64, 0.3);
+  background: rgba(200, 70, 70, 0.12);
+  border: 1rpx solid rgba(181, 64, 64, 0.35);
   color: #E57373;
+}
+
+/* 深色模式下 slider 配色 */
+.page.dark slider {
+  /* 微信小程序 slider 的背景色通过属性控制，此处保留兜底 */
 }

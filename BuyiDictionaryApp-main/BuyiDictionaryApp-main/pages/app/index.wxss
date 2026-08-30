@@ -1,19 +1,20 @@
+/* ========== 页面基础 ========== */
 .page {
   position: relative;
   min-height: 100vh;
-  /* 采用首页的“白-青蓝”水墨渐变背景 */
+  /* 白-青蓝水墨渐变背景 */
   background: var(--color-bg);
   color: var(--color-text-primary);
 }
 
+/* ========== 背景层 ========== */
 .home-hero-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 620rpx;
-  background: linear-gradient(180deg, #E6F0FF 0%, #F4F8FF 80%, rgba(244,248,255,0) 100%);
-  opacity: 1;
+  background: linear-gradient(180deg, #E6F0FF 0%, #F4F8FF 80%, rgba(244, 248, 255, 0) 100%);
   z-index: 0;
 }
 
@@ -27,7 +28,7 @@
   right: 0;
   width: 100%;
   height: 100%;
-  background-image: 
+  background-image:
     radial-gradient(ellipse at 85% 95%, rgba(22, 100, 217, 0.15) 0%, rgba(22, 100, 217, 0) 40%),
     radial-gradient(ellipse at 15% 100%, rgba(87, 140, 199, 0.18) 0%, rgba(87, 140, 199, 0) 45%),
     radial-gradient(circle at 90% 10%, rgba(35, 85, 167, 0.05) 0%, rgba(35, 85, 167, 0) 40%),
@@ -37,7 +38,7 @@
 }
 
 .page.dark .bg-cloud {
-  background-image: 
+  background-image:
     radial-gradient(ellipse at 85% 95%, rgba(22, 100, 217, 0.08) 0%, rgba(22, 100, 217, 0) 40%),
     radial-gradient(ellipse at 15% 100%, rgba(87, 140, 199, 0.1) 0%, rgba(87, 140, 199, 0) 45%);
 }
@@ -53,16 +54,18 @@
   position: relative;
   z-index: 1;
   box-sizing: border-box;
-  padding: 0rpx 28rpx 0;
+  padding: 0 28rpx 0;
 }
 
+/* ========== 头部 ========== */
 .hero {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 10rpx;
-  margin-bottom: 34rpx;
-  padding: 20rpx 0;
+  margin-bottom: 42rpx;
+  padding: 28rpx 0 30rpx;
+  animation: rise-in 0.5s ease backwards;
 }
 
 .hero-kicker,
@@ -72,106 +75,147 @@
 }
 
 .hero-kicker {
-  font-size: 24rpx;
-  letter-spacing: 4rpx;
+  align-self: flex-start;
+  padding: 8rpx 22rpx;
+  border: 1rpx solid rgba(22, 100, 217, 0.26);
+  border-radius: 10rpx;
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 22rpx;
+  letter-spacing: 6rpx;
   color: var(--color-text-secondary);
 }
 
 .hero-title {
+  align-self: flex-start;
+  margin-top: 10rpx;
   font-size: 60rpx;
   font-weight: 700;
+  letter-spacing: 2rpx;
   color: var(--color-primary-dark);
   font-family: "STZhongsong", "SimSun", serif;
-  margin-top: 10rpx;
-  margin-bottom: 10rpx;
+}
+
+/* 标题下的朱砂笔触 */
+.hero-title::after {
+  content: '';
+  display: block;
+  width: 138rpx;
+  height: 8rpx;
+  margin-top: 12rpx;
+  border-radius: 4rpx;
+  background: linear-gradient(90deg, rgba(194, 69, 45, 0.72), rgba(194, 69, 45, 0));
 }
 
 .hero-desc {
   font-size: 26rpx;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--color-text-secondary);
 }
 
+/* 朱砂印章 */
+.hero-seal {
+  position: absolute;
+  top: 30rpx;
+  right: 8rpx;
+  width: 92rpx;
+  height: 92rpx;
+  background: linear-gradient(150deg, #CD5A40 0%, #B93E28 100%);
+  border-radius: 14rpx;
+  transform: rotate(6deg);
+  box-shadow: 0 12rpx 26rpx rgba(185, 62, 40, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rpx;
+}
+
+.hero-seal::after {
+  content: '';
+  position: absolute;
+  inset: 6rpx;
+  border: 2rpx solid rgba(255, 246, 238, 0.55);
+  border-radius: 9rpx;
+}
+
+.seal-char {
+  font-size: 32rpx;
+  line-height: 1.15;
+  color: #FFF6EE;
+  font-family: "STZhongsong", "SimSun", serif;
+  font-weight: 700;
+}
+
+/* ========== 功能卡片 ========== */
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 28rpx;
+  gap: 26rpx;
 }
 
 .feature-card {
+  /* 默认青色，各入口通过修饰类覆盖 */
+  --accent: #1664D9;
+  --accent-deep: #12489E;
+  --accent-bg: #F1F5FD;
+  --accent-line: rgba(22, 100, 217, 0.32);
+
   display: flex;
   flex-direction: column;
-  min-height: 280rpx;
-  padding: 32rpx;
-  border-radius: 30rpx;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(243, 248, 255, 0.96) 100%);
+  min-height: 284rpx;
+  padding: 30rpx 28rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(172deg, #FFFFFF 0%, var(--accent-bg) 100%);
   border: 1rpx solid rgba(135, 181, 234, 0.3);
-  box-shadow: 0 20rpx 40rpx rgba(45, 100, 176, 0.08);
+  box-shadow: 0 18rpx 40rpx rgba(45, 100, 176, 0.08);
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.25s ease;
+  animation: card-in 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
 }
 
-.page.dark .feature-card {
-  background: linear-gradient(180deg, rgba(14, 30, 52, 0.98) 0%, rgba(10, 24, 43, 0.96) 100%);
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20rpx 40rpx rgba(0, 0, 0, 0.4);
-}
-
+/* 卡片顶部色条 */
 .feature-card::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 100% 100%, rgba(22, 100, 217, 0.03) 0%, transparent 60%);
+  top: 0;
+  left: 30rpx;
+  width: 76rpx;
+  height: 5rpx;
+  border-radius: 0 0 6rpx 6rpx;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  z-index: 1;
+}
+
+/* 背景水印大字 */
+.feature-card::after {
+  content: '';
+  position: absolute;
+  right: -18rpx;
+  bottom: -40rpx;
+  font-family: "STZhongsong", "SimSun", serif;
+  font-size: 200rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.055;
+  transform: rotate(-8deg);
   z-index: 0;
   pointer-events: none;
 }
 
-.page.dark .feature-card::before {
-  background-image: radial-gradient(circle at 100% 100%, rgba(22, 100, 217, 0.1) 0%, transparent 60%);
+/* 按压反馈 */
+.card-pressed {
+  transform: scale(0.965);
+  box-shadow: 0 8rpx 20rpx rgba(45, 100, 176, 0.12);
 }
 
-.feature-card.primary {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(238, 246, 255, 0.96) 100%);
-  border-color: rgba(55, 109, 183, 0.24);
-  box-shadow: 0 24rpx 44rpx rgba(34, 101, 194, 0.14);
-}
+/* 水印字已统一为空，不再区分入口 */
 
-.page.dark .feature-card.primary {
-  background: linear-gradient(145deg, rgba(20, 40, 70, 0.98) 0%, rgba(14, 30, 52, 0.96) 100%);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 24rpx 44rpx rgba(0, 0, 0, 0.5);
-}
-
-.feature-card.accent {
-  background: linear-gradient(180deg, #fbfdff 0%, #eef5ff 100%);
-}
-
-.page.dark .feature-card.accent {
-  background: linear-gradient(180deg, rgba(14, 30, 52, 0.95) 0%, rgba(10, 24, 43, 0.95) 100%);
-}
-
-/* 文化馆入口跨两列成横向卡，避免单独一行右侧留白 */
-.feature-card.full {
-  grid-column: 1 / -1;
-  flex-direction: row;
-  align-items: center;
-  gap: 24rpx;
-  min-height: 0;
-}
-
-.feature-card.full .feature-full-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.feature-card.full .feature-desc {
-  margin-top: 0;
-}
-
-.feature-top, .feature-title, .feature-desc {
+.feature-top,
+.feature-title,
+.feature-desc {
   position: relative;
   z-index: 1;
 }
@@ -180,17 +224,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 26rpx;
+  margin-bottom: 24rpx;
 }
 
 .feature-icon {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 50rpx;
-  background: transparent;
-  border: 2rpx dashed var(--color-primary-light);
-  color: var(--color-primary-dark);
-  font-size: 44rpx;
+  width: 92rpx;
+  height: 92rpx;
+  border-radius: 46rpx;
+  background: var(--accent-bg);
+  border: 2rpx dashed var(--accent-line);
+  color: var(--accent-deep);
+  font-size: 42rpx;
   font-family: "STZhongsong", "SimSun", serif;
   display: flex;
   align-items: center;
@@ -201,71 +245,58 @@
 .feature-icon::after {
   content: '';
   position: absolute;
-  top: -6rpx; left: -6rpx; right: -6rpx; bottom: -6rpx;
+  top: -7rpx;
+  left: -7rpx;
+  right: -7rpx;
+  bottom: -7rpx;
   border-radius: 50%;
-  border: 2rpx solid rgba(22, 100, 217, 0.15);
+  border: 1rpx solid var(--accent-line);
+  opacity: 0.6;
 }
 
 .feature-arrow {
-  font-size: 34rpx;
-  color: var(--color-text-secondary);
+  font-size: 38rpx;
+  font-weight: 300;
+  color: var(--accent);
+  opacity: 0.65;
 }
 
 .feature-title {
   font-size: 31rpx;
   font-weight: 700;
-  color: var(--color-text-primary);
+  letter-spacing: 1rpx;
+  color: var(--accent-deep);
 }
 
 .feature-desc {
-  margin-top: 16rpx;
+  margin-top: 14rpx;
   font-size: 24rpx;
-  line-height: 1.8;
+  line-height: 1.75;
   color: var(--color-text-secondary);
 }
 
-.feature-card.primary .feature-icon {
-  border-color: rgba(22, 100, 217, 0.4);
-  color: var(--color-primary-dark);
-}
-
-.feature-card.primary .feature-arrow,
-.feature-card.primary .feature-title,
-.feature-card.primary .feature-desc {
-  color: #1c4e88;
-}
-
-.page.dark .feature-card.primary .feature-arrow,
-.page.dark .feature-card.primary .feature-title {
-  color: #EDF5FF;
-}
-
-.page.dark .feature-card.primary .feature-desc {
-  color: #9FB8D8;
-}
-
+/* ========== 学习顺序指引 ========== */
 .guide-panel {
-  margin-top: 30rpx;
-  padding: 40rpx 32rpx;
-  border-radius: 30rpx;
+  margin-top: 32rpx;
+  padding: 40rpx 32rpx 34rpx;
+  border-radius: 28rpx;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 249, 255, 0.95) 100%);
   border: 1rpx solid rgba(167, 207, 255, 0.3);
   box-shadow: 0 16rpx 32rpx rgba(45, 100, 176, 0.05);
   position: relative;
   overflow: hidden;
+  animation: rise-in 0.6s ease 0.45s backwards;
 }
 
-.page.dark .guide-panel {
-  background: linear-gradient(180deg, rgba(14, 30, 52, 0.98) 0%, rgba(10, 24, 43, 0.95) 100%);
-  border: 1rpx solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 16rpx 32rpx rgba(0, 0, 0, 0.4);
-}
-
+/* 宣纸格纹 */
 .guide-panel::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: 
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
     linear-gradient(90deg, rgba(22, 100, 217, 0.02) 1px, transparent 1px),
     linear-gradient(rgba(22, 100, 217, 0.02) 1px, transparent 1px);
   background-size: 40rpx 40rpx;
@@ -305,10 +336,6 @@
   border-bottom: 1rpx dashed rgba(22, 100, 217, 0.1);
 }
 
-.page.dark .guide-item {
-  border-bottom: 1rpx dashed rgba(255, 255, 255, 0.1);
-}
-
 .guide-item:last-child {
   border-bottom: none;
   padding-bottom: 0;
@@ -330,21 +357,15 @@
   position: relative;
 }
 
-.page.dark .guide-index {
-  border-color: #EDF5FF;
-  color: #EDF5FF;
-}
-
 .guide-index::after {
   content: '';
   position: absolute;
-  top: 4rpx; left: 4rpx; right: 4rpx; bottom: 4rpx;
+  top: 4rpx;
+  left: 4rpx;
+  right: 4rpx;
+  bottom: 4rpx;
   border-radius: 50%;
   border: 2rpx dashed rgba(18, 59, 107, 0.3);
-}
-
-.page.dark .guide-index::after {
-  border: 2rpx dashed rgba(255, 255, 255, 0.3);
 }
 
 .guide-text {
@@ -355,10 +376,47 @@
   padding-top: 6rpx;
 }
 
+.guide-footnote {
+  display: block;
+  margin-top: 28rpx;
+  padding-top: 22rpx;
+  border-top: 1rpx dashed rgba(22, 100, 217, 0.14);
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+  color: var(--color-text-secondary);
+  text-align: right;
+  position: relative;
+  z-index: 1;
+}
+
 .bottom-safe {
   height: 180rpx;
 }
 
+/* ========== 入场动画 ========== */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ========== 深色模式 ========== */
 .dark.page {
   background: linear-gradient(180deg, #071525 0%, #0b1d33 42%, #10243e 100%);
   color: #eaf3ff;
@@ -368,57 +426,76 @@
   background-image:
     radial-gradient(circle at 50% -10%, rgba(220, 235, 255, 0.08) 0%, rgba(220, 235, 255, 0.02) 18%, rgba(220, 235, 255, 0) 34%),
     radial-gradient(ellipse at 18% 16%, rgba(49, 95, 175, 0.2) 0%, rgba(49, 95, 175, 0.05) 28%, rgba(49, 95, 175, 0) 56%),
-    radial-gradient(ellipse at 84% 22%, rgba(87, 140, 199, 0.18) 0%, rgba(87, 140, 199, 0.04) 30%, rgba(87, 140, 199, 0) 58%),
-    linear-gradient(180deg, rgba(18, 51, 98, 0.18) 0%, rgba(18, 51, 98, 0.06) 44%, rgba(18, 51, 98, 0.16) 100%);
+    radial-gradient(ellipse at 84% 22%, rgba(87, 140, 199, 0.18) 0%, rgba(87, 140, 199, 0.04) 30%, rgba(87, 140, 199, 0) 58%);
 }
 
-.dark .bg-grid {
-  background-image:
-    linear-gradient(180deg, rgba(120, 170, 233, 0.12) 0%, rgba(120, 170, 233, 0.03) 78%, rgba(120, 170, 233, 0) 100%),
-    repeating-linear-gradient(90deg, rgba(143, 188, 244, 0.14) 0, rgba(143, 188, 244, 0.14) 2rpx, transparent 2rpx, transparent 26rpx),
-    repeating-radial-gradient(circle at 0 100%, rgba(116, 164, 229, 0.2) 0 12rpx, rgba(116, 164, 229, 0) 12rpx 30rpx),
-    repeating-radial-gradient(circle at 28rpx 100%, rgba(53, 99, 171, 0.18) 0 9rpx, rgba(53, 99, 171, 0) 9rpx 24rpx),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 22%);
-  opacity: 0.44;
+.dark .hero-kicker {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #9fb8d8;
 }
 
-.dark .hero {
-  background: linear-gradient(145deg, rgba(12, 28, 49, 0.96) 0%, rgba(15, 36, 63, 0.94) 100%);
-  border-color: rgba(88, 127, 181, 0.28);
+.dark .hero-title {
+  color: #edf5ff;
 }
 
-.dark .hero::before {
-  background:
-    radial-gradient(circle at 82% 22%, rgba(80, 132, 205, 0.16) 0%, rgba(80, 132, 205, 0.04) 22%, rgba(80, 132, 205, 0) 44%),
-    linear-gradient(125deg, rgba(49, 95, 176, 0.1) 0%, rgba(49, 95, 176, 0) 26%, rgba(111, 172, 219, 0.1) 52%, rgba(111, 172, 219, 0) 78%);
+.dark .hero-desc {
+  color: #9fb8d8;
 }
 
-.dark .hero-kicker,
-.dark .hero-desc,
-.dark .guide-text,
+.dark .feature-card {
+  background: linear-gradient(172deg, rgba(16, 33, 56, 0.98) 0%, var(--accent-bg) 100%);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18rpx 40rpx rgba(0, 0, 0, 0.35);
+}
+
+.dark .feature-card::after {
+  opacity: 0.09;
+}
+
+.dark .card-pressed {
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.5);
+}
+
+.dark .feature-card {
+  --accent: #7FB0F7;
+  --accent-deep: #BDD7FA;
+  --accent-bg: #1E324E;
+  --accent-line: rgba(127, 176, 247, 0.3);
+}
+
 .dark .feature-desc {
   color: #9fb8d8;
 }
 
-.dark .hero-title,
-.dark .guide-title,
-.dark .feature-title {
+.dark .guide-panel {
+  background: linear-gradient(180deg, rgba(14, 30, 52, 0.98) 0%, rgba(10, 24, 43, 0.95) 100%);
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16rpx 32rpx rgba(0, 0, 0, 0.4);
+}
+
+.dark .guide-title {
   color: #edf5ff;
 }
 
-.dark .feature-card,
-.dark .guide-panel {
-  background: rgba(10, 24, 43, 0.9);
-  border-color: rgba(96, 139, 191, 0.28);
-  box-shadow: 0 18rpx 34rpx rgba(0, 0, 0, 0.24);
+.dark .guide-item {
+  border-bottom: 1rpx dashed rgba(255, 255, 255, 0.1);
 }
 
-.dark .feature-card.primary {
-  background: rgba(12, 28, 49, 0.94);
-}
-
-.dark .feature-icon,
 .dark .guide-index {
-  background: rgba(118, 184, 255, 0.16);
-  color: #dceeff;
+  border-color: #EDF5FF;
+  color: #EDF5FF;
+}
+
+.dark .guide-index::after {
+  border: 2rpx dashed rgba(255, 255, 255, 0.3);
+}
+
+.dark .guide-text {
+  color: #9fb8d8;
+}
+
+.dark .guide-footnote {
+  border-top-color: rgba(255, 255, 255, 0.1);
+  color: #9fb8d8;
 }

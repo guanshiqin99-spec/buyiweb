@@ -1,22 +1,24 @@
 <view class="page {{currentTheme}} {{fontSizeClass}}">
   <custom-nav title="应用"></custom-nav>
-  <!-- 自定义导航栏预留（模拟透明背景） -->
-  
+  <!-- 自定义导航栏（透明背景融合页面） -->
+
   <view class="page-bg">
-    <!-- 将水墨渐变背景与云水纹结合 -->
+    <!-- 水墨渐变背景与云水纹 -->
     <view class="home-hero-bg"></view>
     <view class="bg-cloud"></view>
   </view>
 
   <view class="app-scroll">
+    <!-- 头部：标题与朱砂印章 -->
     <view class="hero">
       <text class="hero-kicker">LEARNING HUB</text>
       <text class="hero-title">功能中心</text>
       <text class="hero-desc">按学习场景进入内容，减少跳转，保持专注。</text>
     </view>
 
+    <!-- 功能卡片：2×3 网格，取传统六色（青·碧·靛·金·玉·朱）区分入口 -->
     <view class="feature-grid">
-      <view class="feature-card primary" bindtap="goToQuery">
+      <view class="feature-card" hover-class="card-pressed" hover-stay-time="60" bindtap="goToQuery">
         <view class="feature-top">
           <view class="feature-icon">词</view>
           <text class="feature-arrow">→</text>
@@ -25,7 +27,7 @@
         <text class="feature-desc">支持布依语、中文、英文搜索，快速查看词条与释义。</text>
       </view>
 
-      <view class="feature-card" bindtap="goToPhrases">
+      <view class="feature-card" hover-class="card-pressed" hover-stay-time="60" bindtap="goToPhrases">
         <view class="feature-top">
           <view class="feature-icon">句</view>
           <text class="feature-arrow">→</text>
@@ -34,7 +36,7 @@
         <text class="feature-desc">把高频场景表达集中起来，适合口语入门和记忆。</text>
       </view>
 
-      <view class="feature-card" bindtap="goToProverbs">
+      <view class="feature-card" hover-class="card-pressed" hover-stay-time="60" bindtap="goToProverbs">
         <view class="feature-top">
           <view class="feature-icon">谚</view>
           <text class="feature-arrow">→</text>
@@ -43,7 +45,7 @@
         <text class="feature-desc">从短句里理解布依语文化与表达节奏。</text>
       </view>
 
-      <view class="feature-card accent" bindtap="goToLearn">
+      <view class="feature-card" hover-class="card-pressed" hover-stay-time="60" bindtap="goToLearn">
         <view class="feature-top">
           <view class="feature-icon">学</view>
           <text class="feature-arrow">→</text>
@@ -52,16 +54,26 @@
         <text class="feature-desc">翻转卡片记单词，发音、收藏、复习一步到位。</text>
       </view>
 
-      <view class="feature-card full" bindtap="goToCulture">
-        <view class="feature-icon">文</view>
-        <view class="feature-full-body">
-          <text class="feature-title">文化馆</text>
-          <text class="feature-desc">声调体验与非遗纹样展项，内容均带资料来源。</text>
+      <view class="feature-card" hover-class="card-pressed" hover-stay-time="60" bindtap="goToQuiz">
+        <view class="feature-top">
+          <view class="feature-icon">测</view>
+          <text class="feature-arrow">→</text>
         </view>
-        <text class="feature-arrow">→</text>
+        <text class="feature-title">测验 &amp; 发音闯关</text>
+        <text class="feature-desc">文化答题 + AI 语音跟读评测，巩固学习成果。</text>
+      </view>
+
+      <view class="feature-card" hover-class="card-pressed" hover-stay-time="60" bindtap="goToCulture">
+        <view class="feature-top">
+          <view class="feature-icon">文</view>
+          <text class="feature-arrow">→</text>
+        </view>
+        <text class="feature-title">文化馆</text>
+        <text class="feature-desc">声调体验与非遗纹样展项，内容均带资料来源。</text>
       </view>
     </view>
 
+    <!-- 学习顺序指引 -->
     <view class="guide-panel">
       <text class="guide-title">建议的学习顺序</text>
       <view class="guide-list">
@@ -78,6 +90,7 @@
           <text class="guide-text">最后听发音和民歌，建立语音记忆。</text>
         </view>
       </view>
+      <text class="guide-footnote">循序渐进 · 温故知新</text>
     </view>
 
     <view class="bottom-safe"></view>

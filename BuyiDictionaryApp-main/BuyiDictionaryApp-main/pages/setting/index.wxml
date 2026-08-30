@@ -25,7 +25,7 @@
       <view class="setting-item">
         <text class="text-body">字号大小</text>
         <view class="slider-wrapper">
-          <slider value="{{fontSizeIndex}}" min="0" max="2" step="1" activeColor="#5C86C5" backgroundColor="#E0E8F5" block-color="#5C86C5" block-size="20" bindchange="changeFontSize" />
+          <slider value="{{fontSizeIndex}}" min="0" max="2" step="1" activeColor="{{currentTheme === 'dark' ? '#7FB0F7' : '#5C86C5'}}" backgroundColor="{{currentTheme === 'dark' ? 'rgba(255,255,255,0.1)' : '#E0E8F5'}}" block-color="{{currentTheme === 'dark' ? '#7FB0F7' : '#5C86C5'}}" block-size="20" bindchange="changeFontSize" />
           <view class="slider-labels text-sub">
             <text>小</text>
             <text>中</text>
@@ -42,12 +42,12 @@
     <view class="card glass-card">
       <view class="setting-item">
         <text class="text-body">学习提醒</text>
-        <switch color="#5C86C5" checked="{{notifications}}" bindchange="changeLearningReminder" />
+        <switch color="{{currentTheme === 'dark' ? '#7FB0F7' : '#5C86C5'}}" checked="{{notifications}}" bindchange="changeLearningReminder" />
       </view>
       <view class="divider"></view>
       <view class="setting-item">
         <text class="text-body">自动播放发音</text>
-        <switch color="#5C86C5" checked="{{autoplay}}" bindchange="changeAutoplay" />
+        <switch color="{{currentTheme === 'dark' ? '#7FB0F7' : '#5C86C5'}}" checked="{{autoplay}}" bindchange="changeAutoplay" />
       </view>
     </view>
   </view>

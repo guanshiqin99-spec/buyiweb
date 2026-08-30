@@ -32,4 +32,8 @@ Page({
   goToCulture() {
     wx.navigateTo({ url: '/pages/culture/index' });
   },
+
+  goToQuiz() {
+    wx.navigateTo({ url: '/pages/quiz/index' });
+  },
 });

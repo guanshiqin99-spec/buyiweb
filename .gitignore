@@ -94,6 +94,13 @@ migration-test.sqlite
 **/.vite/
 **/.wrangler/
 
+# npm 本地缓存(运行 npm 命令时可能生成)
+.npm-cache/
+**/.npm-cache/
+
+# Trae 临时检查脚本
+.trae/tmp-*
+
 # ---------- 环境变量(生产环境配置含密钥) ----------
 .env.production
 **/.env.production
