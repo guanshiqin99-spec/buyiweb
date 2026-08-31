@@ -39,6 +39,25 @@ const panelRef = ref(null)
 const draft = ref('')
 let lastFocus = null
 
+// 首页欢迎气泡：仅进入首页时在悬浮球旁弹出一条消息
+const showGreeting = ref(false)
+let greetingTimer = null
+
+watch(() => route.path, (p) => {
+  if (p === '/') {
+    showGreeting.value = true
+    clearTimeout(greetingTimer)
+    greetingTimer = setTimeout(() => { showGreeting.value = false }, 6000)
+  } else {
+    showGreeting.value = false
+  }
+}, { immediate: true })
+
+function dismissGreeting() {
+  showGreeting.value = false
+  clearTimeout(greetingTimer)
+}
+
 // 路由变化时同步上下文
 watch(() => route.path, (p) => {
   agentStore.setContext(p)
@@ -64,6 +83,7 @@ watch(() => agentStore.messages.length, () => {
 })
 
 function togglePanel() {
+  dismissGreeting()
   if (agentStore.isOpen) agentStore.close()
   else agentStore.open(route.path)
 }
@@ -102,11 +122,25 @@ function handleKeydown(e) {
 
 onUnmounted(() => {
   // 组件卸载时确保面板关闭，避免焦点丢失
+  clearTimeout(greetingTimer)
   agentStore.close()
 })
 </script>
 
 <template>
+  <!-- 首页欢迎气泡：悬浮球旁弹出一条导览员消息 -->
+  <Transition name="greet">
+    <div v-if="showGreeting && !agentStore.isOpen" class="agent-greeting" role="status">
+      <p class="greet-text">你好，我是 AI 导览员，可以为你讲解布依语词汇、民歌、谚语与民俗。</p>
+      <button class="greet-close" type="button" aria-label="关闭提示" @click="dismissGreeting">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </Transition>
+
   <!-- 悬浮入口按钮：全站可见 -->
   <button
     class="agent-fab"
@@ -116,11 +150,8 @@ onUnmounted(() => {
     aria-label="打开布依文化导览员"
     @click="togglePanel"
   >
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
-      <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-      <line x1="9" y1="9" x2="9.01" y2="9"/>
-      <line x1="15" y1="9" x2="15.01" y2="9"/>
+    <svg width="42" height="42" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="currentColor" d="M512 64c259.2 0 469.333333 200.576 469.333333 448s-210.133333 448-469.333333 448a484.48 484.48 0 0 1-232.725333-58.88l-116.394667 50.645333a42.666667 42.666667 0 0 1-58.517333-49.002666l29.76-125.013334C76.629333 703.402667 42.666667 611.477333 42.666667 512 42.666667 264.576 252.8 64 512 64z m0 64C287.488 128 106.666667 300.586667 106.666667 512c0 79.573333 25.557333 155.434667 72.554666 219.285333l5.525334 7.317334 18.709333 24.192-26.965333 113.237333 105.984-46.08 27.477333 15.018667C370.858667 878.229333 439.978667 896 512 896c224.512 0 405.333333-172.586667 405.333333-384S736.512 128 512 128z m-157.696 341.333333a42.666667 42.666667 0 1 1 0 85.333334 42.666667 42.666667 0 0 1 0-85.333334z m159.018667 0a42.666667 42.666667 0 1 1 0 85.333334 42.666667 42.666667 0 0 1 0-85.333334z m158.997333 0a42.666667 42.666667 0 1 1 0 85.333334 42.666667 42.666667 0 0 1 0-85.333334z"/>
     </svg>
   </button>
 
@@ -145,11 +176,8 @@ onUnmounted(() => {
       <header class="agent-header">
         <div class="agent-title-wrap">
           <span class="agent-avatar" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
-              <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-              <line x1="9" y1="9" x2="9.01" y2="9"/>
-              <line x1="15" y1="9" x2="15.01" y2="9"/>
+            <svg width="26" height="26" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+              <path fill="currentColor" d="M512 64c259.2 0 469.333333 200.576 469.333333 448s-210.133333 448-469.333333 448a484.48 484.48 0 0 1-232.725333-58.88l-116.394667 50.645333a42.666667 42.666667 0 0 1-58.517333-49.002666l29.76-125.013334C76.629333 703.402667 42.666667 611.477333 42.666667 512 42.666667 264.576 252.8 64 512 64z m0 64C287.488 128 106.666667 300.586667 106.666667 512c0 79.573333 25.557333 155.434667 72.554666 219.285333l5.525334 7.317334 18.709333 24.192-26.965333 113.237333 105.984-46.08 27.477333 15.018667C370.858667 878.229333 439.978667 896 512 896c224.512 0 405.333333-172.586667 405.333333-384S736.512 128 512 128z m-157.696 341.333333a42.666667 42.666667 0 1 1 0 85.333334 42.666667 42.666667 0 0 1 0-85.333334z m159.018667 0a42.666667 42.666667 0 1 1 0 85.333334 42.666667 42.666667 0 0 1 0-85.333334z m158.997333 0a42.666667 42.666667 0 1 1 0 85.333334 42.666667 42.666667 0 0 1 0-85.333334z"/>
             </svg>
           </span>
           <div>
@@ -239,11 +267,11 @@ onUnmounted(() => {
 /* 悬浮入口按钮 */
 .agent-fab {
   position: fixed;
-  right: 24px;
+  right: 56px;
   bottom: 96px;
   z-index: 90;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border: none;
   border-radius: 50%;
   background: var(--grad-accent);
@@ -266,10 +294,74 @@ onUnmounted(() => {
   outline-offset: 3px;
 }
 
+/* 首页欢迎气泡：半透明底 + 毛玻璃模糊，既协调又保证文字可读 */
+.agent-greeting {
+  position: fixed;
+  right: 136px;
+  bottom: 108px;
+  z-index: 89;
+  max-width: min(300px, 60vw);
+  padding: 12px 16px;
+  border-radius: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(212, 136, 58, 0.25);
+  box-shadow: 0 4px 14px rgba(27, 58, 92, 0.10), 0 1px 3px rgba(27, 58, 92, 0.06);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+}
+
+.greet-text {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--c-text);
+}
+
+.greet-close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  padding: 2px;
+  color: var(--c-text-70);
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 0;
+}
+
+.greet-close:hover {
+  color: var(--c-text);
+}
+
+[data-theme="dark"] .agent-greeting {
+  background: rgba(38, 49, 61, 0.45);
+  border-color: rgba(224, 168, 90, 0.30);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* 弹出/收起过渡 */
+.greet-enter-active,
+.greet-leave-active {
+  transition: opacity 280ms ease, transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.greet-enter-from,
+.greet-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
 @media (max-width: 768px) {
   .agent-fab {
-    right: 16px;
+    right: 40px;
     bottom: 150px;
+  }
+
+  .agent-greeting {
+    right: 116px;
+    bottom: 162px;
   }
 }
 

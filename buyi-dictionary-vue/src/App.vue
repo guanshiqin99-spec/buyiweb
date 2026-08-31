@@ -8,8 +8,12 @@ import AgentPanel from './components/specific/AgentPanel.vue'
 import SearchModal from './components/common/SearchModal.vue'
 import { initLiquidGlass } from './utils/liquidGlass'
 import { useSearchStore } from './stores/search'
+import { useAgentStore } from './stores/agent'
+import { useRoute } from 'vue-router'
 
 const searchStore = useSearchStore()
+const agentStore = useAgentStore()
+const route = useRoute()
 
 // 判断目标是否为输入型元素，避免在输入框内按 / 误触发搜索
 function isTypingTarget(el) {
