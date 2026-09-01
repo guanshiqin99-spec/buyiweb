@@ -239,10 +239,30 @@ defineProps({
 [data-theme="dark"] .tool-page__overlay {
   background: linear-gradient(
     180deg,
-    rgba(15, 20, 25, 0.62) 0%,
-    rgba(15, 20, 25, 0.70) 45%,
-    rgba(15, 20, 25, 0.78) 100%
+    rgba(15, 20, 25, 0.72) 0%,
+    rgba(15, 20, 25, 0.80) 45%,
+    rgba(15, 20, 25, 0.86) 100%
   );
+}
+
+/* 深色模式：image-light 模式下白光晕改为黑光晕，避免浅色字被吞没；同时辅助文字提亮一档 */
+[data-theme="dark"] .tool-page--image-only.tool-page--image-light .tool-page__heading h1 {
+  color: var(--c-text);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .85), 0 0 2px rgba(0,0,0,.9);
+}
+[data-theme="dark"] .tool-page--image-only.tool-page--image-light .tool-page__heading p {
+  color: var(--c-text-85);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .88);
+}
+[data-theme="dark"] .tool-page--image-only .tool-page__heading h1 {
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .9);
+}
+[data-theme="dark"] .tool-page--image-only .tool-page__heading p {
+  color: var(--c-white-65);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .85);
+}
+[data-theme="dark"] .tool-page__heading p {
+  color: var(--c-text-85);
 }
 
 /* 深色模式：image-only 页面也压一层深色蒙层，避免亮背景图冲淡深色氛围 */
@@ -252,7 +272,7 @@ defineProps({
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: rgba(15, 20, 25, 0.5);
+  background: rgba(15, 20, 25, 0.62);
 }
 
 /* 深色模式：玻璃卡片显式切为深色调，抵消 scoped :deep() 选择器高优先级覆盖 */

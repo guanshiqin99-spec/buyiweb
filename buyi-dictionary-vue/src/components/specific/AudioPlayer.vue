@@ -127,7 +127,7 @@ onUnmounted(() => {
 .player__status { position: absolute; left: 18px; right: 18px; bottom: calc(100% + 8px); min-height: 0; margin: 0; color: var(--c-text-70); font-size: 12px; text-align: center; pointer-events: none; }
 .player__status:empty { display: none; }
 .player__status--error { color: var(--c-danger); }
-.player--collapsed { left: auto; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: none; display: flex; width: 66px; height: 66px; padding: 5px; border-radius: 50%; }
+.player--collapsed { left: auto; right: calc(48px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: none; display: flex; width: 66px; height: 66px; padding: 5px; border-radius: 50%; }
 .player--collapsed .player__disc { width: 56px; height: 56px; cursor: pointer; background: repeating-radial-gradient(circle at center, transparent 0 3px, rgba(255,255,255,.04) 3px 4px), radial-gradient(circle at center, #2a2d33 0%, #15171c 80%); box-shadow: 0 4px 12px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.06); }
 .player__disc-label { width: 72%; height: 72%; border-radius: 50%; overflow: hidden; display: grid; place-items: center; }
 .player__disc-label.is-spinning { animation: spin 9s linear infinite; }
@@ -137,6 +137,7 @@ onUnmounted(() => {
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 680px) {
+  .player--collapsed { right: calc(16px + env(safe-area-inset-right, 0px)); }
   .player { grid-template-columns: 1fr auto; gap: 10px; padding: 10px 14px; }
   .player__timeline { grid-column: 1 / -1; grid-row: 1; }
   .player__identity { grid-column: 1; grid-row: 2; }

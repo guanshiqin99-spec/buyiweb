@@ -9,6 +9,7 @@ import { generateStream } from '@/utils/agentStream'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useAuthStore } from '@/stores/auth'
 import { useAgentStore } from '@/stores/agent'
+import { useThemeStore } from '@/stores/theme'
 import imgBg from '@/assets/images/generated/dictionary-archive-study.webp'
 import { getContentLabel } from '../utils/contentTypes'
 
@@ -17,6 +18,7 @@ const router = useRouter()
 const favoritesStore = useFavoritesStore()
 const authStore = useAuthStore()
 const agentStore = useAgentStore()
+const themeStore = useThemeStore()
 
 const searchQuery = ref(String(route.query.q || ''))
 const activeFilter = ref(String(route.query.type || 'all'))
@@ -113,6 +115,9 @@ const filteredResults = computed(() => {
 
 const selectedItem = computed(() => filteredResults.value.find((item) => item.id === selectedId.value) || null)
 const hasQuery = computed(() => Boolean(searchQuery.value.trim()))
+// 导航栏背景标记：深色模式下页面铺深色蒙层，需告知导航栏按深色背景着色（白字+深色玻璃），
+// 避免浅色文字叠在白色玻璃胶囊上导致同色系无法看清
+const navTone = computed(() => (themeStore.resolved === 'dark' ? 'dark' : 'light'))
 // 当前分类的中文标签，用于分类空态提示文案
 const activeFilterLabel = computed(() => filters.find((f) => f.key === activeFilter.value)?.label || '当前分类')
 const isFavoriteSelected = computed(() => {
@@ -551,6 +556,12 @@ watch(() => route.query.q, (value) => {
   const next = String(value || '')
   if (next !== searchQuery.value) searchQuery.value = next
 })
+// 主题切换后背景明暗改变，派发 resize 促使导航栏按新的 data-nav-tone 重新着色（含 96ms 平滑过渡）
+watch(navTone, () => {
+  window.requestAnimationFrame(() => {
+    window.dispatchEvent(new Event('resize'))
+  })
+})
 
 function handleModalKeydown(event) {
   if (event.key === 'Escape' && showDetailModal.value) closeDetailModal()
@@ -595,7 +606,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main id="main" class="dictionary-workspace" data-nav-tone="light" data-motion-surface="tool" data-tool-page="">
+  <main id="main" class="dictionary-workspace" :data-nav-tone="navTone" data-motion-surface="tool" data-tool-page="">
     <div class="dictionary-bg" :style="{ transform: `translate3d(0, ${bgParallax}px, 0)` }"><img :src="imgBg" alt="" loading="eager" fetchpriority="high" /></div>
 
     <header class="dictionary-hero">
@@ -746,11 +757,17 @@ onUnmounted(() => {
 
 <style scoped>
 .dictionary-workspace { position: relative; min-height: 100vh; padding: 104px max(24px, calc((100% - 1100px) / 2)) 120px; color: var(--c-text); background: transparent; overflow: hidden; }
+.dictionary-workspace::before { content: ""; position: fixed; inset: 0; z-index: -1; background: linear-gradient(120deg, rgba(247,245,242,0.55) 0%, rgba(247,245,242,0.25) 45%, transparent 78%); pointer-events: none; }
 .dictionary-bg { position: fixed; inset: -10%; z-index: -2; will-change: transform; }
 .dictionary-bg img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); animation: dictBgReveal var(--duration-slow) var(--ease-out-quint) forwards; }
 @keyframes dictBgReveal { to { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .dictionary-bg, .dictionary-bg img { animation: none !important; transform: none !important; } }
 .dictionary-hero { padding: 8px 0 22px; }.dictionary-hero p, .culture-links > p { margin: 0; color: var(--c-accent); font-size: .75rem; font-weight: 700; letter-spacing: .08em; }.dictionary-hero h1 { max-width: 18ch; margin: 6px 0 8px; color: var(--c-text); font: 600 clamp(1.85rem, 3.4vw, 2.85rem) / 1.08 var(--font-serif); letter-spacing: -.025em; text-shadow: 0 2px 16px rgba(255, 255, 255, .78); text-wrap: balance; }.dictionary-hero > div > span { display: block; max-width: 48ch; color: var(--c-text-70); font-size: 1rem; line-height: 1.75; text-shadow: 0 1px 10px rgba(255, 255, 255, .82); }
+/* 深色模式：Hero 区域文字阴影由白光改为黑光，避免浅色文字与白光晕叠糊；背景蒙层改为深色提升对比 */
+[data-theme="dark"] .dictionary-workspace::before { background: linear-gradient(120deg, rgba(15,20,25,0.82) 0%, rgba(15,20,25,0.55) 40%, rgba(15,20,25,0.25) 70%, transparent 88%); }
+[data-theme="dark"] .dictionary-hero h1 { text-shadow: 0 2px 18px rgba(0, 0, 0, .85), 0 0 2px rgba(0,0,0,.9); }
+[data-theme="dark"] .dictionary-hero > div > span { color: var(--c-text-85); text-shadow: 0 1px 10px rgba(0, 0, 0, .88); }
+[data-theme="dark"] .dictionary-hero p { color: var(--c-accent); text-shadow: 0 1px 6px rgba(0,0,0,.75); }
 /* 招募母语者录音横幅：单行紧凑展示，不抢视觉重心 */
 .recruit-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 16px; padding: 8px 14px; border-left: 2px solid var(--c-accent); border-radius: var(--radius-sm); background: var(--c-accent-04); font-size: .75rem; line-height: 1.6; }
 .recruit-banner__kicker { color: var(--c-accent-text); font-weight: 700; letter-spacing: .06em; }
@@ -758,6 +775,11 @@ onUnmounted(() => {
 .recruit-banner__contact { color: var(--c-brand); font-weight: 600; text-decoration: none; word-break: break-all; }
 .recruit-banner__contact:hover { text-decoration: underline; }
 .recruit-banner__contact:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; border-radius: 2px; }
+/* 深色模式：招募横幅加深背景与文字颜色，保证可读性 */
+[data-theme="dark"] .recruit-banner { background: rgba(224, 168, 90, 0.16); border-left-color: var(--c-accent); }
+[data-theme="dark"] .recruit-banner__kicker { color: var(--c-accent); }
+[data-theme="dark"] .recruit-banner__text { color: var(--c-text-85); }
+[data-theme="dark"] .recruit-banner__contact { color: var(--c-brand-light); }
 /* 搜索区：hero 玻璃外壳。内部 SearchBar 自带 content 玻璃会被下面 :deep 抹平，避免双层玻璃叠糊。 */
 .dictionary-search { padding: 24px; }.dictionary-search :deep(.search-bar) { border-color: transparent; background: var(--c-glass); box-shadow: none; }.dictionary-search :deep(.search-bar:focus-within) { box-shadow: 0 0 0 4px var(--c-brand-08); }.dictionary-search__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }.dictionary-search__meta p { margin: 0; color: var(--c-text-60); font-size: .875rem; }.filter-pills { display: flex; flex-wrap: wrap; gap: 6px; }.filter-pills button { min-height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: 999px; color: var(--c-text-70); background: transparent; cursor: pointer; font: 600 .8125rem var(--font-sans); }.filter-pills button:hover { color: var(--c-text); background: var(--c-brand-06); }.filter-pills button.active { color: var(--c-white); background: var(--c-brand); }.filter-pills button:focus-visible, .entry-actions button:focus-visible, .state-panel button:focus-visible, .result-row:focus-visible, .culture-links a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 3px; }
 /* 浏览模式分页条：紧贴列表顶部，与 cache-notice 同区 */
@@ -769,6 +791,17 @@ onUnmounted(() => {
 .entry-detail { position: sticky; top: calc(56px + env(safe-area-inset-top, 0px) + 20px); min-height: 420px; padding: clamp(24px, 4vw, 46px); }
 .state-panel { max-width: 34rem; margin: 40px auto; padding: 28px; border: 1px solid var(--c-divider); border-radius: var(--radius-md); background: var(--c-bg-silver); }.state-panel strong { color: var(--c-text); }.state-panel p { margin: 8px 0 20px; color: var(--c-text-70); line-height: 1.7; }.state-panel button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; color: var(--c-white); background: var(--c-brand); cursor: pointer; font: 600 .875rem var(--font-sans); }.state-panel--error { background: var(--c-danger-08); border-color: color-mix(in srgb, var(--c-danger) 28%, transparent); }.state-copy { margin: 16px 0; color: var(--c-text-60); font-size: .875rem; }.result-skeleton { display: grid; grid-template-columns: 50px 1fr; gap: 10px; padding: 20px 14px; border-bottom: 1px solid var(--c-divider); }.result-skeleton i, .result-skeleton b, .result-skeleton span { display: block; border-radius: 999px; background: linear-gradient(90deg, var(--c-brand-06), var(--c-brand-08), var(--c-brand-06)); animation: shimmer 1.4s ease-in-out infinite; }.result-skeleton i { grid-row: span 2; height: 22px; }.result-skeleton b { height: 17px; width: 44%; }.result-skeleton span { height: 12px; width: 64%; }.entry-detail__empty { display: grid; min-height: 340px; place-content: center; gap: 14px; color: var(--c-text-60); text-align: center; }.entry-detail__empty span { color: var(--c-accent); font: 3rem var(--font-serif); }.entry-detail__empty p { max-width: 25ch; margin: 0; line-height: 1.8; }.action-message { position: absolute; right: 24px; bottom: 18px; left: 24px; margin: 0; padding: 10px 12px; border-radius: var(--radius-sm); color: var(--c-text); background: var(--c-accent-10); font-size: .8125rem; }
 .service-status { display: block; margin: -8px 0 20px; color: var(--c-text-60); font-size: .75rem; }.service-status--ready { color: var(--c-brand); }.service-status--degraded, .service-status--offline { color: var(--c-danger); }
+/* 深色模式：搜索区元信息、详情空态、状态面板等辅助文字提升对比度 */
+[data-theme="dark"] .dictionary-search__meta p { color: var(--c-text-70); }
+[data-theme="dark"] .entry-detail__empty { color: var(--c-text-85); }
+[data-theme="dark"] .entry-detail__empty span { color: var(--c-accent); }
+[data-theme="dark"] .state-copy { color: var(--c-text-70); }
+[data-theme="dark"] .state-panel p { color: var(--c-text-85); }
+[data-theme="dark"] .service-status { color: var(--c-text-70); }
+[data-theme="dark"] .service-status--ready { color: var(--c-brand-light); }
+[data-theme="dark"] .browse-pager { color: var(--c-text-85); }
+[data-theme="dark"] .browse-pager button { color: var(--c-text-70); }
+[data-theme="dark"] .browse-pager button:hover:not(:disabled) { color: var(--c-brand-light); }
 @keyframes shimmer { 50% { opacity: .45; } }
 
 /* 移动端详情弹窗过渡动画 */
@@ -890,6 +923,17 @@ onUnmounted(() => {
 .dictionary-workspace .entry-actions button { min-width: 0; }
 .dictionary-workspace .entry-actions button { display: inline-flex; align-items: center; gap: 7px; }
 .dictionary-workspace .cache-notice { margin: 14px 0 0; padding: 10px 12px; border-left: 3px solid var(--c-accent); color: var(--c-text-70); background: var(--c-accent-04); font-size: .8125rem; line-height: 1.6; }
+/* 深色模式：补充第二个 scoped 作用域中的文字阴影与缓存通知对比度 */
+[data-theme="dark"] .dictionary-workspace .dictionary-hero p {
+  color: var(--c-accent);
+  text-shadow: 0 1px 6px rgba(0,0,0,.75);
+}
+[data-theme="dark"] .dictionary-workspace .entry-detail__empty span { color: var(--c-accent); }
+[data-theme="dark"] .dictionary-workspace .cache-notice {
+  color: var(--c-text-85);
+  background: rgba(224, 168, 90, 0.16);
+  border-left-color: var(--c-accent);
+}
 
 @media (max-width: 560px) {
   .dictionary-workspace .dictionary-search,
